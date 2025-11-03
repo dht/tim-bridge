@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { playMp3, stopAudio } from './audio.js';
 import { listenToCollection } from './firestore.js';
 import { turnLightsOff, turnLightsOn } from './lights.js';
+import { delay } from './utils.js';
 
 const INSTALLATION_ID = 'TS-001';
 const FRESH_WINDOW_MS = 30_000; // 30s
