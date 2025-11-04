@@ -13,7 +13,7 @@ import {
 let app = null;
 let db = null;
 
-export const init = (firebaseConfig) => {
+export const init = firebaseConfig => {
   app = getApps().length ? getApp() : initializeApp(firebaseConfig);
   db = getFirestore(app);
 };
@@ -33,14 +33,14 @@ export function listenToCollection(name, callback) {
   const collectionRef = collection(db, name);
   let isInitialLoad = true;
 
-  const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
+  const unsubscribe = onSnapshot(collectionRef, snapshot => {
     if (isInitialLoad) {
       // skip initial batch of 'added' events
       isInitialLoad = false;
       return;
     }
 
-    snapshot.docChanges().forEach((change) => {
+    snapshot.docChanges().forEach(change => {
       const id = change.doc.id;
       const data = change.doc.data();
 
@@ -59,7 +59,7 @@ export function listenToCollection(name, callback) {
 
 export function crud(collectionName) {
   return {
-    add: async (values) => {
+    add: async values => {
       const valuesWithTs = {
         ...values,
         clientTs: Date.now(),
@@ -78,11 +78,11 @@ export function crud(collectionName) {
 
       await setDoc(ref, newChange, { merge: true });
     },
-    delete: async (id) => {
+    delete: async id => {
       const ref = doc(db, collectionName, id);
       await deleteDoc(ref);
     },
-    listen: (callback) => {
+    listen: callback => {
       return listenToCollection(collectionName, callback);
     },
   };
@@ -95,7 +95,43 @@ export async function clearCollection(name) {
   console.log(`Clearing collection: ${name}`);
   // Implement as needed.
   const snapshot = await getDocs(collectionRef);
-  snapshot.forEach(async (doc) => {
+  snapshot.forEach(async doc => {
     await deleteDoc(doc.ref);
   });
 }
+
+/*
+const INSTALLATION_ID = 'TS-001';
+const FRESH_WINDOW_MS = 30_000; // 30s
+
+
+
+process.on('SIGINT', () => {
+  stopAudio();
+  process.exit(0);
+});
+process.on('SIGTERM', () => {
+  stopAudio();
+  process.exit(0);
+});
+
+function run() {
+  console.log('Listening to Firestore collection "installations"...');
+  console.log(`Installation ID: ${INSTALLATION_ID}`);
+
+  listenToCollection('installations', (change) => {
+    const { id, data } = change || {};
+    if (id !== INSTALLATION_ID || !data) return;
+
+    const { mp3Url, mp3UrlChangeTs } = data;
+    const delta = Date.now() - mp3UrlChangeTs;
+    console.log('mp3Url:', mp3Url, 'delta(ms):', delta);
+
+    if (mp3Url && delta < FRESH_WINDOW_MS) {
+      // simply play the latest url (replaces any current playback)
+      playMp3(mp3Url);
+    }
+  });
+}
+
+*/
