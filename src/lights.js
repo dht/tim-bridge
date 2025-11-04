@@ -1,6 +1,6 @@
 import rpio from 'rpio';
 
-const LED_PIN = 17; // GPIO 17 (pin 11)
+const LED_PIN = 11; // GPIO 17 (pin 11)
 
 // helper: wait for ms milliseconds
 function sleep(ms) {
