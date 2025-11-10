@@ -21,7 +21,7 @@ async function rgb() {
 
   // turn purple (red + blue)
   setColor(true, false, true);
-  await delay(2000);
+  await delay(7000);
 
   // turn off
   setColor(false, false, false);
