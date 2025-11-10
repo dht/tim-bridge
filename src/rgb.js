@@ -1,14 +1,17 @@
 import rpio from "rpio";
 
-rpio.init({ mapping: "gpio" });
+rpio.init({
+  mapping: "gpio",
+  gpiomem: false, // <— required for PWM
+});
 
 const RED = 12,
   GREEN = 13,
-  BLUE = 18;
+  BLUE = 18; // hardware-PWM-capable pins
 
 function setupPWM(pin) {
   rpio.open(pin, rpio.PWM);
-  rpio.pwmSetClockDivider(64); // reasonable resolution
+  rpio.pwmSetClockDivider(64);
   rpio.pwmSetRange(pin, 255); // 0–255 brightness
 }
 
@@ -17,7 +20,7 @@ setupPWM(GREEN);
 setupPWM(BLUE);
 
 export function setColor(r, g, b) {
-  rpio.pwmSetData(RED, r); // 0–255
+  rpio.pwmSetData(RED, r);
   rpio.pwmSetData(GREEN, g);
   rpio.pwmSetData(BLUE, b);
 }
