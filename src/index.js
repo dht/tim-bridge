@@ -17,9 +17,11 @@ async function main() {
 async function rgb() {
   console.log("💡 Starting RGB sequence...");
   await delay(1000);
+  setColor(255, 255, 255); // ocean blue
+  await delay(3000);
 
   setColor(0, 128, 255); // ocean blue
-  await delay(7000);
+  await delay(3000);
 
   // turn off
   setColor(255, 50, 0); // orange
