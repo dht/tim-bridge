@@ -1,395 +1,195 @@
-/*
+import rpio from 'rpio';
 
-# for 3-pin RGB LED on GPIO
-npm i pigpio
+rpio.init({ mapping: 'gpio' });
 
-# for WS2812 / NeoPixel (single LED)
-npm i rpi-ws281x-native
+const RED = 17,
+  GREEN = 22,
+  BLUE = 24;
+[RED, GREEN, BLUE].forEach(pin => {
+  rpio.open(pin, rpio.PWM);
+  rpio.pwmSetRange(pin, 1024);
+});
 
-
-
-*/
-
-/**
- * Prompt-Haus Light Language for Raspberry Pi
- * -------------------------------------------
- * States:
- *  - IDLE:        cyan-green, slow breathing
- *  - GENERATING:  magenta, 1s pulse
- *  - LISTENING:   sky blue, 2s single blink
- *  - SPEAKING:    amber, amplitude-reactive (use feedAmplitude)
- *  - RESETTING:   white→blue directional fade (simulated as sweep)
- *  - ERROR:       red only; pattern encodes type:
- *      'noInternet' (double-blink),
- *      'resetFail'  (long fade loop),
- *      'genFail'    (triple-stutter),
- *      'internal'   (uneven heartbeat),
- *      'timeout'    (slow rise & drop)
- *
- * Usage:
- *  const light = await Light.create({
- *    driver: 'gpio', // 'gpio' | 'neopixel' | 'console'
- *    gpio: { r: 17, g: 27, b: 22, common: 'cathode' }, // or 'anode'
- *    neopixel: { pin: 18, brightness: 128 },
- *    fps: 60
- *  });
- *
- *  light.setState('IDLE');
- *  light.setState('GENERATING');
- *  light.setState('LISTENING');
- *  light.setState('SPEAKING');
- *  light.feedAmplitude(0.0..1.0); // when SPEAKING
- *  light.setState('RESETTING');
- *  light.setError('noInternet');  // or 'resetFail' | 'genFail' | 'internal' | 'timeout'
- *  light.clearError();            // returns to previous state
- *
- *  process.on('SIGINT', () => light.dispose());
- */
-
-// ---------- small utils ----------
-const clamp01 = (x) => Math.max(0, Math.min(1, x));
-const lerp = (a, b, t) => a + (b - a) * t;
-const easeInOut = (t) => 0.5 * (1 - Math.cos(Math.PI * clamp01(t))); // cosine ease
-const nowMs = () => Date.now();
-
-function mixRGB(a, b, t) {
-  return [
-    Math.round(lerp(a[0], b[0], t)),
-    Math.round(lerp(a[1], b[1], t)),
-    Math.round(lerp(a[2], b[2], t)),
-  ];
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
 }
 
-// ---------- color palette (0-255) ----------
-const COLORS = {
-  idle: [0, 200, 160], // cyan-green
-  generating: [255, 0, 180], // magenta
-  listening: [0, 180, 255], // sky blue
-  speaking: [255, 160, 0], // amber
-  white: [255, 255, 255],
-  blue: [40, 90, 255],
-  black: [0, 0, 0],
-  red: [255, 32, 32], // deep crimson base
-};
-
-// ---------- drivers ----------
-class ConsoleDriver {
-  constructor() {
-    this.type = "console";
+// Utility: write 0–1024 PWM levels (common-anode invert handled)
+function writeRGB(r, g, b, invert = false) {
+  if (invert) {
+    r = 1024 - r;
+    g = 1024 - g;
+    b = 1024 - b;
   }
-  async init() {}
-  setRGB(rgb) {
-    /* eslint-disable no-console */ console.log("LED", rgb);
-  }
-  dispose() {}
+  rpio.pwmSetData(RED, r);
+  rpio.pwmSetData(GREEN, g);
+  rpio.pwmSetData(BLUE, b);
 }
 
-class GpioDriver {
-  constructor(cfg) {
-    this.type = "gpio";
-    this.cfg = cfg || {};
-    this.pins = this.cfg.pins || this.cfg;
-    this.common = this.cfg.common || "cathode"; // or 'anode'
-    this.PWM = null;
-    this.r = this.g = this.b = null;
-  }
-  async init() {
-    const pigpio = require("pigpio");
-    this.PWM = pigpio.Gpio;
-    this.r = new this.PWM(this.pins.r, { mode: this.PWM.OUTPUT });
-    this.g = new this.PWM(this.pins.g, { mode: this.PWM.OUTPUT });
-    this.b = new this.PWM(this.pins.b, { mode: this.PWM.OUTPUT });
-    // start off
-    this.setRGB([0, 0, 0]);
-  }
-  setRGB([r, g, b]) {
-    // scale to 0..255; invert if common anode
-    if (this.common === "anode") {
-      r = 255 - r;
-      g = 255 - g;
-      b = 255 - b;
+// Convert 0–255 color to 0–1024 PWM value
+function colorToPWM([r, g, b], scale = 1.0) {
+  return [r, g, b].map(c => Math.round((c * scale * 1024) / 255));
+}
+
+// Helper: cosine-ease fade 0–1
+const ease = t => 0.5 * (1 - Math.cos(Math.PI * t));
+
+// ---------- PATTERNS ----------
+async function breathing(color, period = 3000) {
+  const [r, g, b] = color;
+  while (true) {
+    for (let t = 0; t < 1; t += 0.02) {
+      const s = 0.25 + 0.7 * ease(t);
+      writeRGB(...colorToPWM([r, g, b], s));
+      await sleep(period / 50);
     }
-    this.r.pwmWrite(r);
-    this.g.pwmWrite(g);
-    this.b.pwmWrite(b);
-  }
-  dispose() {
-    this.setRGB([0, 0, 0]);
-    this.r?.digitalWrite(0);
-    this.g?.digitalWrite(0);
-    this.b?.digitalWrite(0);
   }
 }
 
-class NeoPixelDriver {
-  constructor(cfg) {
-    this.type = "neopixel";
-    this.cfg = cfg || {};
-    this.ws281x = null;
-    this.brightness = this.cfg.brightness ?? 128;
-    this.leds = new Uint32Array(1);
-  }
-  async init() {
-    this.ws281x = require("rpi-ws281x-native");
-    this.ws281x.init(1, {
-      dma: 10,
-      freq: 800000,
-      gpio: this.cfg.pin ?? 18,
-      invert: false,
-      brightness: this.brightness,
-    });
-    this.setRGB([0, 0, 0]);
-  }
-  setRGB([r, g, b]) {
-    // pack into GRB for ws281x
-    const color = ((g & 0xff) << 16) | ((r & 0xff) << 8) | (b & 0xff);
-    this.leds[0] = color;
-    this.ws281x.render(this.leds);
-  }
-  dispose() {
-    this.setRGB([0, 0, 0]);
-    try {
-      this.ws281x.reset();
-    } catch {}
+async function pulse(color, period = 1000) {
+  const [r, g, b] = color;
+  while (true) {
+    for (let t = 0; t < 1; t += 0.04) {
+      const s = 0.3 + 0.7 * ease(t);
+      writeRGB(...colorToPWM([r, g, b], s));
+      await sleep(period / 25);
+    }
   }
 }
 
-// ---------- core engine ----------
-class Light {
-  static async create(config = {}) {
-    const light = new Light(config);
-    await light.init();
-    return light;
-  }
-
-  constructor(config) {
-    this.config = Object.assign(
-      {
-        driver: "console", // 'gpio' | 'neopixel' | 'console'
-        gpio: { r: 17, g: 27, b: 22, common: "cathode" },
-        neopixel: { pin: 18, brightness: 128 },
-        fps: 60,
-      },
-      config
-    );
-
-    this.driver =
-      this.config.driver === "gpio"
-        ? new GpioDriver(this.config.gpio)
-        : this.config.driver === "neopixel"
-        ? new NeoPixelDriver(this.config.neopixel)
-        : new ConsoleDriver();
-
-    this.state = "IDLE";
-    this.errorType = null;
-    this.prevNonErrorState = "IDLE";
-    this.t0 = nowMs();
-    this.amplitude = 0; // for SPEAKING
-    this._timer = null;
-    this._frameMs = Math.max(10, Math.round(1000 / (this.config.fps || 60)));
-  }
-
-  async init() {
-    await this.driver.init();
-    this._start();
-    this.setState("IDLE");
-    process.on("SIGINT", () => this.dispose());
-  }
-
-  dispose() {
-    clearInterval(this._timer);
-    this.driver.dispose();
-    process.exit(0);
-  }
-
-  // -------- public API --------
-  setState(state) {
-    const upper = String(state || "").toUpperCase();
-    if (upper === "ERROR") return; // use setError
-    if (this.state !== "ERROR") this.prevNonErrorState = upper; // remember
-    this.state = upper;
-    this.errorType = null;
-    this.t0 = nowMs();
-  }
-
-  setError(
-    type /* 'noInternet' | 'resetFail' | 'genFail' | 'internal' | 'timeout' */
-  ) {
-    this.errorType = String(type || "internal");
-    this.state = "ERROR";
-    this.t0 = nowMs();
-  }
-
-  clearError() {
-    this.errorType = null;
-    this.state = this.prevNonErrorState || "IDLE";
-    this.t0 = nowMs();
-  }
-
-  feedAmplitude(level) {
-    this.amplitude = clamp01(level ?? 0);
-  }
-
-  // -------- engine loop --------
-  _start() {
-    this._timer = setInterval(() => this._tick(), this._frameMs);
-  }
-
-  _tick() {
-    const t = (nowMs() - this.t0) / 1000; // seconds since state started
-    let rgb = COLORS.black;
-
-    switch (this.state) {
-      case "IDLE":
-        // slow breathing 3s cycle
-        rgb = this._breathing(COLORS.idle, t, 3.0, 0.25, 0.95);
-        break;
-
-      case "GENERATING":
-        // 1s pulse
-        rgb = this._pulse(COLORS.generating, t, 1.0, 0.3, 1.0);
-        break;
-
-      case "LISTENING":
-        // single blink every 2s
-        rgb = this._blink(COLORS.listening, t, 2.0, 0.1);
-        break;
-
-      case "SPEAKING":
-      case "PLAYBACK":
-        // amplitude-reactive amber (min 0.2 floor so it's never fully dark)
-        {
-          const floor = 0.2;
-          const a = floor + (1 - floor) * this._smoothedAmp();
-          rgb = this._scale(COLORS.speaking, a);
-        }
-        break;
-
-      case "RESETTING":
-        // white -> blue "sweep": 1.5s cosine ease loop
-        {
-          const cycle = 1.5;
-          const k = 0.5 * (1 - Math.cos((2 * Math.PI * (t % cycle)) / cycle));
-          rgb = mixRGB(COLORS.white, COLORS.blue, k);
-          // brief hold near white at start for clarity
-        }
-        break;
-
-      case "ERROR":
-        rgb = this._errorPattern(this.errorType || "internal", t);
-        break;
-
-      default:
-        rgb = COLORS.black;
-    }
-
-    this.driver.setRGB(rgb);
-  }
-
-  // -------- pattern helpers --------
-  _scale([r, g, b], s) {
-    return [(r * s) | 0, (g * s) | 0, (b * s) | 0];
-  }
-
-  _breathing(color, t, period = 3, min = 0.2, max = 1.0) {
-    const k = (Math.sin((2 * Math.PI * t) / period - Math.PI / 2) + 1) / 2; // 0..1
-    const a = lerp(min, max, k);
-    return this._scale(color, a);
-  }
-
-  _pulse(color, t, period = 1, min = 0.3, max = 1.0) {
-    const phase = (t % period) / period; // 0..1
-    const a = lerp(min, max, easeInOut(phase)); // smooth pulse
-    return this._scale(color, a);
-  }
-
-  _blink(color, t, period = 2, duty = 0.1) {
-    const phase = (t % period) / period;
-    const on = phase < duty;
-    return on ? color : COLORS.black;
-  }
-
-  _tripleStutter(color, t, gap = 0.12, pause = 2.0) {
-    const cycle = 3 * gap + pause; // three quick blinks then rest
-    const p = t % cycle;
-    const on =
-      p < gap || (p >= gap && p < 2 * gap) || (p >= 2 * gap && p < 3 * gap);
-    return on ? color : COLORS.black;
-  }
-
-  _doubleBlink(color, t, blink = 0.08, gap = 0.12, pause = 1.0) {
-    const cycle = 2 * blink + gap + pause;
-    const p = t % cycle;
-    const on = p < blink || (p >= blink + gap && p < blink + gap + blink);
-    return on ? color : COLORS.black;
-  }
-
-  _longFadeLoop(color, t, period = 2.5) {
-    return this._pulse(color, t, period, 0.05, 1.0);
-  }
-
-  _unevenHeartbeat(color, t) {
-    // two pulses: short then longer, repeating every ~1.2s
-    const cycle = 1.2;
-    const p = t % cycle;
-    if (p < 0.15) {
-      return this._pulse(color, p, 0.15, 0.1, 1.0);
-    } else if (p < 0.55) {
-      return this._pulse(color, p - 0.15, 0.4, 0.1, 1.0);
-    } else {
-      return COLORS.black;
-    }
-  }
-
-  _slowRiseDrop(color, t, rise = 1.4, hold = 0.4, drop = 0.1, dark = 0.8) {
-    const cycle = rise + hold + drop + dark;
-    const p = t % cycle;
-    if (p < rise) {
-      const a = lerp(0.05, 1.0, easeInOut(p / rise));
-      return this._scale(color, a);
-    } else if (p < rise + hold) {
-      return color;
-    } else if (p < rise + hold + drop) {
-      const a = lerp(1.0, 0.0, easeInOut((p - rise - hold) / drop));
-      return this._scale(color, a);
-    } else {
-      return COLORS.black;
-    }
-  }
-
-  _errorPattern(type, t) {
-    const red = COLORS.red;
-
-    switch (type) {
-      case "noInternet": // short double-blink, 1s pause
-        return this._doubleBlink(red, t, 0.08, 0.12, 1.0);
-
-      case "resetFail": // long fade in/out loop
-        return this._longFadeLoop(red, t, 2.8);
-
-      case "genFail": // triple stutter then rest
-        return this._tripleStutter(red, t, 0.1, 2.0);
-
-      case "internal": // uneven heartbeat
-        return this._unevenHeartbeat(red, t);
-
-      case "timeout": // slow rise, hold, sudden drop, dark
-        return this._slowRiseDrop(red, t, 1.6, 0.5, 0.12, 0.9);
-
-      default:
-        return this._unevenHeartbeat(red, t);
-    }
-  }
-
-  // amplitude smoothing for SPEAKING
-  _smoothedAmp() {
-    // simple one-pole low-pass
-    this._ampState = this._ampState ?? 0;
-    const alpha = 0.35;
-    this._ampState =
-      this._ampState * (1 - alpha) + (this.amplitude || 0) * alpha;
-    return clamp01(this._ampState);
+async function blink(color, period = 2000, duty = 0.1) {
+  const [r, g, b] = color;
+  const onTime = period * duty,
+    offTime = period - onTime;
+  while (true) {
+    writeRGB(...colorToPWM([r, g, b]));
+    await sleep(onTime);
+    writeRGB(0, 0, 0);
+    await sleep(offTime);
   }
 }
 
-module.exports = { Light };
+async function longFade(color, period = 2800) {
+  const [r, g, b] = color;
+  while (true) {
+    for (let t = 0; t < 1; t += 0.02) {
+      const s = ease(t);
+      writeRGB(...colorToPWM([r, g, b], s));
+      await sleep(period / 50);
+    }
+    for (let t = 1; t >= 0; t -= 0.02) {
+      const s = ease(t);
+      writeRGB(...colorToPWM([r, g, b], s));
+      await sleep(period / 50);
+    }
+  }
+}
+
+async function doubleBlink(color) {
+  const [r, g, b] = color;
+  while (true) {
+    for (let i = 0; i < 2; i++) {
+      writeRGB(...colorToPWM([r, g, b]));
+      await sleep(80);
+      writeRGB(0, 0, 0);
+      await sleep(120);
+    }
+    await sleep(1000);
+  }
+}
+
+async function tripleStutter(color) {
+  const [r, g, b] = color;
+  while (true) {
+    for (let i = 0; i < 3; i++) {
+      writeRGB(...colorToPWM([r, g, b]));
+      await sleep(100);
+      writeRGB(0, 0, 0);
+      await sleep(120);
+    }
+    await sleep(2000);
+  }
+}
+
+async function unevenHeartbeat(color) {
+  const [r, g, b] = color;
+  while (true) {
+    writeRGB(...colorToPWM([r, g, b]));
+    await sleep(150);
+    writeRGB(0, 0, 0);
+    await sleep(100);
+    writeRGB(...colorToPWM([r, g, b]));
+    await sleep(400);
+    writeRGB(0, 0, 0);
+    await sleep(600);
+  }
+}
+
+async function slowRiseDrop(color) {
+  const [r, g, b] = color;
+  while (true) {
+    // rise
+    for (let t = 0; t < 1; t += 0.02) {
+      writeRGB(...colorToPWM([r, g, b], ease(t)));
+      await sleep(30);
+    }
+    await sleep(500);
+    // drop fast
+    for (let t = 1; t >= 0; t -= 0.1) {
+      writeRGB(...colorToPWM([r, g, b], t));
+      await sleep(20);
+    }
+    await sleep(900);
+  }
+}
+
+async function whiteToBlueSweep() {
+  const white = [255, 255, 255],
+    blue = [40, 90, 255];
+  while (true) {
+    for (let t = 0; t < 1; t += 0.02) {
+      writeRGB(
+        ...colorToPWM([
+          white[0] + (blue[0] - white[0]) * t,
+          white[1] + (blue[1] - white[1]) * t,
+          white[2] + (blue[2] - white[2]) * t,
+        ])
+      );
+      await sleep(30);
+    }
+  }
+}
+
+// ---------- STATE HANDLER ----------
+export async function setState(state) {
+  writeRGB(0, 0, 0);
+  const c = {
+    idle: [0, 200, 160],
+    generating: [255, 0, 180],
+    listening: [0, 180, 255],
+    speaking: [255, 160, 0],
+    error: [255, 32, 32],
+  };
+  switch (state.toUpperCase()) {
+    case 'IDLE':
+      return breathing(c.idle);
+    case 'GENERATING':
+      return pulse(c.generating);
+    case 'LISTENING':
+      return blink(c.listening);
+    case 'RESETTING':
+      return whiteToBlueSweep();
+    case 'ERROR-NOINTERNET':
+      return doubleBlink(c.error);
+    case 'ERROR-RESETFAIL':
+      return longFade(c.error);
+    case 'ERROR-GENFAIL':
+      return tripleStutter(c.error);
+    case 'ERROR-INTERNAL':
+      return unevenHeartbeat(c.error);
+    case 'ERROR-TIMEOUT':
+      return slowRiseDrop(c.error);
+    default:
+      writeRGB(0, 0, 0);
+  }
+}

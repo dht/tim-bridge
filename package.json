@@ -1,7 +1,6 @@
 {
   "name": "client-node-bridge",
   "version": "1.0.0",
-  "type": "module",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -13,6 +12,8 @@
   "dependencies": {
     "@firebase/app": "^0.14.4",
     "@firebase/firestore": "^4.9.2",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "pigpio": "^3.3.1",
+    "rpio": "^2.4.2"
   }
 }
