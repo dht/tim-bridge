@@ -13,5 +13,19 @@ async function main() {
   // stopMotor();
 }
 
+
+async function rgb() {
+  console.log('💡 Starting RGB sequence...');
+  await delay(1000);
+
+  // turn purple (red + blue)
+  setColor(true, false, true);
+  await delay(2000);
+
+  // turn off
+  setColor(false, false, false);
+  console.log('✅ Done.');
+}
+
 // run();
-main();
+rgb();
