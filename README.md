@@ -1,7 +1,7 @@
 # TIM-BRIDGE
 
-is the code that runs on the raspberry pies.
-The bridge is designed to be simple. For example:
+is the code that runs on the edge devices: the various raspberry pie (Zero, 4B & 5).
+The bridge is designed to be simple. For example a change like:
 
 ```json
 {
@@ -9,15 +9,15 @@ The bridge is designed to be simple. For example:
 }
 ```
 
-It will turn the left light on.
+will turn the left light on.
 
 The cycle is:
 
 1. listen to firestore changes
 2. when an incoming change is received use the raspberry pi commands to control:
    a. voice via speakers
-   b. box elements: lights
-   c. panel elements: status LED
+   b. BOX elements: lights (Hillel/Shammai), rotors (2084)
+   c. PANEL elements: status LED
 
 ## Lights
 
