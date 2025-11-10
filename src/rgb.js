@@ -5,8 +5,8 @@ rpio.init({
   gpiomem: false, // <— required for PWM
 });
 
-const RED = 12,
-  GREEN = 13,
+const RED = 11,
+  GREEN = 15,
   BLUE = 18; // hardware-PWM-capable pins
 
 function setupPWM(pin) {
