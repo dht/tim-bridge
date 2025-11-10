@@ -28,4 +28,4 @@ async function rgb() {
   console.log('✅ Done.');
 }
 
-cycleColors();
+rgb();
