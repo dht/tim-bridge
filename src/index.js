@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { turnLightsOff, turnLightsOn } from './lights.js';
+import { setColor } from './rgb.js'; // import your RGB function
 import { delay } from './utils.js';
 
 async function main() {
