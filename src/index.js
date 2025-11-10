@@ -1,7 +1,7 @@
-import "dotenv/config";
-import { turnLightsOff, turnLightsOn } from "./lights.js";
-import { setColor } from "./rgb.js"; // import your RGB function
-import { delay } from "./utils.js";
+import 'dotenv/config';
+import { turnLightsOff, turnLightsOn } from './lights.js';
+import { setColor } from './rgb.js'; // import your RGB function
+import { delay } from './utils.js';
 
 async function main() {
   await delay(1000);
@@ -15,7 +15,7 @@ async function main() {
 }
 
 async function rgb() {
-  console.log("💡 Starting RGB sequence...");
+  console.log('💡 Starting RGB sequence...');
   await delay(1000);
   setColor(255, 255, 255); // ocean blue
   await delay(3000);
@@ -25,8 +25,7 @@ async function rgb() {
 
   // turn off
   setColor(255, 50, 0); // orange
-  console.log("✅ Done.");
+  console.log('✅ Done.');
 }
 
-// run();
-rgb();
+cycleColors();

@@ -1,7 +1,7 @@
-import rpio from "rpio";
+import rpio from 'rpio';
 
 rpio.init({
-  mapping: "gpio",
+  mapping: 'gpio',
   gpiomem: false, // <— required for PWM
 });
 
