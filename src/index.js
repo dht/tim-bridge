@@ -3,6 +3,9 @@ import { flashLights, turnLightsOff, turnLightsOn } from './lights.js';
 import { setColor } from './rgb.js'; // import your RGB function
 import { delay } from './utils.js';
 
+const LED1 = 17;
+const LED2 = 27;
+
 async function main() {
   await delay(1000);
   turnLightsOn([LED1, LED2]); // turn on both

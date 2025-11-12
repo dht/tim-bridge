@@ -2,9 +2,6 @@ import rpio from 'rpio';
 
 rpio.init({ mapping: 'physical' }); // using physical pin numbering
 
-const LED1 = 11; // pin 11 = GPIO 17
-const LED2 = 13; // pin 13 = GPIO 27
-
 // helper: wait for ms milliseconds
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
