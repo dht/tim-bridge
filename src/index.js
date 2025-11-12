@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { turnLightsOff, turnLightsOn } from './lights.js';
+import { flashLights, turnLightsOff, turnLightsOn } from './lights.js';
 import { setColor } from './rgb.js'; // import your RGB function
 import { delay } from './utils.js';
 
@@ -8,8 +8,8 @@ async function main() {
   turnLightsOn();
   await delay(2000);
   turnLightsOff();
-  // await delay(2000);
-  // spinMotor();
+  await delay(2000);
+  flashLights();
   // await delay(2000);
   // stopMotor();
 }
@@ -28,4 +28,5 @@ async function rgb() {
   console.log('✅ Done.');
 }
 
-rgb();
+main();
+// rgb();
