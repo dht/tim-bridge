@@ -1,35 +1,43 @@
-import 'dotenv/config';
-import { flashLights, turnLightsOff, turnLightsOn } from './lights.js';
-import { setColor } from './rgb.js'; // import your RGB function
+// src/index.js
+import { turnLightsOn, turnLightsOff } from './lights.js';
 import { delay } from './utils.js';
+import player from 'play-sound';
 
-const LED1 = 17;
-const LED2 = 27;
+// speaker sequence
+const LED1 = 17; // H-speaker
+const LED2 = 27; // S-speaker
+
+// paths to audio files
+const sequence = [
+  { led: LED1, file: '../io/H1.mp3' },
+  { led: LED2, file: '../io/S1.mp3' },
+  { led: LED1, file: '../io/H2.mp3' },
+  { led: LED2, file: '../io/S2.mp3' },
+  { led: LED1, file: '../io/H3.mp3' },
+  { led: LED2, file: '../io/S3.mp3' },
+];
+
+const play = player(); // audio player wrapper
+
+async function playFile(path) {
+  return new Promise((resolve, reject) => {
+    const audio = play.play(path, (err) => (err ? reject(err) : resolve()));
+    audio.on('exit', resolve);
+  });
+}
 
 async function main() {
-  await delay(1000);
-  turnLightsOn([LED1, LED2]); // turn on both
-  await delay(10000);
-  turnLightsOff(LED2);        // turn off only LED2
-  await delay(2000);
-  flashLights();
-  // await delay(2000);
-  // stopMotor();
+  console.log('🎬 Starting LED + Audio sequence...');
+
+  for (const { led, file } of sequence) {
+    console.log(`💡 Lighting LED on pin ${led} and playing ${file}...`);
+    turnLightsOn(led);
+    await playFile(file);
+    turnLightsOff(led);
+    await delay(500); // short gap between clips
+  }
+
+  console.log('✅ Sequence complete.');
 }
 
-async function rgb() {
-  console.log('💡 Starting RGB sequence...');
-  await delay(1000);
-  setColor(255, 255, 255); // ocean blue
-  await delay(3000);
-
-  setColor(0, 128, 255); // ocean blue
-  await delay(3000);
-
-  // turn off
-  setColor(255, 50, 0); // orange
-  console.log('✅ Done.');
-}
-
-main();
-// rgb();
+main().catch(console.error);
