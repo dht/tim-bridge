@@ -1,9 +1,9 @@
 import rpio from 'rpio';
 
-rpio.init({ mapping: 'physical' }); // your LED_PIN=11 is physical, not GPIO
+rpio.init({ mapping: 'physical' }); // using physical pin numbering
 
-const LED1 = 11; // first LED (pin 11 = GPIO 17)
-const LED2 = 13; // second LED (pin 13 = GPIO 27)
+const LED1 = 11; // pin 11 = GPIO 17
+const LED2 = 13; // pin 13 = GPIO 27
 
 // helper: wait for ms milliseconds
 function sleep(ms) {
@@ -11,7 +11,7 @@ function sleep(ms) {
 }
 
 export async function flashLights(times = 5, delay = 500) {
-  console.log(`💡 Starting to flash lights ${times} times...`);
+  console.log(`💡 Flashing both LEDs ${times} times...`);
   rpio.open(LED1, rpio.OUTPUT, rpio.LOW);
   rpio.open(LED2, rpio.OUTPUT, rpio.LOW);
 
@@ -29,18 +29,28 @@ export async function flashLights(times = 5, delay = 500) {
   console.log('✅ Done flashing lights.');
 }
 
-export function turnLightsOn() {
-  console.log('💡 Turning lights ON');
-  rpio.open(LED1, rpio.OUTPUT, rpio.LOW);
-  rpio.open(LED2, rpio.OUTPUT, rpio.LOW);
-  rpio.write(LED1, rpio.HIGH);
-  rpio.write(LED2, rpio.HIGH);
+/**
+ * Turn one or more LEDs ON
+ * @param {number|number[]} leds - LED pin number(s), e.g. 11 or [11, 13]
+ */
+export function turnLightsOn(leds) {
+  const pins = Array.isArray(leds) ? leds : [leds];
+  for (const pin of pins) {
+    rpio.open(pin, rpio.OUTPUT, rpio.LOW);
+    rpio.write(pin, rpio.HIGH);
+    console.log(`💡 LED on pin ${pin} turned ON`);
+  }
 }
 
-export function turnLightsOff() {
-  console.log('💤 Turning lights OFF');
-  rpio.open(LED1, rpio.OUTPUT, rpio.LOW);
-  rpio.open(LED2, rpio.OUTPUT, rpio.LOW);
-  rpio.write(LED1, rpio.LOW);
-  rpio.write(LED2, rpio.LOW);
+/**
+ * Turn one or more LEDs OFF
+ * @param {number|number[]} leds - LED pin number(s), e.g. 11 or [11, 13]
+ */
+export function turnLightsOff(leds) {
+  const pins = Array.isArray(leds) ? leds : [leds];
+  for (const pin of pins) {
+    rpio.open(pin, rpio.OUTPUT, rpio.LOW);
+    rpio.write(pin, rpio.LOW);
+    console.log(`💤 LED on pin ${pin} turned OFF`);
+  }
 }

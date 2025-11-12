@@ -5,9 +5,9 @@ import { delay } from './utils.js';
 
 async function main() {
   await delay(1000);
-  turnLightsOn();
-  await delay(2000);
-  turnLightsOff();
+  turnLightsOn([LED1, LED2]); // turn on both
+  await delay(10000);
+  turnLightsOff(LED2);        // turn off only LED2
   await delay(2000);
   flashLights();
   // await delay(2000);
