@@ -36,4 +36,6 @@ The cycle is:
 | **ERROR: Internal Fault**  | Red (`#FF2020`)        | Uneven heartbeat (short-long)   | Agent or system glitch                 |
 | **ERROR: Timeout**         | Red (`#FF2020`)        | Slow rise, hold, sudden drop    | Process stalled or unresponsive        |
 
-gpio pigio
+## installing oxmplayer
+
+sudo apt install omxplayer
