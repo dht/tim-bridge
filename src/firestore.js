@@ -1,5 +1,5 @@
 // firebase.ts
-import { getApp, getApps, initializeApp } from "@firebase/app";
+import { initializeApp } from '@firebase/app';
 import {
   collection,
   deleteDoc,
@@ -8,48 +8,52 @@ import {
   getFirestore,
   onSnapshot,
   setDoc,
-} from "@firebase/firestore";
-
-let app = null;
-let db = null;
-
-export const init = (firebaseConfig) => {
-  app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-  db = getFirestore(app);
-};
+} from '@firebase/firestore';
+import 'dotenv/config';
 
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.VITE_FIREBASE_APP_ID,
+  apiKey: process.env.FIREBASE_API_KEY ?? process.env.VITE_FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID ?? process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET ?? process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId:
+    process.env.FIREBASE_MESSAGING_SENDER_ID ?? process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID ?? process.env.VITE_FIREBASE_APP_ID,
 };
 
-init(firebaseConfig);
+console.log('Firebase config:', firebaseConfig);
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 export function listenToCollection(name, callback) {
+  if (!name) {
+    throw new Error('listenToCollection requires a collection name');
+  }
+  if (typeof callback !== 'function') {
+    throw new Error('listenToCollection requires a callback function');
+  }
+
   const collectionRef = collection(db, name);
   let isInitialLoad = true;
 
-  const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
+  const unsubscribe = onSnapshot(collectionRef, snapshot => {
     if (isInitialLoad) {
       // skip initial batch of 'added' events
       isInitialLoad = false;
       return;
     }
 
-    snapshot.docChanges().forEach((change) => {
+    snapshot.docChanges().forEach(change => {
       const id = change.doc.id;
       const data = change.doc.data();
 
-      if (change.type === "added") {
-        callback({ type: "create", id, data });
-      } else if (change.type === "modified") {
-        callback({ type: "update", id, data });
-      } else if (change.type === "removed") {
-        callback({ type: "delete", id });
+      if (change.type === 'added') {
+        callback({ type: 'create', id, data });
+      } else if (change.type === 'modified') {
+        callback({ type: 'update', id, data });
+      } else if (change.type === 'removed') {
+        callback({ type: 'delete', id });
       }
     });
   });
@@ -59,17 +63,29 @@ export function listenToCollection(name, callback) {
 
 export function crud(collectionName) {
   return {
-    add: async (values) => {
+    add: async values => {
+      if (!values) {
+        throw new Error('crud.add requires a values object');
+      }
+
+      const { id, ...rest } = values;
+      const collectionRef = collection(ensureInitialized(), collectionName);
+      const ref = id ? doc(collectionRef, id) : doc(collectionRef);
+
       const valuesWithTs = {
-        ...values,
+        ...rest,
+        id: id ?? ref.id,
         clientTs: Date.now(),
       };
 
-      const ref = doc(collection(db, collectionName), values.id);
       await setDoc(ref, valuesWithTs, { merge: false });
+      return ref.id;
     },
     update: async (id, change) => {
-      const ref = doc(db, collectionName, id);
+      if (!id) {
+        throw new Error('crud.update requires a document id');
+      }
+      const ref = doc(ensureInitialized(), collectionName, id);
 
       const newChange = {
         clientTs: Date.now(),
@@ -78,26 +94,26 @@ export function crud(collectionName) {
 
       await setDoc(ref, newChange, { merge: true });
     },
-    delete: async (id) => {
-      const ref = doc(db, collectionName, id);
+    delete: async id => {
+      if (!id) {
+        throw new Error('crud.delete requires a document id');
+      }
+      const ref = doc(ensureInitialized(), collectionName, id);
       await deleteDoc(ref);
     },
-    listen: (callback) => {
+    listen: callback => {
       return listenToCollection(collectionName, callback);
     },
   };
 }
 
 export async function clearCollection(name) {
-  const collectionRef = collection(db, name);
+  const collectionRef = collection(ensureInitialized(), name);
   // Note: Firestore does not support direct collection deletion.
   // You would need to delete documents individually or use a batch operation.
   console.log(`Clearing collection: ${name}`);
-  // Implement as needed.
   const snapshot = await getDocs(collectionRef);
-  snapshot.forEach(async (doc) => {
-    await deleteDoc(doc.ref);
-  });
+  await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
 }
 
 /*

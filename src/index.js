@@ -1,7 +1,6 @@
 import 'dotenv/config';
-import player from 'play-sound';
 import { playMp3 } from './audio.js';
-import { init, listenToCollection } from './firestore.js';
+import { listenToCollection } from './firestore.js';
 
 // speaker sequence
 const LED1 = 11; // H-speaker
@@ -17,21 +16,8 @@ const sequence = [
   { led: LED2, file: 'io/S3.mp3' },
 ];
 
-const play = player({ player: 'mpg123' }); // force mpg123 backend
-
 const MACHINE_ID = 'A-001';
 const FRESH_WINDOW_MS = 30_000; // 30s
-
-init();
-
-
-async function playFile(path) {
-  return new Promise((resolve, reject) => {
-    const audio = play.play(path, (err) => (err ? reject(err) : resolve()));
-    audio.on('exit', resolve);
-  });
-}
-
 
 // async function main() {
 //   console.log('🎬 Starting LED + Audio sequence...');
@@ -47,12 +33,11 @@ async function playFile(path) {
 //   console.log('✅ Sequence complete.');
 // }
 
-
 async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  listenToCollection('machines', async(change) => {
+  listenToCollection('machines', async change => {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 
@@ -69,17 +54,17 @@ async function run() {
     if (mp3Url && delta < FRESH_WINDOW_MS) {
       // simply play the latest url (replaces any current playback)
       playMp3(mp3Url);
-        console.log('🎬 Starting LED + Audio sequence...');
+      console.log('🎬 Starting LED + Audio sequence...');
 
-  for (const { led, file } of sequence) {
-    console.log(`💡 Lighting LED on pin ${led} and playing ${file}...`);
-    turnLightsOn(led);
-    await playFile(file);
-    turnLightsOff(led);
-    await delay(500); // short gap between clips
-  }
+      for (const { led, file } of sequence) {
+        console.log(`💡 Lighting LED on pin ${led} and playing ${file}...`);
+        turnLightsOn(led);
+        await playFile(file);
+        turnLightsOff(led);
+        await delay(500); // short gap between clips
+      }
 
-  console.log('✅ Sequence complete.');
+      console.log('✅ Sequence complete.');
     }
   });
 }
