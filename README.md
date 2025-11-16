@@ -39,3 +39,4 @@ The cycle is:
 ## installing oxmplayer
 
 sudo apt install omxplayer
+npm install speaker
