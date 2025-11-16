@@ -1,7 +1,7 @@
-// src/index.js
-import { turnLightsOn, turnLightsOff } from './lights.js';
-import { delay } from './utils.js';
+import 'dotenv/config';
 import player from 'play-sound';
+import { playMp3 } from './audio.js';
+import { init, listenToCollection } from './firestore.js';
 
 // speaker sequence
 const LED1 = 11; // H-speaker
@@ -19,6 +19,12 @@ const sequence = [
 
 const play = player({ player: 'mpg123' }); // force mpg123 backend
 
+const MACHINE_ID = 'A-001';
+const FRESH_WINDOW_MS = 30_000; // 30s
+
+init();
+
+
 async function playFile(path) {
   return new Promise((resolve, reject) => {
     const audio = play.play(path, (err) => (err ? reject(err) : resolve()));
@@ -26,8 +32,44 @@ async function playFile(path) {
   });
 }
 
-async function main() {
-  console.log('🎬 Starting LED + Audio sequence...');
+
+// async function main() {
+//   console.log('🎬 Starting LED + Audio sequence...');
+
+//   for (const { led, file } of sequence) {
+//     console.log(`💡 Lighting LED on pin ${led} and playing ${file}...`);
+//     turnLightsOn(led);
+//     await playFile(file);
+//     turnLightsOff(led);
+//     await delay(500); // short gap between clips
+//   }
+
+//   console.log('✅ Sequence complete.');
+// }
+
+
+async function run() {
+  console.log('Listening to Firestore collection "machines"...');
+  console.log(`Machine ID: ${MACHINE_ID}`);
+
+  listenToCollection('machines', async(change) => {
+    const { id, data } = change || {};
+    if (id !== MACHINE_ID || !data) return;
+
+    const { mp3Url, mp3UrlTs, lightStatus } = data;
+    const delta = Date.now() - mp3UrlTs;
+
+    console.log({
+      mp3Url,
+      mp3UrlTs,
+      delta,
+      lightStatus,
+    });
+
+    if (mp3Url && delta < FRESH_WINDOW_MS) {
+      // simply play the latest url (replaces any current playback)
+      playMp3(mp3Url);
+        console.log('🎬 Starting LED + Audio sequence...');
 
   for (const { led, file } of sequence) {
     console.log(`💡 Lighting LED on pin ${led} and playing ${file}...`);
@@ -38,6 +80,8 @@ async function main() {
   }
 
   console.log('✅ Sequence complete.');
+    }
+  });
 }
 
-main().catch(console.error);
+run();
