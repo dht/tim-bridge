@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { playMp3 } from './audio.js';
 import { listenToCollection } from './firestore.js';
+import { turnLightsOn, turnLightsOff } from './lights.js';
 
 // speaker sequence
 const LED1 = 11; // H-speaker
