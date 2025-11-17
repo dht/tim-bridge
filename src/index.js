@@ -20,19 +20,12 @@ const sequence = [
 const MACHINE_ID = 'A-001';
 const FRESH_WINDOW_MS = 30_000; // 30s
 
-// async function main() {
-//   console.log('🎬 Starting LED + Audio sequence...');
-
-//   for (const { led, file } of sequence) {
-//     console.log(`💡 Lighting LED on pin ${led} and playing ${file}...`);
-//     turnLightsOn(led);
-//     await playFile(file);
-//     turnLightsOff(led);
-//     await delay(500); // short gap between clips
-//   }
-
-//   console.log('✅ Sequence complete.');
-// }
+async function playFile(path) {
+  return new Promise((resolve, reject) => {
+    const audio = play.play(path, (err) => (err ? reject(err) : resolve()));
+    audio.on('exit', resolve);
+  });
+}
 
 async function run() {
   console.log('Listening to Firestore collection "machines"...');
