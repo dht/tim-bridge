@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { playMp3 } from './audio.js';
 import { listenToCollection } from './firestore.js';
-import { turnLights, turnLightsOff, turnLightsOn } from './lights.js';
+import { turnLights} from './lights.js';
 
 
 const MACHINE_ID = 'A-001';
