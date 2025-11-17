@@ -1,7 +1,7 @@
 // src/index.js
-import { turnLightsOn, turnLightsOff } from './lights.js';
-import { delay } from './utils.js';
 import player from 'play-sound';
+import { turnLightsOff, turnLightsOn } from '../src/lights.js';
+import { delay } from './utils.js';
 
 // speaker sequence
 const LED1 = 11; // H-speaker
@@ -21,7 +21,7 @@ const play = player({ player: 'mpg123' }); // force mpg123 backend
 
 async function playFile(path) {
   return new Promise((resolve, reject) => {
-    const audio = play.play(path, (err) => (err ? reject(err) : resolve()));
+    const audio = play.play(path, err => (err ? reject(err) : resolve()));
     audio.on('exit', resolve);
   });
 }

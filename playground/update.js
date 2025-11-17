@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { crud } from './firestore.js';
+import { crud } from '../src/firestore.js';
 
 const URL = 'https://tim-os.web.app/voice3.mp3?t=' + Date.now();
 

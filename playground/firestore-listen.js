@@ -1,8 +1,8 @@
-import "dotenv/config";
-import { playMp3 } from "./audio.js";
-import { init, listenToCollection } from "./firestore.js";
+import 'dotenv/config';
+import { playMp3 } from '../src/audio.js';
+import { init, listenToCollection } from '../src/firestore.js';
 
-const MACHINE_ID = "A-001";
+const MACHINE_ID = 'A-001';
 const FRESH_WINDOW_MS = 30_000; // 30s
 
 init();
@@ -11,7 +11,7 @@ function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  listenToCollection("machines", (change) => {
+  listenToCollection('machines', change => {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 

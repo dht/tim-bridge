@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { playMp3 } from './audio.js';
 import { listenToCollection } from './firestore.js';
-import { turnLightsOn, turnLightsOff } from './lights.js';
+import { turnLightsOff, turnLightsOn } from './lights.js';
 
 const LED1 = 11;
 const LED2 = 13;
@@ -13,7 +13,7 @@ async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  listenToCollection('machines', async (change) => {
+  listenToCollection('machines', async change => {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 
