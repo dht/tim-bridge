@@ -1,3 +1,8 @@
+// playground/led.demo.js
 import { setState } from './led.js';
 
-await setState('IDLE'); // slow cyan-green breathing
+// Immediately-invoked async wrapper
+(async () => {
+  console.log('Setting LED state: IDLE (cyan-green breathing)…');
+  await setState('IDLE');
+})();
