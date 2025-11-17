@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { playMp3 } from './audio.js';
 import { listenToCollection } from './firestore.js';
 import { turnLightsOn, turnLightsOff } from './lights.js';
+import { delay } from './utils.js';
 
 // speaker sequence
 const LED1 = 11; // H-speaker
@@ -20,46 +21,55 @@ const sequence = [
 const MACHINE_ID = 'A-001';
 const FRESH_WINDOW_MS = 30_000; // 30s
 
-async function playFile(path) {
-  return new Promise((resolve, reject) => {
-    const audio = play.play(path, (err) => (err ? reject(err) : resolve()));
-    audio.on('exit', resolve);
-  });
+
+// wrapper to wait for local MP3 file
+async function playLocalFile(path) {
+  console.log(`🎵 Playing: ${path}`);
+  try {
+    await playMp3(path);
+  } catch (err) {
+    console.error('❌ Error playing file:', err);
+  }
 }
+
 
 async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  listenToCollection('machines', async change => {
+  listenToCollection('machines', async (change) => {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 
-    const { mp3Url, mp3UrlTs, lightStatus } = data;
+    const { mp3Url, mp3UrlTs } = data;
     const delta = Date.now() - mp3UrlTs;
 
     console.log({
       mp3Url,
       mp3UrlTs,
       delta,
-      lightStatus,
     });
 
+    // remote MP3 trigger from Firestore
     if (mp3Url && delta < FRESH_WINDOW_MS) {
-      // simply play the latest url (replaces any current playback)
-      playMp3(mp3Url);
-      console.log('🎬 Starting LED + Audio sequence...');
-
-      for (const { led, file } of sequence) {
-        console.log(`💡 Lighting LED on pin ${led} and playing ${file}...`);
-        turnLightsOn(led);
-        await playFile(file);
-        turnLightsOff(led);
-        await delay(500); // short gap between clips
-      }
-
-      console.log('✅ Sequence complete.');
+      console.log('🎧 Playing mp3Url from Firestore:', mp3Url);
+      await playMp3(mp3Url); // remote file
     }
+
+    // now run the LED + audio sequence
+    console.log('🎬 Starting LED + Audio sequence...');
+
+    for (const { led, file } of sequence) {
+      console.log(`💡 ON pin ${led}, playing ${file}`);
+      turnLightsOn(led);
+
+      await playLocalFile(file);
+
+      turnLightsOff(led);
+      await delay(400); // tiny pause
+    }
+
+    console.log('✅ Sequence complete.');
   });
 }
 
