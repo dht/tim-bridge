@@ -8,15 +8,14 @@ const MACHINE_ID = 'A-001';
 async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
-  turnLights(lightStatus);
 
   listenToCollection('machines', async change => {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 
     const { mp3Url, mp3UrlTs, lightStatus } = data;
-
-    console.log({ mp3Url, mp3UrlTs });
+    console.log({ mp3Url, mp3UrlTs, lightStatus});
+    turnLights(lightStatus);
 
     if (!mp3Url) return;
     console.log('🎧 Playing mp3Url from Firestore:', mp3Url);
