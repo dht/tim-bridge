@@ -1,10 +1,7 @@
 import 'dotenv/config';
 import { playMp3 } from './audio.js';
 import { listenToCollection } from './firestore.js';
-import { turnLightsOff, turnLightsOn } from './lights.js';
-
-const LED1 = 11;
-const LED2 = 13;
+import { turnLights, turnLightsOff } from './lights.js';
 
 const MACHINE_ID = 'A-001';
 const FRESH_WINDOW_MS = 30_000; // 30s
@@ -17,7 +14,7 @@ async function run() {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 
-    const { mp3Url, mp3UrlTs } = data;
+    const { mp3Url, mp3UrlTs, lightStatus } = data;
     const delta = Date.now() - mp3UrlTs;
 
     console.log({ mp3Url, mp3UrlTs, delta });
@@ -28,7 +25,9 @@ async function run() {
       // -------------------------------------
       // 🟡 TURN BOTH LIGHTS ON WHEN PLAY STARTS
       // -------------------------------------
-      turnLightsOn([LED1, LED2]);
+
+      // lightStatus: ONE, TWO, BOTH, NONE
+      turnLights(lightStatus);
 
       try {
         await playMp3(mp3Url); // Wait for the entire playback

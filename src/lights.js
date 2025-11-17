@@ -1,10 +1,13 @@
 import rpio from 'rpio';
 
+const LED1 = 11;
+const LED2 = 13;
+
 rpio.init({ mapping: 'physical' }); // using physical pin numbering
 
 // helper: wait for ms milliseconds
 function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export async function flashLights(times = 5, delay = 500) {
@@ -26,28 +29,37 @@ export async function flashLights(times = 5, delay = 500) {
   console.log('✅ Done flashing lights.');
 }
 
-/**
- * Turn one or more LEDs ON
- * @param {number|number[]} leds - LED pin number(s), e.g. 11 or [11, 13]
- */
-export function turnLightsOn(leds) {
-  const pins = Array.isArray(leds) ? leds : [leds];
-  for (const pin of pins) {
-    rpio.open(pin, rpio.OUTPUT, rpio.LOW);
-    rpio.write(pin, rpio.HIGH);
-    console.log(`💡 LED on pin ${pin} turned ON`);
-  }
+/*
+type Options = {
+  isLedOneOn: boolean,
+  isLedTwoOn: boolean,
+}
+*/
+
+export function turnLed(pin, isOn) {
+  const value = isOn ? rpio.HIGH : rpio.LOW;
+  rpio.open(pin, rpio.OUTPUT, rpio.LOW);
+  rpio.write(pin, value);
 }
 
-/**
- * Turn one or more LEDs OFF
- * @param {number|number[]} leds - LED pin number(s), e.g. 11 or [11, 13]
- */
-export function turnLightsOff(leds) {
-  const pins = Array.isArray(leds) ? leds : [leds];
-  for (const pin of pins) {
-    rpio.open(pin, rpio.OUTPUT, rpio.LOW);
-    rpio.write(pin, rpio.LOW);
-    console.log(`💤 LED on pin ${pin} turned OFF`);
+export function turnLights(lightStatus) {
+  switch (lightStatus) {
+    case 'ONE':
+      turnLed(LED1, true);
+      turnLed(LED2, false);
+      break;
+    case 'TWO':
+      turnLed(LED1, false);
+      turnLed(LED2, true);
+      break;
+    case 'BOTH':
+      turnLed(LED1, true);
+      turnLed(LED2, true);
+      break;
+    case 'NONE':
+    default:
+      turnLed(LED1, false);
+      turnLed(LED2, false);
+      break;
   }
 }
