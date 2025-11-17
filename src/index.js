@@ -1,11 +1,9 @@
 import 'dotenv/config';
 import { playMp3 } from './audio.js';
 import { listenToCollection } from './firestore.js';
-import { turnLights} from './lights.js';
-
+import { turnLights } from './lights.js';
 
 const MACHINE_ID = 'A-001';
-const FRESH_WINDOW_MS = 30_000; // 30s
 
 async function run() {
   console.log('Listening to Firestore collection "machines"...');
@@ -17,27 +15,22 @@ async function run() {
 
     const { mp3Url, mp3UrlTs, lightStatus } = data;
 
-    console.log({ mp3Url, mp3UrlTs});
+    console.log({ mp3Url, mp3UrlTs });
 
-    if (mp3Url) {
-      console.log('🎧 Playing mp3Url from Firestore:', mp3Url);
+    if (!mp3Url) return;
+    console.log('🎧 Playing mp3Url from Firestore:', mp3Url);
 
-      // lightStatus: ONE, TWO, BOTH, NONE
-      turnLights(lightStatus);
+    // lightStatus: ONE, TWO, BOTH, NONE
+    turnLights(lightStatus);
 
-      try {
-        await playMp3(mp3Url); // Wait for the entire playback
-      } catch (err) {
-        console.error('❌ Error playing mp3Url:', err);
-      }
-
-      // -------------------------------------
-      // 🔵 TURN BOTH LIGHTS OFF WHEN DONE
-      // -------------------------------------
-      turnLightsOff([LED1, LED2]);
-
-      console.log('✅ Playback + Lights completed.');
+    try {
+      await playMp3(mp3Url); // Wait for the entire playback
+    } catch (err) {
+      console.error('❌ Error playing mp3Url:', err);
     }
+    turnLights(lightStatus);
+
+    console.log('✅ Playback + Lights completed.');
   });
 }
 
