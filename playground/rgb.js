@@ -57,4 +57,40 @@ function setColor(r, g, b) {
 
 async function showColor(name, r, g, b, ms = 2000) {
   console.log(`\n=== Showing ${name} ===`);
-  con
+  console.log({ r, g, b });
+  setColor(r, g, b);
+  await sleep(ms);
+}
+
+function cleanup() {
+  console.log("\nCleaning up…");
+
+  clearInterval(redPWM);
+  clearInterval(bluePWM);
+
+  // Default color: all OFF
+  rpio.write(RED, rpio.HIGH);
+  rpio.pwmSetData(GREEN, OFF);
+  rpio.write(BLUE, rpio.HIGH);
+
+  console.log("LED reset. Exiting.");
+
+  process.exit(0);
+}
+
+async function main() {
+  initPins();
+
+  process.on("SIGINT", cleanup);
+  process.on("SIGTERM", cleanup);
+
+  console.log("Starting RGB LED loop…");
+
+  while (true) {
+    await showColor("RED",   ON,   OFF,  OFF);
+    await showColor("GREEN", OFF,  ON,   OFF);
+    await showColor("BLUE",  OFF,  OFF,  ON);
+  }
+}
+
+main();
