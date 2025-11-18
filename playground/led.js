@@ -95,6 +95,14 @@ async function doubleBlink(color) {
   }
 }
 
+export function resetLED() {
+  const OFF = RANGE; // 1024 for common anode
+  rpio.pwmSetData(RED, OFF);
+  rpio.pwmSetData(GREEN, OFF);
+  rpio.pwmSetData(BLUE, OFF);
+}
+
+
 // ---------------- STATE HANDLER ----------------
 export async function setState(state) {
   writeRGB(0, 0, 0);
