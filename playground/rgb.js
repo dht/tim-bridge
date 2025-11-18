@@ -1,13 +1,11 @@
 import rpio from "rpio";
 
-// Updated pin selection (no channel conflicts)
-const RED = 11;    // GPIO17 - software PWM
-const GREEN = 12;  // GPIO18 - hardware PWM (PWM0)
-const BLUE = 13;   // GPIO27 - software PWM
+const RED   = 11; // GPIO17 (software PWM)
+const GREEN = 12; // GPIO18 (hardware PWM)
+const BLUE  = 13; // GPIO27 (software PWM)
 
-// Common-anode LED → HIGH = OFF, LOW = ON
 const OFF = 255;
-const ON = 0;
+const ON  = 0;
 
 function sleep(ms) {
   return new Promise((res) => setTimeout(res, ms));
@@ -16,44 +14,47 @@ function sleep(ms) {
 function initPins() {
   rpio.init({ gpiomem: false });
 
-  rpio.open(RED, rpio.PWM);
+  // RED → software PWM
+  rpio.open(RED, rpio.OUTPUT, rpio.HIGH);
+
+  // GREEN → hardware PWM
   rpio.open(GREEN, rpio.PWM);
-  rpio.open(BLUE, rpio.PWM);
-
-  rpio.pwmSetRange(RED, 255);
   rpio.pwmSetRange(GREEN, 255);
-  rpio.pwmSetRange(BLUE, 255);
+  rpio.pwmSetClockDivider(GREEN, 64);
 
-  rpio.pwmSetClockDivider(64);
+  // BLUE → software PWM
+  rpio.open(BLUE, rpio.OUTPUT, rpio.HIGH);
 }
 
-function allOff() {
-  rpio.pwmSetData(RED, OFF);
-  rpio.pwmSetData(GREEN, OFF);
-  rpio.pwmSetData(BLUE, OFF);
+function setSoftwarePWM(pin, value) {
+  // value 0–255, but software PWM is simulated using duty cycles
+  const duty = value / 255;
+
+  let isOn = false;
+  let interval = setInterval(() => {
+    rpio.write(pin, isOn ? rpio.HIGH : rpio.LOW);
+    isOn = !isOn;
+  }, 2 * duty + 1);
+
+  return interval;
+}
+
+let redPWM = null;
+let bluePWM = null;
+
+function setColor(r, g, b) {
+  // Stop previous software PWM
+  if (redPWM) clearInterval(redPWM);
+  if (bluePWM) clearInterval(bluePWM);
+
+  // RED and BLUE → software PWM
+  redPWM = setSoftwarePWM(RED, r);
+  bluePWM = setSoftwarePWM(BLUE, b);
+
+  // GREEN → hardware PWM
+  rpio.pwmSetData(GREEN, g);
 }
 
 async function showColor(name, r, g, b, ms = 2000) {
   console.log(`\n=== Showing ${name} ===`);
-  console.log({ r, g, b });
-
-  rpio.pwmSetData(RED, r);
-  rpio.pwmSetData(GREEN, g);
-  rpio.pwmSetData(BLUE, b);
-
-  await sleep(ms);
-}
-
-async function main() {
-  initPins();
-
-  console.log("Starting RGB LED loop...");
-
-  while (true) {
-    await showColor("RED",   ON,   OFF,  OFF);  // bright red
-    await showColor("GREEN", OFF,  ON,   OFF);  // bright green
-    await showColor("BLUE",  OFF,  OFF,  ON);   // bright blue
-  }
-}
-
-main();
+  con
