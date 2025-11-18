@@ -22,12 +22,6 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
-  console.log("\n🔌 Cleaning up GPIOs (turning LED OFF)...");
-  resetLED();
-  process.exit(0);
-});
-
 // Main loop
 (async () => {
   console.log("🌈 Cycling LED modes every 10 seconds...\n");
