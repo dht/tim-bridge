@@ -57,7 +57,7 @@ const ease = t => 0.5 * (1 - Math.cos(Math.PI * t));
 async function breathing(color, period = 3000) {
   while (true) {
     for (let t = 0; t < 1; t += 0.02) {
-      const s = 0.25 + 0.7 * ease(t);
+      const s = 0.15 + 0.7 * ease(t);
       writeRGB(...colorToPWM(color, s));
       await sleep(period / 50);
     }
