@@ -1,61 +1,17 @@
-import rpio from "rpio";
+import rpio from 'rpio';
 
-// All three are hardware PWM pins
-const RED   = 32;  // GPIO12  (PWM0)
-const GREEN = 33;  // GPIO13  (PWM1)
-const BLUE  = 12;  // GPIO18  (PWM0)
+rpio.init({ gpiomem: false });   // default mapping = physical
 
-// common-anode logic
-const OFF = 255;
-const ON  = 0;
+const RED   = 32;   // what you THINK is red
+const GREEN = 33;   // what you THINK is green
+const BLUE  = 12;   // what you THINK is blue
 
-function sleep(ms) {
-  return new Promise((res) => setTimeout(res, ms));
+const pins = { RED, GREEN, BLUE };
+
+for (const [name, pin] of Object.entries(pins)) {
+  console.log("Testing", name, "on pin", pin);
+  rpio.open(pin, rpio.OUTPUT, rpio.HIGH);
+  rpio.write(pin, rpio.LOW);   // turn ON (common anode)
+  await new Promise(r => setTimeout(r, 2000));
+  rpio.write(pin, rpio.HIGH);  // turn OFF
 }
-
-function initPins() {
-  rpio.init({ gpiomem: false });
-
-  rpio.open(RED, rpio.PWM);
-  rpio.open(GREEN, rpio.PWM);
-  rpio.open(BLUE, rpio.PWM);
-
-  rpio.pwmSetRange(RED, 255);
-  rpio.pwmSetRange(GREEN, 255);
-  rpio.pwmSetRange(BLUE, 255);
-
-  // global to all channels, must be power-of-two
-  rpio.pwmSetClockDivider(64);
-}
-
-function setColor(r, g, b) {
-  rpio.pwmSetData(RED, r);
-  rpio.pwmSetData(GREEN, g);
-  rpio.pwmSetData(BLUE, b);
-}
-
-async function main() {
-  initPins();
-
-  process.on("SIGINT", () => {
-    console.log("cleanup…");
-    setColor(OFF, OFF, OFF);
-    process.exit(0);
-  });
-
-  while (true) {
-    console.log("RED");
-    setColor(ON, OFF, OFF);
-    await sleep(1500);
-
-    console.log("GREEN");
-    setColor(OFF, ON, OFF);
-    await sleep(1500);
-
-    console.log("BLUE");
-    setColor(OFF, OFF, ON);
-    await sleep(1500);
-  }
-}
-
-main();
