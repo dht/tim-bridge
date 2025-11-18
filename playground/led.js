@@ -1,34 +1,45 @@
 import rpio from 'rpio';
 
-rpio.init({ gpiomem: false }); // using full /dev/mem for PWM if needed
+rpio.init({ gpiomem: false });
 
 const RED   = 32;
 const GREEN = 33;
 const BLUE  = 12;
 
-// Common anode: HIGH = off, LOW = on
+// Common anode logic
 function on(pin)  { rpio.write(pin, rpio.LOW); }
 function off(pin) { rpio.write(pin, rpio.HIGH); }
 
-function allOff() {
+export function allOff() {
   off(RED); off(GREEN); off(BLUE);
 }
 
-async function sleep(ms) {
+function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-// ---------- EFFECTS ----------
-async function steadyGreen() {
+async function dimAllColors() {
+  // no PWM – simulate dim by short ON pulses
+  for (let i = 0; i < 40; i++) {
+    on(RED); on(GREEN); on(BLUE);
+    await sleep(10);
+    off(RED); off(GREEN); off(BLUE);
+    await sleep(40);
+  }
   allOff();
-  on(GREEN);
+}
+
+// ---------------- Patterns ------------------
+
+async function steadyGreen() {
+  allOff(); on(GREEN);
 }
 
 async function slowBlinkGreen() {
   allOff();
   while (currentStatus === "generating") {
-    on(GREEN);  await sleep(600);
-    off(GREEN); await sleep(600);
+    on(GREEN);  await sleep(900);   // calmer ON
+    off(GREEN); await sleep(900);   // calmer OFF
   }
 }
 
@@ -36,21 +47,19 @@ async function doubleBlinkGreen() {
   allOff();
   while (currentStatus === "listening") {
     for (let i = 0; i < 2; i++) {
-      on(GREEN);  await sleep(150);
-      off(GREEN); await sleep(150);
+      on(GREEN);  await sleep(250);  // slow, calm
+      off(GREEN); await sleep(250);
     }
-    await sleep(500);
+    await sleep(800); // relax pause
   }
 }
 
 async function steadyBlue() {
-  allOff();
-  on(BLUE);
+  allOff(); on(BLUE);
 }
 
 async function steadyRed() {
-  allOff();
-  on(RED);
+  allOff(); on(RED);
 }
 
 async function blinkRed() {
@@ -65,10 +74,10 @@ async function doubleBlinkRed() {
   allOff();
   while (currentStatus === "error-reset-fail") {
     for (let i = 0; i < 2; i++) {
-      on(RED);  await sleep(150);
-      off(RED); await sleep(150);
+      on(RED);  await sleep(200);
+      off(RED); await sleep(200);
     }
-    await sleep(600);
+    await sleep(700);
   }
 }
 
@@ -76,14 +85,15 @@ async function tripleBlinkRed() {
   allOff();
   while (currentStatus === "error-generation-fail") {
     for (let i = 0; i < 3; i++) {
-      on(RED);  await sleep(150);
-      off(RED); await sleep(150);
+      on(RED);  await sleep(200);
+      off(RED); await sleep(200);
     }
-    await sleep(600);
+    await sleep(700);
   }
 }
 
-// ---------- STATE SYSTEM ----------
+// ---------------- Dispatcher ------------------
+
 let currentStatus = null;
 
 export async function setStatus(mode) {
@@ -91,18 +101,32 @@ export async function setStatus(mode) {
   allOff();
 
   switch (mode) {
-    case "idle":                return steadyGreen();
-    case "generating":         return slowBlinkGreen();
-    case "listening":           return doubleBlinkGreen();
-    case "speaking":            return steadyBlue();
+    case "idle":                     return steadyGreen();
+    case "generating":              return slowBlinkGreen();
+    case "listening":               return doubleBlinkGreen();
+    case "speaking":                return steadyBlue();
 
-    case "error":               return steadyRed();
-    case "error-no-internet":   return blinkRed();
-    case "error-reset-fail":    return doubleBlinkRed();
-    case "error-generation-fail": return tripleBlinkRed();
-
-    default:
-      console.error("Unknown status:", mode);
-      return allOff();
+    case "error":                   return steadyRed();
+    case "error-no-internet":       return blinkRed();
+    case "error-reset-fail":        return doubleBlinkRed();
+    case "error-generation-fail":   return tripleBlinkRed();
   }
 }
+
+// ---------------- Cleanup on Exit ------------------
+
+let cleaning = false;
+
+async function cleanup() {
+  if (cleaning) return;
+  cleaning = true;
+
+  console.log("\nCleaning up… dimming all colors.");
+  await dimAllColors();
+
+  allOff();
+  process.exit(0);
+}
+
+process.on("SIGINT", cleanup);
+process.on("SIGTERM", cleanup);
