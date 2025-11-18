@@ -1,9 +1,10 @@
 import "./App.css";
+import { PageRunning } from "./PageRunning";
 
 function App() {
   return (
     <>
-      <div>123</div>
+      <PageRunning />
     </>
   );
 }
