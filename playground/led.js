@@ -1,130 +1,108 @@
 import rpio from 'rpio';
 
-// --- Enable full hardware PWM access ---
-rpio.init({
-  mapping: 'gpio',
-  gpiomem: false,   // required for hardware PWM
-});
+rpio.init({ gpiomem: false }); // using full /dev/mem for PWM if needed
 
-// --- HARDWARE PWM PINS ---
-// RED   → GPIO18 (PWM0)
-// GREEN → GPIO13 (PWM1)
-// BLUE  → GPIO12 (PWM0 ALT)
-const RED   = 18;
-const GREEN = 13;
+const RED   = 32;
+const GREEN = 33;
 const BLUE  = 12;
 
-// --- Setup pins for hardware PWM ---
-rpio.open(RED,   rpio.PWM);
-rpio.open(GREEN, rpio.PWM);
-rpio.open(BLUE,  rpio.PWM);
+// Common anode: HIGH = off, LOW = on
+function on(pin)  { rpio.write(pin, rpio.LOW); }
+function off(pin) { rpio.write(pin, rpio.HIGH); }
 
-// --- PWM precision ---
-const RANGE = 1024;
-rpio.pwmSetRange(RED, RANGE);
-rpio.pwmSetRange(GREEN, RANGE);
-rpio.pwmSetRange(BLUE, RANGE);
+function allOff() {
+  off(RED); off(GREEN); off(BLUE);
+}
 
-// Smooth hardware PWM clock
-rpio.pwmSetClockDivider(32);
-
-// Utility sleep
-function sleep(ms) {
+async function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-// --- COMMON ANODE: invert output (0 = bright, 1024 = off) ---
-function invert(v) {
-  return RANGE - v; // 1024 - value
+// ---------- EFFECTS ----------
+async function steadyGreen() {
+  allOff();
+  on(GREEN);
 }
 
-// Write RGB in PWM 0–1024 (inverted for anode)
-function writeRGB(r, g, b) {
-  rpio.pwmSetData(RED,   invert(r));
-  rpio.pwmSetData(GREEN, invert(g));
-  rpio.pwmSetData(BLUE,  invert(b));
-}
-
-// Convert 0–255 color × scale → 0–1024
-function colorToPWM([r, g, b], scale = 1) {
-  return [r, g, b].map(c => Math.round(c * scale * RANGE / 255));
-}
-
-// Easing
-const ease = t => 0.5 * (1 - Math.cos(Math.PI * t));
-
-// ---------------- PATTERNS ----------------
-async function breathing(color, period = 3000) {
-  while (true) {
-    for (let t = 0; t < 1; t += 0.02) {
-      const s = 0.15 + 0.7 * ease(t);
-      writeRGB(...colorToPWM(color, s));
-      await sleep(period / 50);
-    }
+async function slowBlinkGreen() {
+  allOff();
+  while (currentStatus === "generating") {
+    on(GREEN);  await sleep(600);
+    off(GREEN); await sleep(600);
   }
 }
 
-async function pulse(color, period = 1000) {
-  while (true) {
-    for (let t = 0; t < 1; t += 0.04) {
-      writeRGB(...colorToPWM(color, 0.3 + 0.7 * ease(t)));
-      await sleep(period / 25);
-    }
-  }
-}
-
-async function blink(color, period = 2000, duty = 0.1) {
-  const onTime = period * duty;
-  while (true) {
-    writeRGB(...colorToPWM(color));
-    await sleep(onTime);
-    writeRGB(0, 0, 0);
-    await sleep(period - onTime);
-  }
-}
-
-async function doubleBlink(color) {
-  while (true) {
+async function doubleBlinkGreen() {
+  allOff();
+  while (currentStatus === "listening") {
     for (let i = 0; i < 2; i++) {
-      writeRGB(...colorToPWM(color));
-      await sleep(80);
-      writeRGB(0, 0, 0);
-      await sleep(120);
+      on(GREEN);  await sleep(150);
+      off(GREEN); await sleep(150);
     }
-    await sleep(1000);
+    await sleep(500);
   }
 }
 
-export function resetLED() {
-  const OFF = RANGE; // 1024 for common anode
-  rpio.pwmSetData(RED, OFF);
-  rpio.pwmSetData(GREEN, OFF);
-  rpio.pwmSetData(BLUE, OFF);
+async function steadyBlue() {
+  allOff();
+  on(BLUE);
 }
 
+async function steadyRed() {
+  allOff();
+  on(RED);
+}
 
-// ---------------- STATE HANDLER ----------------
-export async function setState(state) {
-  writeRGB(0, 0, 0);
+async function blinkRed() {
+  allOff();
+  while (currentStatus === "error-no-internet") {
+    on(RED);  await sleep(400);
+    off(RED); await sleep(400);
+  }
+}
 
-  const c = {
-    idle:       [0, 200, 160],
-    generating: [255, 0, 180],
-    listening:  [0, 180, 255],
-    speaking:   [255, 160, 0],
-    error:      [255, 32, 32],
-  };
+async function doubleBlinkRed() {
+  allOff();
+  while (currentStatus === "error-reset-fail") {
+    for (let i = 0; i < 2; i++) {
+      on(RED);  await sleep(150);
+      off(RED); await sleep(150);
+    }
+    await sleep(600);
+  }
+}
 
-  switch (state.toUpperCase()) {
-    case 'IDLE':             return breathing(c.idle);
-    case 'GENERATING':       return pulse(c.generating);
-    case 'LISTENING':        return blink(c.listening);
-    case 'ERROR-NOINTERNET': return doubleBlink(c.error);
+async function tripleBlinkRed() {
+  allOff();
+  while (currentStatus === "error-generation-fail") {
+    for (let i = 0; i < 3; i++) {
+      on(RED);  await sleep(150);
+      off(RED); await sleep(150);
+    }
+    await sleep(600);
+  }
+}
+
+// ---------- STATE SYSTEM ----------
+let currentStatus = null;
+
+export async function setStatus(mode) {
+  currentStatus = mode;
+  allOff();
+
+  switch (mode) {
+    case "idle":                return steadyGreen();
+    case "generating":         return slowBlinkGreen();
+    case "listening":           return doubleBlinkGreen();
+    case "speaking":            return steadyBlue();
+
+    case "error":               return steadyRed();
+    case "error-no-internet":   return blinkRed();
+    case "error-reset-fail":    return doubleBlinkRed();
+    case "error-generation-fail": return tripleBlinkRed();
+
     default:
-      writeRGB(0, 0, 0);
+      console.error("Unknown status:", mode);
+      return allOff();
   }
 }
-
-//NOTES: run it with which node
-// sudo node-location file-js
-

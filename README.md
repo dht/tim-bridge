@@ -72,19 +72,16 @@ node src/index.js from the tim-bridge repo
 
 ### Status Light (RGB)
 
-| **State**                  | **Color**              | **Pattern / Rhythm**            | **Meaning / Behavior**                 |
-| -------------------------- | ---------------------- | ------------------------------- | -------------------------------------- |
-| **IDLE**                   | Cyan-Green (`#00C8A0`) | Slow breathing (3s fade in/out) | Waiting for interaction / QR scan      |
-| **GENERATING**             | Magenta (`#FF00B4`)    | 1s smooth pulse                 | AI creating assets (voice, text, etc.) |
-| **LISTENING**              | Sky Blue (`#00B4FF`)   | Single blink every 2s           | Waiting for user input / voice         |
-| **SPEAKING / PLAYBACK**    | Amber (`#FFA000`)      | Amplitude-reactive glow         | AI voice or playback active            |
-| **RESETTING**              | White → Blue           | Directional fade / sweep        | Saving session, clearing memory        |
-| **ERROR: No Internet**     | Red (`#FF2020`)        | Short double-blink, 1s pause    | Connection attempt failed              |
-| **ERROR: Reset Fail**      | Red (`#FF2020`)        | Long fade loop (2.8s)           | Could not return to idle               |
-| **ERROR: Generation Fail** | Red (`#FF2020`)        | Triple stutter, 2s pause        | Creation interrupted                   |
-| **ERROR: Internal Fault**  | Red (`#FF2020`)        | Uneven heartbeat (short-long)   | Agent or system glitch                 |
-| **ERROR: Timeout**         | Red (`#FF2020`)        | Slow rise, hold, sudden drop    | Process stalled or unresponsive        |
+| **Mode / State**        | **Color** | **Pattern**  | **Meaning**                                          |
+| ----------------------- | --------- | ------------ | ---------------------------------------------------- |
+| `idle`                  | Green     | Steady       | System is ready & idle                               |
+| `generating`           | Green     | Slow blink   | Generating (L2 model, response creation, processing) |
+| `listening`             | Green     | Double-blink | Listening for a user command / audio input           |
+| `speaking` / `playback` | Blue      | Steady       | Speaking / playing audio                             |
+| `error`                 | Red       | Steady       | General error state                                  |
+| `error-no-internet`     | Red       | Single blink | No network connection                                |
+| `error-reset-fail`      | Red       | Double-blink | Reset command failure                                |
+| `error-generation-fail` | Red       | Triple-blink | TTS/Generation failure                               |
 
-## installing oxmplayer
 
 sudo apt install omxplayer
