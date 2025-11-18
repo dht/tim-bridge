@@ -1,40 +1,31 @@
-// playground/led.demo.js
-import { setState, resetLED } from './led.js';
+import { setStatus } from "./led.js";
 
-// All modes to cycle through
-const MODES = [
-  'IDLE',
-  'GENERATING',
-  'LISTENING',
-  'SPEAKING',         // optional if you add an effect
-  'ERROR-NOINTERNET',
-];
-
-// Sleep helper
 function sleep(ms) {
-  return new Promise(res => setTimeout(res, ms));
+  return new Promise(r => setTimeout(r, ms));
 }
 
-// Cleanup on Ctrl-C (or kill)
-process.on('SIGINT', () => {
-  console.log("\n🔌 Cleaning up GPIOs (turning LED OFF)...");
-  resetLED();
-  process.exit(0);
-});
+async function runDemo() {
+  console.log("Starting RGB LED status demo...");
 
-// Main loop
-(async () => {
-  console.log("🌈 Cycling LED modes every 10 seconds...\n");
+  const sequence = [
+    "idle",
+    "egenerating",
+    "listening",
+    "speaking",
+    "error",
+    "error-no-internet",
+    "error-reset-fail",
+    "error-generation-fail",
+  ];
 
-  while (true) {
-    for (const mode of MODES) {
-      console.log(`→ Switching to: ${mode}`);
-
-      // start animation (runs in background)
-      setState(mode);
-
-      // keep this mode for 10 seconds
-      await sleep(10_000);
-    }
+  for (const state of sequence) {
+    console.log("State:", state);
+    setStatus(state);      // activate the LED pattern
+    await sleep(5000);     // hold 5 seconds
   }
-})();
+
+  console.log("Demo complete. Returning to idle.");
+  setStatus("idle");
+}
+
+runDemo();
