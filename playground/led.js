@@ -101,10 +101,10 @@ export async function setStatus(mode) {
   allOff();
 
   switch (mode) {
-    case "idle":                     return steadyGreen();
-    case "generating":              return slowBlinkGreen();
-    case "listening":               return doubleBlinkGreen();
-    case "speaking":                return steadyBlue();
+    case "IDLE":                     return steadyGreen();
+    case "GENERATING":              return slowBlinkGreen();
+    case "LISTENING":               return doubleBlinkGreen();
+    case "PLAYBACK":                return steadyBlue();
 
     case "error":                   return steadyRed();
     case "error-no-internet":       return blinkRed();
