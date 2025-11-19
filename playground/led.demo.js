@@ -1,4 +1,4 @@
-import { setStatus } from "./led.js";
+import { setStatus } from "../src/led.js";
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
