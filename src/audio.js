@@ -15,7 +15,8 @@ let player = null;
 function getPlayerCmd() {
   const platform = process.platform;
   if (platform === "darwin") return { cmd: "afplay", args: [] }; // macOS
-  if (platform === "linux") return { cmd: "mpg123", args: ["-q"] }; // Raspberry Pi/Linux
+  if (platform === "linux")
+    return { cmd: "mpg123", args: ["-q", "-o", "alsa"] }; // Raspberry Pi/Linux
   throw new Error(`Unsupported platform: ${platform}`);
 }
 
