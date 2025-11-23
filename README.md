@@ -104,10 +104,19 @@ node src/index.js    # or: npm run dev
 
 ---
 
-### ** 9. Give permissions **
+### ** 9. Give permissions to GPIO**
+
+In case you current user is admin
+
+```
+echo $USER
+```
+
+Give it permissions:
 
 ```
 sudo usermod -aG gpio admin
+sudo reboot
 ```
 
 ---
