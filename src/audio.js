@@ -66,8 +66,8 @@ export async function playMp3(url) {
       gid: PI_GID,
       env: {
         ...process.env,
-        HOME: "/home/pi",
-        USER: "pi",
+        HOME: "/home/admin",
+        USER: "admin",
       },
     });
 
