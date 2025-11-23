@@ -1,87 +1,168 @@
-# TIM-BRIDGE
+# **TIM-BRIDGE Documentation**
 
-is the code that runs on the edge devices: the various raspberry pie (Zero, 4B & 5).
-The bridge is designed to be simple. For example a change like:
+## **Overview**
+
+**TIM-BRIDGE** is the software running on the edge devices—specifically various Raspberry Pi models (Zero, 4B, and 5).
+The bridge listens for state changes in Firestore and updates hardware components on the Pi accordingly.
+
+A state update such as:
 
 ```json
 {
-  "leftLightOn": true // was false
+  "leftLightOn": true
 }
 ```
 
-will turn the left light on.
+will directly trigger the left light to turn on.
 
-The cycle is:
+### **Core Execution Cycle**
 
-1. listen to firestore changes
-2. when an incoming change is received use the raspberry pi commands to control:
-   a. voice via speakers
-   b. BOX elements: lights (Hillel/Shammai), rotors (2084)
-   c. PANEL elements: status LED
+1. **Listen** for Firestore document changes.
+2. **On change**, control Raspberry Pi–connected hardware:
 
-# SET UP GUIDE:
-# 🧰 Raspberry Pi — Ultra-Concise Setup Guide (Everything in ONE Block)
+   - **Audio**: playback via speakers
+   - **BOX components**: lights (Hillel/Shammai), rotors (2084)
+   - **PANEL components**: status LED
 
-# --- Flash Correct OS (via Raspberry Pi Imager) ---
-# Pi Zero → Raspberry Pi OS Legacy 32-bit (armhf)
-# Pi 4/5  → Raspberry Pi OS 64-bit (aarch64)
+---
 
-# --- Update System ---
+# **Setup Guide**
+
+## 🧰 **Raspberry Pi Setup (Concise Single-Block Guide)**
+
+### **1. Flash the Correct OS (Raspberry Pi Imager)**
+
+| Device          | OS Version                            |
+| --------------- | ------------------------------------- |
+| **Pi Zero**     | Raspberry Pi OS Legacy 32-bit (armhf) |
+| **Pi 4 / Pi 5** | Raspberry Pi OS 64-bit (aarch64)      |
+
+---
+
+### **2. Update the System**
+
+```bash
 sudo apt update && sudo apt upgrade -y
+```
 
-# --- Install NVM ---
+---
+
+### **3. Install NVM**
+
+```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
 source ~/.bashrc
+```
 
-# --- Install Node.js 20 ---
+---
+
+### **4. Install Node.js 20**
+
+```bash
 nvm install 20
 nvm use 20
 nvm alias default 20
+```
 
-# --- Verify Node ---
+---
+
+### **5. (Optional but Useful) Install fzf**
+
+```bash
+git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+~/.fzf/install
+```
+
+---
+
+### **6. Verify Node Installation**
+
+```bash
 node -v
 npm -v
+```
 
-# --- Create a Projects Folder ---
-mkdir -p ~/projects && cd ~/projects
+---
 
-# --- Clone + Run tim-bridge ---
+### **7. Create Projects Directory**
+
+```bash
+mkdir -p ~/projects
+cd ~/projects
+```
+
+---
+
+### **8. Clone and Run tim-bridge**
+
+```bash
 git clone https://github.com/dht/tim-bridge.git
 cd tim-bridge
 npm install
-node src/index.js   # or: npm run dev
+node src/index.js    # or: npm run dev
+```
 
-# --- Optional: Install VS Code ---
+---
+
+### ** 9. Give permissions **
+
+```
+sudo usermod -aG gpio admin
+```
+
+---
+
+### **10. (Optional) Install VS Code**
+
+```bash
 sudo apt install code -y
 code ~/projects/tim-bridge
+```
 
-# --- Tips ---
-# Reset git repo:
-git reset --hard HEAD
+---
 
-# If running Node gives "couldn't find bcm...":
-which node
-# then:
-sudo /path/to/node yourfile.js
+### **Common Tips**
 
-# --- To run the file: ---
-node src/index.js from the tim-bridge repo
+- **Reset repo**
 
+  ```bash
+  git reset --hard HEAD
+  ```
 
-## Lights
+- **If Node reports “couldn’t find bcm…”**
 
-### Status Light (RGB)
+  ```bash
+  which node
+  sudo /path/to/node yourfile.js
+  ```
 
-| **Mode / State**        | **Color** | **Pattern**  | **Meaning**                                          |
-| ----------------------- | --------- | ------------ | ---------------------------------------------------- |
-| `idle`                  | Green     | Steady       | System is ready & idle                               |
-| `generating`           | Green     | Slow blink   | Generating (L2 model, response creation, processing) |
-| `listening`             | Green     | Double-blink | Listening for a user command / audio input           |
-| `speaking` / `playback` | Blue      | Steady       | Speaking / playing audio                             |
-| `error`                 | Red       | Steady       | General error state                                  |
-| `error-no-internet`     | Red       | Single blink | No network connection                                |
-| `error-reset-fail`      | Red       | Double-blink | Reset command failure                                |
-| `error-generation-fail` | Red       | Triple-blink | TTS/Generation failure                               |
+- **Run the bridge manually**
 
+  ```bash
+  node src/index.js
+  ```
 
-sudo apt install omxplayer
+- **Install omxplayer (for audio playback)**
+
+  ```bash
+  sudo apt install omxplayer
+  ```
+
+---
+
+# **Lights Documentation**
+
+## **Status Light (RGB)**
+
+| Mode / State            | Color | Pattern      | Meaning                          |
+| ----------------------- | ----- | ------------ | -------------------------------- |
+| `idle`                  | Green | Steady       | System ready and idle            |
+| `generating`            | Green | Slow blink   | L2 model generation / processing |
+| `listening`             | Green | Double blink | Awaiting user input              |
+| `speaking` / `playback` | Blue  | Steady       | Speaking / playing audio         |
+| `error`                 | Red   | Steady       | General error                    |
+| `error-no-internet`     | Red   | Single blink | No network connection            |
+| `error-reset-fail`      | Red   | Double blink | Reset command failed             |
+| `error-generation-fail` | Red   | Triple blink | TTS / Generation failure         |
+
+---

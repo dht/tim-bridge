@@ -1,6 +1,7 @@
 import rpio from 'rpio';
 
-rpio.init({ gpiomem: false });
+// Use /dev/gpiomem so GPIO works without sudo (user just needs to be in the gpio group)
+rpio.init({ gpiomem: true });
 
 const RED   = 32;
 const GREEN = 33;
