@@ -1,18 +1,21 @@
-import { spawn } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
-import fs from 'node:fs';
-import http from 'node:http';
-import https from 'node:https';
-import { tmpdir } from 'node:os';
-import path from 'node:path';
+import { spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs";
+import http from "node:http";
+import https from "node:https";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
+const PI_UID = 1000;
+const PI_GID = 1000;
 
 let player = null;
 
 // Pick command per platform
 function getPlayerCmd() {
   const platform = process.platform;
-  if (platform === 'darwin') return { cmd: 'afplay', args: [] }; // macOS
-  if (platform === 'linux') return { cmd: 'mpg123', args: ['-q'] }; // Raspberry Pi/Linux
+  if (platform === "darwin") return { cmd: "afplay", args: [] }; // macOS
+  if (platform === "linux") return { cmd: "mpg123", args: ["-q"] }; // Raspberry Pi/Linux
   throw new Error(`Unsupported platform: ${platform}`);
 }
 
@@ -21,7 +24,7 @@ function downloadToTempFile(url) {
   return new Promise((resolve, reject) => {
     const tempFile = path.join(tmpdir(), `${randomUUID()}.mp3`);
     const file = fs.createWriteStream(tempFile);
-    const client = url.startsWith('https') ? https : http;
+    const client = url.startsWith("https") ? https : http;
 
     console.log(`[audio] downloading: ${url}`);
     const request = client.get(url, (response) => {
@@ -32,12 +35,12 @@ function downloadToTempFile(url) {
       }
 
       response.pipe(file);
-      file.on('finish', () => {
+      file.on("finish", () => {
         file.close(() => resolve(tempFile));
       });
     });
 
-    request.on('error', (err) => {
+    request.on("error", (err) => {
       fs.unlink(tempFile, () => reject(err));
     });
   });
@@ -47,7 +50,7 @@ export async function playMp3(url) {
   // Stop any previous playback
   if (player && !player.killed) {
     try {
-      player.kill('SIGTERM');
+      player.kill("SIGTERM");
     } catch {}
   }
 
@@ -57,16 +60,25 @@ export async function playMp3(url) {
 
     console.log(`[audio] playing temp file: ${tempFile} using ${cmd}`);
 
-    player = spawn(cmd, [...args, tempFile], { stdio: 'inherit' });
+    player = spawn(cmd, [...args, tempFile], {
+      stdio: "inherit",
+      uid: PI_UID,
+      gid: PI_GID,
+      env: {
+        ...process.env,
+        HOME: "/home/pi",
+        USER: "pi",
+      },
+    });
 
-    player.on('exit', (code, signal) => {
+    player.on("exit", (code, signal) => {
       console.log(`[audio] ended (code=${code}, signal=${signal})`);
       player = null;
       // optional: clean up temp file
       fs.unlink(tempFile, () => {});
     });
 
-    player.on('error', (err) => {
+    player.on("error", (err) => {
       console.error(`[audio] failed to start ${cmd}:`, err);
       player = null;
       fs.unlink(tempFile, () => {});
@@ -79,7 +91,7 @@ export async function playMp3(url) {
 export function stopAudio() {
   if (player && !player.killed) {
     try {
-      player.kill('SIGTERM');
+      player.kill("SIGTERM");
     } catch {}
   }
   player = null;
