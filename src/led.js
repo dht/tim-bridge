@@ -106,7 +106,8 @@ export async function setStatus(mode) {
     case "GENERATING":              return slowBlinkGreen();
     case "LISTENING":               return doubleBlinkGreen();
     case "PLAYBACK":                return steadyBlue();
-
+    case "RESETTING":               return steadyBlue();
+    
     case "error":                   return steadyRed();
     case "error-no-internet":       return blinkRed();
     case "error-reset-fail":        return doubleBlinkRed();

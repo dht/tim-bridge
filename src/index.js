@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { listenToCollection } from "./firestore.js";
-import { callbacks } from "./installations/index.js";
+import { callbacks } from "./installations/installations_map.js";
 
 const MACHINE_ID = "A-001";
 
