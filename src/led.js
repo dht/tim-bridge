@@ -1,134 +1,86 @@
-import rpio from 'rpio';
+// led.js — safe for Mac & Raspberry Pi
 
-// Use /dev/gpiomem so GPIO works without sudo (user just needs to be in the gpio group)
-rpio.init({ gpiomem: true });
+let rpio = null;
 
-const RED   = 32;
+async function loadRpio() {
+  const isPi =
+    process.platform === "linux" &&
+    (process.arch === "arm" || process.arch === "arm64");
+
+  if (!isPi) {
+    console.log("⚠️ Running on non-Pi system: RGB LED disabled.");
+    return null;
+  }
+
+  try {
+    const module = await import("rpio");
+    module.default.init({ gpiomem: true });
+    console.log("GPIO ready (RGB).");
+    return module.default;
+  } catch (err) {
+    console.log("⚠️ Failed to load rpio for RGB:", err.message);
+    return null;
+  }
+}
+
+const rpioPromise = loadRpio();
+
+// Pins (physical)
+const RED = 32;
 const GREEN = 33;
-const BLUE  = 12;
+const BLUE = 12;
 
-// Common anode logic
-function on(pin)  { rpio.write(pin, rpio.LOW); }
-function off(pin) { rpio.write(pin, rpio.HIGH); }
-
-export function allOff() {
-  off(RED); off(GREEN); off(BLUE);
+function simulate(pin, on) {
+  console.log(`(simulate RGB) pin ${pin} = ${on ? "ON" : "OFF"}`);
 }
 
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+async function on(pin) {
+  const rpio = await rpioPromise;
+  if (!rpio) return simulate(pin, true);
+
+  rpio.open(pin, rpio.OUTPUT, rpio.LOW);
+  rpio.write(pin, rpio.LOW); // common-anode logic
 }
 
-async function dimAllColors() {
-  // no PWM – simulate dim by short ON pulses
-  for (let i = 0; i < 40; i++) {
-    on(RED); on(GREEN); on(BLUE);
-    await sleep(10);
-    off(RED); off(GREEN); off(BLUE);
-    await sleep(40);
-  }
-  allOff();
+async function off(pin) {
+  const rpio = await rpioPromise;
+  if (!rpio) return simulate(pin, false);
+
+  rpio.open(pin, rpio.OUTPUT, rpio.LOW);
+  rpio.write(pin, rpio.HIGH);
 }
 
-// ---------------- Patterns ------------------
-
-async function steadyGreen() {
-  allOff(); on(GREEN);
+export async function allOff() {
+  await off(RED);
+  await off(GREEN);
+  await off(BLUE);
 }
-
-async function slowBlinkGreen() {
-  allOff();
-  while (currentStatus === "generating") {
-    on(GREEN);  await sleep(900);   // calmer ON
-    off(GREEN); await sleep(900);   // calmer OFF
-  }
-}
-
-async function doubleBlinkGreen() {
-  allOff();
-  while (currentStatus === "listening") {
-    for (let i = 0; i < 2; i++) {
-      on(GREEN);  await sleep(250);  // slow, calm
-      off(GREEN); await sleep(250);
-    }
-    await sleep(800); // relax pause
-  }
-}
-
-async function steadyBlue() {
-  allOff(); on(BLUE);
-}
-
-async function steadyRed() {
-  allOff(); on(RED);
-}
-
-async function blinkRed() {
-  allOff();
-  while (currentStatus === "error-no-internet") {
-    on(RED);  await sleep(400);
-    off(RED); await sleep(400);
-  }
-}
-
-async function doubleBlinkRed() {
-  allOff();
-  while (currentStatus === "error-reset-fail") {
-    for (let i = 0; i < 2; i++) {
-      on(RED);  await sleep(200);
-      off(RED); await sleep(200);
-    }
-    await sleep(700);
-  }
-}
-
-async function tripleBlinkRed() {
-  allOff();
-  while (currentStatus === "error-generation-fail") {
-    for (let i = 0; i < 3; i++) {
-      on(RED);  await sleep(200);
-      off(RED); await sleep(200);
-    }
-    await sleep(700);
-  }
-}
-
-// ---------------- Dispatcher ------------------
 
 let currentStatus = null;
 
 export async function setStatus(mode) {
   currentStatus = mode;
-  allOff();
+
+  await allOff();
 
   switch (mode) {
-    case "IDLE":                     return steadyGreen();
-    case "GENERATING":              return slowBlinkGreen();
-    case "LISTENING":               return doubleBlinkGreen();
-    case "PLAYBACK":                return steadyBlue();
-    case "RESETTING":               return steadyBlue();
-    
-    case "error":                   return steadyRed();
-    case "error-no-internet":       return blinkRed();
-    case "error-reset-fail":        return doubleBlinkRed();
-    case "error-generation-fail":   return tripleBlinkRed();
+    case "IDLE":
+      await on(GREEN);
+      break;
+
+    case "GENERATING":
+      await on(GREEN);
+      break;
+
+    case "LISTENING":
+      await on(BLUE);
+      break;
+
+    case "PLAYBACK":
+      await on(RED);
+      break;
+
+    default:
+      await allOff();
   }
 }
-
-// ---------------- Cleanup on Exit ------------------
-
-let cleaning = false;
-
-async function cleanup() {
-  if (cleaning) return;
-  cleaning = true;
-
-  console.log("\nCleaning up… dimming all colors.");
-  await dimAllColors();
-
-  allOff();
-  process.exit(0);
-}
-
-process.on("SIGINT", cleanup);
-process.on("SIGTERM", cleanup);

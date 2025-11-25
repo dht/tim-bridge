@@ -2,7 +2,7 @@ import "dotenv/config";
 import { listenToCollection } from "./firestore.js";
 import { callbacks } from "./installations/installations_map.js";
 
-const MACHINE_ID = "A-001";
+const MACHINE_ID = "A-901";
 
 async function run() {
   console.log('Listening to Firestore collection "machines"...');
