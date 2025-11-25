@@ -1,8 +1,8 @@
-import { onChange as onChangeA001 } from "./installations/A-001.js";
-import { onChange as onChangeA002 } from "./installations/A-002.js";
-import { onChange as onChangeA003 } from "./installations/A-003.js";
-import { onChange as onChangeA004 } from "./installations/A-004.js";
-import { onChange as onChangeA901 } from "./installations/A-901.js";
+import { onChange as onChangeA001 } from "./A-001.js";
+import { onChange as onChangeA002 } from "./A-002.js";
+import { onChange as onChangeA003 } from "./A-003.js";
+import { onChange as onChangeA004 } from "./A-004.js";
+import { onChange as onChangeA901 } from "./A-901.js";
 
 export const callbacks = {
   "A-001": onChangeA001,
