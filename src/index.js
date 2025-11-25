@@ -1,41 +1,25 @@
-import 'dotenv/config';
-import { playMp3 } from './audio.js';
-import { listenToCollection } from './firestore.js';
-import { setStatus } from './led.js';
-import { turnLights } from './lights.js';
+import "dotenv/config";
+import { listenToCollection } from "./firestore.js";
+import { callbacks } from "./installations/index.js";
 
-const MACHINE_ID = 'A-001';
+const MACHINE_ID = "A-001";
 
 async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  listenToCollection('machines', async change => {
+  listenToCollection("machines", (change) => {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 
-    const { mp3Url, mp3UrlTs, lightStatus, status } = data;
-    console.log({ mp3Url, mp3UrlTs, lightStatus, status });
-    turnLights(lightStatus);
-    if (status) {
-      console.log('LED status:', status);
-      setStatus(status);
+    const onChange = callbacks[MACHINE_ID];
+
+    if (!onChange) {
+      console.warn(`No onChange callback found for MACHINE_ID: ${MACHINE_ID}`);
+      return;
     }
 
-    if (!mp3Url) return;
-    console.log('🎧 Playing mp3Url from Firestore:', mp3Url);
-
-    // lightStatus: ONE, TWO, BOTH, NONE
-    turnLights(lightStatus);
-
-    try {
-      await playMp3(mp3Url); // Wait for the entire playback
-    } catch (err) {
-      console.error('❌ Error playing mp3Url:', err);
-    }
-    turnLights(lightStatus);
-
-    console.log('✅ Playback + Lights completed.');
+    onChange(data);
   });
 }
 
