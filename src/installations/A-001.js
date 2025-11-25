@@ -1,4 +1,7 @@
 // A-001: Houses
+import { turnLights } from "../lights.js";
+import { setStatus } from "../led.js";
+import { playMp3 } from "../audio.js";
 
 export async function onChange(data) {
   const { mp3Url, mp3UrlTs, lightStatus, status } = data;

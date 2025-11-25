@@ -5,7 +5,6 @@ const LED2 = 13;
 
 // rpio.init({ mapping: 'physical' }); // using physical pin numbering
 
-
 export function turnLed(pin, isOn) {
   const value = isOn ? rpio.HIGH : rpio.LOW;
   rpio.open(pin, rpio.OUTPUT, rpio.LOW);
