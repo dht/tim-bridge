@@ -26,6 +26,11 @@ nvm alias default 20
 node -v
 npm -v
 
+# --- Install mpg123 for audio playing ---
+
+sudo apt update
+sudo apt install mpg123
+
 # --- Create a Projects Folder ---
 
 mkdir -p ~/projects && cd ~/projects
@@ -44,6 +49,10 @@ https://prompt-haus.web.app/env.md
 # --- Use passwordless chromium ---
 
 when entering chromium at first and it asks for a key enter both password and confirm empty
+
+# --- PM2 to autoload index on boot ---
+
+sudo npm install -g pm2
 
 # --- Optional: Install VS Code ---
 
