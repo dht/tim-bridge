@@ -69,7 +69,7 @@ export async function setStatus(mode) {
       break;
 
     case "GENERATING":
-      await on(GREEN);
+      await on(BLUE);
       break;
 
     case "LISTENING":
