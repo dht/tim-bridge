@@ -52,7 +52,10 @@ when entering chromium at first and it asks for a key enter both password and co
 
 # --- PM2 to autoload index on boot ---
 
-sudo npm install -g pm2
+npm install -g pm2
+go to project folder
+pm2 start index.js --name tim-bridge
+
 
 # --- Optional: Install VS Code ---
 
