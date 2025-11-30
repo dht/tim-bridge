@@ -30,9 +30,14 @@ npm install
 echo "========== Installing PM2 =========="
 npm install -g pm2
 
-echo "========== Starting PM2 Service =========="
-pm2 start index.js --name tim --watch
-pm2 save
+echo "========== Installing autojump =========="
+sudo apt install autojump
+. /usr/share/autojump/autojump.zsh
+source ~/.zshrc
+
+# echo "========== Starting PM2 Service =========="
+# pm2 start index.js --name tim --watch
+# pm2 save
 
 echo "========== Installation Complete =========="
 echo ""
