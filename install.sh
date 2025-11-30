@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+echo "========== Updating System For Raspberry ZERO =========="
 
 echo "========== Updating System =========="
 sudo apt update && sudo apt upgrade -y
@@ -15,10 +16,11 @@ export NVM_DIR="$HOME/.nvm"
 # shellcheck disable=SC1091
 source "$NVM_DIR/nvm.sh"
 
-echo "========== Installing Node.js 20 =========="
-nvm install 20
-nvm use 20
-nvm alias default 20
+echo "========== Installing Node.js 10 =========="
+nvm install 10.24.1
+nvm use 10.24.1
+node -v
+echo "install bash: Verify it's v10.24.1 above this line"
 
 echo "========== Verifying Node Installation =========="
 node -v
