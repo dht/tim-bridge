@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-echo "========== Updating System For Raspberry ZERO =========="
+echo "========== Updating System For Raspberry 4 model B =========="
 
 echo "========== Updating System =========="
 sudo apt update && sudo apt upgrade -y
@@ -17,8 +17,8 @@ export NVM_DIR="$HOME/.nvm"
 source "$NVM_DIR/nvm.sh"
 
 echo "========== Installing Node.js 10 =========="
-nvm install 16.20.2
-nvm use 16.20.2
+nvm install 20
+nvm use 20
 node -v
 echo "install bash: Verify it's v16.20.2 above this line"
 
