@@ -20,7 +20,7 @@ echo "========== Installing Node.js 10 =========="
 nvm install 16.20.2
 nvm use 16.20.2
 node -v
-echo "install bash: Verify it's v10.24.1 above this line"
+echo "install bash: Verify it's v16.20.2 above this line"
 
 echo "========== Verifying Node Installation =========="
 node -v
