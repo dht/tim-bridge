@@ -57,11 +57,12 @@ source ~/.bashrc
 echo "========== Installing PM2 =========="
 npm install -g pm2
 
-echo "========== Starting PM2 Service =========="
-pm2 start src/index.js --name houses --watch
-echo "Add PM2 to system startup"
-pm2 startup systemd -u $USER --hp $HOME
-
+# echo "========== Starting PM2 Service =========="
+# pm2 start src/index.js --name houses --watch
+# echo "Add PM2 to system startup"
+# pm2 startup systemd -u $USER --hp $HOME
+# echo "and print their comnmand, probably:"
+# echo "sudo env PATH=$PATH:/usr/local/node16/bin pm2 startup systemd -u admin --hp /home/admin"
 
 echo "========== Installation Complete =========="
 echo ""
