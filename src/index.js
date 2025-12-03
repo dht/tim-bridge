@@ -3,8 +3,8 @@ import fs from 'fs-extra';
 import path from 'path';
 import { listenToCollection } from './firestore.js';
 import { callbacks } from './installations/installations_map.js';
-import { setStatus } from './rgb.js';
-import { mapStatusToLedMode } from './statusMapper.js'; // <-- NEW
+import { setStatus } from './rgb/rgb.js';
+
 const MACHINE_ID = 'A-001';
 
 let lastKnownStatus = null;
@@ -30,9 +30,8 @@ async function run() {
     lastKnownStatus = data.status || lastKnownStatus;
 
     // Map for RGB
-    const ledMode = mapStatusToLedMode(lastKnownStatus);
     console.log('🔥 Live Update Status → LED Mode:', lastKnownStatus, '→', ledMode);
-    setStatus(ledMode);
+    setStatus(lastKnownStatus);
 
     // Run installation-specific logic (A-001.js)
     const onChange = callbacks[MACHINE_ID];

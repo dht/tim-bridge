@@ -1,8 +1,9 @@
-const admin = require('firebase-admin');
-require('dotenv').config();
-const fs = require('fs-extra');
+import 'dotenv/config';
+import admin from 'firebase-admin';
+import { getFirestore } from 'firebase-admin/firestore';
+import fs from 'fs-extra';
 
-var serviceAccount = require('./service_account.json');
+var serviceAccount = fs.readJsonSync('./playground/service_account.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -12,7 +13,6 @@ admin.initializeApp({
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 // fetch all the firestore data
-const { getFirestore } = require('firebase-admin/firestore');
 const db = getFirestore();
 
 async function changeMachine(machineId, change) {
