@@ -2,7 +2,7 @@
 import { turnLights } from "../lights.js";
 import { setStatus } from "../rgb.js";
 import { playMp3 } from "../audio.js";
-import { mapStatusToLedMode } from "./statusMapper.js";
+import { mapStatusToLedMode } from "../statusMapper.js";
 
 
 export async function onChange(data) {
