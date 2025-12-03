@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { p } from '../package.json';
 import { listenToCollection } from './firestore.js';
 import { callbacks } from './installations/installations_map.js';
 import { setStatus } from './rgb.js';
@@ -7,6 +8,8 @@ import { mapStatusToLedMode } from './statusMapper.js'; // <-- NEW
 const MACHINE_ID = 'A-001';
 
 let lastKnownStatus = null;
+
+console.log(`=== TIM BRIDGE v${p.version} STARTING ===`);
 
 //
 // ---------------------------------------------------------
