@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { listenToCollection } from "./firestore.js";
 import { callbacks } from "./installations/installations_map.js";
-import { setStatus } from "./rgb.js";   // <-- REQUIRED
+import { setStatus } from "./rgb.js";   // <-- your renamed file
 
 const MACHINE_ID = "A-001";
 
@@ -15,10 +15,10 @@ async function run() {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 
-    // 1️⃣ update last status
+    // Save current Firestore LED status
     lastKnownStatus = data.status || lastKnownStatus;
 
-    // 2️⃣ call the machine-specific onChange handler
+    // Find and run device-specific handler
     const onChange = callbacks[MACHINE_ID];
     if (!onChange) {
       console.warn(`No onChange callback found for MACHINE_ID: ${MACHINE_ID}`);
@@ -31,9 +31,14 @@ async function run() {
 
 run();
 
-// 3️⃣ Heartbeat: refresh LED every 5 seconds
+// ---------------------------------------------------------
+// HEARTBEAT: refresh RGB every 5 seconds
+// ---------------------------------------------------------
 console.log("💓 Heartbeat started.");
+
 setInterval(() => {
+  console.log("💓 Tick");
+
   if (lastKnownStatus) {
     console.log("[RGB heartbeat] refreshing status:", lastKnownStatus);
     setStatus(lastKnownStatus);
