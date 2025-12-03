@@ -39,5 +39,6 @@ export async function onChange(data) {
   }
 
   turnLights(lightStatus);
+  if (status) setStatus(mapStatusToLedMode(status));
   console.log("✅ Playback + Lights completed.");
 }
