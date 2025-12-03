@@ -24,6 +24,8 @@ process.on('uncaughtException', err => logCrash('Uncaught Exception', err));
 process.on('unhandledRejection', err => logCrash('Unhandled Rejection', err));
 
 function onChange(change) {
+  console.log('📶 Firestore onChange detected:', change);
+
   try {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
