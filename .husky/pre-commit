@@ -1,7 +1,10 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "⬆️  Auto bumping version…"
+echo "🔧 Pre-commit: bumping patch version..."
+
+# Bump package.json but DO NOT create a tag or commit (avoids infinite loop)
 npm version patch --no-git-tag-version
 
-git add package.json package-lock.json
+# Stage updated package.json
+git add package.json package-lock.json 2>/dev/null || true
