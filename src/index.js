@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { listenToCollection } from "./firestore.js";
 import { callbacks } from "./installations/installations_map.js";
-import { setStatus } from "./led.js";   // <-- REQUIRED
+import { setStatus } from "./rgb.js";   // <-- REQUIRED
 
 const MACHINE_ID = "A-001";
 
