@@ -32,6 +32,7 @@ async function run() {
 run();
 
 // 3️⃣ Heartbeat: refresh LED every 5 seconds
+console.log("💓 Heartbeat started.");
 setInterval(() => {
   if (lastKnownStatus) {
     console.log("[RGB heartbeat] refreshing status:", lastKnownStatus);
