@@ -1,6 +1,5 @@
 // engine.js
-import { COLORS, PATTERNS } from './rgb.data.js';
-
+import { COLORS } from './rgb.data.js';
 
 let rpio = null;
 

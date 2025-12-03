@@ -1,11 +1,7 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
 
-# If package.json already has a staged version change, avoid bumping twice.
-if git diff --cached -- package.json | grep -q '"version"'; then
-  echo "package.json version already staged; skipping auto bump."
-  exit 0
-fi
+echo "⬆️  Auto bumping version…"
+npm version patch --no-git-tag-version
 
-node scripts/bump-version.js
-git add package.json
+git add package.json package-lock.json

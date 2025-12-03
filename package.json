@@ -5,14 +5,14 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/index.js",
     "pm2:start": "pm2 start ecosystem.config.cjs",
     "pm2:restart": "pm2 restart ecosystem.config.cjs || pm2 start ecosystem.config.cjs",
     "pm2:stop": "pm2 stop tim-bridge",
     "pm2:logs": "pm2 logs tim-bridge",
     "bump:patch": "node scripts/bump-version.js",
-    "hooks:install": "git config core.hooksPath .githooks"
+    "hooks:install": "git config core.hooksPath .githooks",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
@@ -25,5 +25,8 @@
     "fs-extra": "^11.3.2",
     "pigpio": "^3.3.1",
     "rpio": "^2.4.2"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
   }
 }

@@ -1,4 +1,5 @@
 // engine.js
+import { PATTERNS } from './rgb.data.js';
 import { runPattern } from './rgb.utils.js';
 
 export async function setStatus(status) {
