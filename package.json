@@ -2,10 +2,15 @@
   "name": "client-node-bridge",
   "version": "1.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "pm2:start": "pm2 start ecosystem.config.cjs",
+    "pm2:restart": "pm2 restart ecosystem.config.cjs || pm2 start ecosystem.config.cjs",
+    "pm2:stop": "pm2 stop tim-bridge",
+    "pm2:logs": "pm2 logs tim-bridge"
   },
   "keywords": [],
   "author": "",
