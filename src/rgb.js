@@ -3,22 +3,20 @@
 let rpio = null;
 
 async function loadRpio() {
-  const isPi =
-    process.platform === "linux" &&
-    (process.arch === "arm" || process.arch === "arm64");
+  const isPi = process.platform === 'linux' && (process.arch === 'arm' || process.arch === 'arm64');
 
   if (!isPi) {
-    console.log("⚠️ Running on non-Pi system: RGB LED disabled.");
+    console.log('⚠️ Running on non-Pi system: RGB LED disabled.');
     return null;
   }
 
   try {
-    const module = await import("rpio");
+    const module = await import('rpio');
     module.default.init({ gpiomem: true });
-    console.log("GPIO ready (RGB).");
+    console.log('GPIO ready (RGB).');
     return module.default;
   } catch (err) {
-    console.log("⚠️ Failed to load rpio for RGB:", err.message);
+    console.log('⚠️ Failed to load rpio for RGB:', err.message);
     return null;
   }
 }
@@ -31,7 +29,7 @@ const GREEN = 33;
 const BLUE = 12;
 
 function simulate(pin, on) {
-  console.log(`(simulate RGB) pin ${pin} = ${on ? "ON" : "OFF"}`);
+  console.log(`(simulate RGB) pin ${pin} = ${on ? 'ON' : 'OFF'}`);
 }
 
 async function on(pin) {
@@ -91,7 +89,7 @@ async function newEffect(fn) {
   effectController++;
   const myId = effectController;
   await allOff();
-  fn(async () => myId !== effectController);
+  await fn(() => myId !== effectController); // ✅ FIXED
 }
 
 // ------------ MAIN STATUS LOGIC -------------
@@ -100,7 +98,7 @@ export async function setStatus(mode) {
   currentStatus = mode;
 
   switch (mode) {
-    case "GENERATING":
+    case 'GENERATING':
       // slow blue pulse
       return newEffect(async cancelled => {
         while (!cancelled()) {
@@ -111,7 +109,7 @@ export async function setStatus(mode) {
         }
       });
 
-    case "READY":
+    case 'READY':
       // very fast green blink
       return newEffect(async cancelled => {
         while (!cancelled()) {
@@ -122,14 +120,14 @@ export async function setStatus(mode) {
         }
       });
 
-    case "PLAYBACK":
+    case 'PLAYBACK':
       // solid blue
       return newEffect(async cancelled => {
         await on(BLUE);
         while (!cancelled()) await sleep(200);
       });
 
-    case "DONE":
+    case 'DONE':
       // very fast blue blink
       return newEffect(async cancelled => {
         while (!cancelled()) {
@@ -140,7 +138,7 @@ export async function setStatus(mode) {
         }
       });
 
-    case "RESETTING":
+    case 'RESETTING':
       // alternate green ↔ blue
       return newEffect(async cancelled => {
         while (!cancelled()) {
@@ -148,7 +146,7 @@ export async function setStatus(mode) {
         }
       });
 
-    case "ERROR":
+    case 'ERROR':
       // solid red
       return newEffect(async cancelled => {
         await on(RED);
