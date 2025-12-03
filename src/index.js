@@ -14,15 +14,17 @@ const p = fs.readJsonSync(packageJsonPath);
 
 console.log(`=== TIM BRIDGE v${p.version} STARTING ===`);
 
-//
-// ---------------------------------------------------------
-// FIRESTORE LIVE LISTENER (onSnapshot)
-// ---------------------------------------------------------
-async function run() {
-  console.log('Listening to Firestore collection "machines"...');
-  console.log(`Machine ID: ${MACHINE_ID}`);
+// Catch unexpected crashes so we can see them in logs
+const logCrash = (type, err) => {
+  const message = err instanceof Error ? err.stack || err.message : err;
+  console.error(`❌ ${type}:`, message);
+};
 
-  listenToCollection('machines', change => {
+process.on('uncaughtException', err => logCrash('Uncaught Exception', err));
+process.on('unhandledRejection', err => logCrash('Unhandled Rejection', err));
+
+function onChange(data) {
+  try {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 
@@ -34,14 +36,27 @@ async function run() {
     setStatus(lastKnownStatus);
 
     // Run installation-specific logic (A-001.js)
-    const onChange = callbacks[MACHINE_ID];
-    if (!onChange) {
+    const callback = callbacks[MACHINE_ID];
+    if (!callback) {
       console.warn(`No onChange callback found for MACHINE_ID: ${MACHINE_ID}`);
       return;
     }
 
-    onChange(data);
-  });
+    callback(data);
+  } catch (err) {
+    console.error('❌ onChange error:', err);
+  }
+}
+
+//
+// ---------------------------------------------------------
+// FIRESTORE LIVE LISTENER (onSnapshot)
+// ---------------------------------------------------------
+async function run() {
+  console.log('Listening to Firestore collection "machines"...');
+  console.log(`Machine ID: ${MACHINE_ID}`);
+
+  listenToCollection('machines', onChange);
 }
 
 run();
