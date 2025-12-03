@@ -1,8 +1,11 @@
 import "dotenv/config";
 import { listenToCollection } from "./firestore.js";
 import { callbacks } from "./installations/installations_map.js";
+import { setStatus } from "./led.js";   // <-- REQUIRED
 
 const MACHINE_ID = "A-001";
+
+let lastKnownStatus = null;
 
 async function run() {
   console.log('Listening to Firestore collection "machines"...');
@@ -12,8 +15,11 @@ async function run() {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 
-    const onChange = callbacks[MACHINE_ID];
+    // 1️⃣ update last status
+    lastKnownStatus = data.status || lastKnownStatus;
 
+    // 2️⃣ call the machine-specific onChange handler
+    const onChange = callbacks[MACHINE_ID];
     if (!onChange) {
       console.warn(`No onChange callback found for MACHINE_ID: ${MACHINE_ID}`);
       return;
@@ -25,19 +31,10 @@ async function run() {
 
 run();
 
-
-let lastKnownStatus = null;
-
-// Hook into every machine update to store the latest status
-listenToCollection("machines", (change) => {
-  const { id, data } = change || {};
-  if (id !== MACHINE_ID || !data) return;
-  lastKnownStatus = data.status || lastKnownStatus;
-});
-
-// Every 5s ensure LED animation matches the saved status
+// 3️⃣ Heartbeat: refresh LED every 5 seconds
 setInterval(() => {
   if (lastKnownStatus) {
-    setStatus(lastKnownStatus);   // this will pulse / blink / solid according to led.js
+    console.log("[RGB heartbeat] refreshing status:", lastKnownStatus);
+    setStatus(lastKnownStatus);
   }
 }, 5000);
