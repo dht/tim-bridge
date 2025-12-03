@@ -175,3 +175,109 @@ code ~/projects/tim-bridge
 | `error-generation-fail` | Red   | Triple blink | TTS / Generation failure         |
 
 ---
+
+# ## Install SSH Keys
+
+### **Set up secure trust between your Mac and Raspberry Pi (password-free login)**
+
+This guide explains how to securely generate SSH keys on your **Mac**, copy only the **public** key to the **Raspberry Pi**, and enable password-free login.
+
+SSH keys let your Mac prove its identity to your Pi **without sending a password**, which is much safer and faster.
+
+---
+
+# ### 📁 Where SSH keys live on macOS
+
+On your **Mac**, SSH keys are stored inside your home folder:
+
+```
+~/.ssh
+```
+
+This folder may contain:
+
+- `id_ed25519` → private key (keep secret!)
+- `id_ed25519.pub` → public key (safe to share)
+- Other keys like `id_rsa`, or custom ones you create
+
+---
+
+# ## 1. Generate an SSH key on the Mac
+
+Run this in Terminal on the **Mac**:
+
+```sh
+ssh-keygen -t ed25519 -f ~/.ssh/id_edpi
+```
+
+What this does:
+
+- Creates a **private key**: `~/.ssh/id_edpi`
+- Creates a **public key**: `~/.ssh/id_edpi.pub`
+
+Press **Enter** for default options unless you want to add a passphrase.
+
+---
+
+# ## 2. Copy the public key to the Raspberry Pi
+
+The public key is what the Pi uses to trust the Mac.
+
+If `ssh-copy-id` works:
+
+```sh
+ssh-copy-id -i ~/.ssh/id_edpi.pub admin@10.0.0.7
+```
+
+You will need to enter the Pi password **one last time**.
+
+After this, the Pi knows and trusts the Mac’s key.
+
+---
+
+# ## 3. (Recommended) Add SSH config entry on the Mac
+
+Create or edit this file:
+
+```
+code ~/.ssh/config
+```
+
+Add:
+
+```conf
+Host pi-server
+    HostName 10.0.0.7
+    User admin
+    IdentityFile ~/.ssh/id_edpi
+    IdentitiesOnly yes
+```
+
+This tells SSH to always use your custom key when connecting to the Pi.
+
+Now connect using:
+
+```sh
+ssh pi-server
+```
+
+You should **not** be asked for a password 🎉
+
+# ## How It Works (Simple Explanation)
+
+- Your **Mac** keeps a **private key** (never share it).
+- Your **Pi** stores the **public key** inside `~/.ssh/authorized_keys`.
+- When you connect, the Mac proves it has the private key.
+- The Pi checks if the matching public key is trusted.
+- If yes → login is automatic, no password needed.
+
+This is secure because:
+
+- The private key never leaves your Mac.
+- The public key can’t be used to steal access.
+
+Now you can do this:
+
+```
+git add . && git commit -am "wip" && git push && ssh pi-server "cd ~/projects/tim-bridge && git pull"
+```
