@@ -1,7 +1,9 @@
 // A-001: Houses
 import { turnLights } from "../lights.js";
-import { setStatus } from "../led.js";
+import { setStatus } from "../rgb.js";
 import { playMp3 } from "../audio.js";
+
+
 // Normalize Firestore status → LED mode names from led.js
 function mapStatusToLedMode(status) {
   if (status.startsWith("1.")) return "IDLE";
