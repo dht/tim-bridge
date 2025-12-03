@@ -105,9 +105,9 @@ export async function setStatus(mode) {
       return newEffect(async cancelled => {
         while (!cancelled()) {
           await on(BLUE);
-          await sleep(400);
+          await sleep(200);
           await off(BLUE);
-          await sleep(600);
+          await sleep(300);
         }
       });
 
