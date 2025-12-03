@@ -1,6 +1,15 @@
+function getArmVersion() {
+  try {
+    const armVersion = parseInt(process.config?.variables?.arm_version);
+    return isNaN(armVersion) ? null : armVersion;
+  } catch {
+    return null;
+  }
+}
+
 export function identifyDevice() {
   const arch = process.arch; // 'arm', 'arm64', 'x64', etc.
-  const armVersion = process.config?.variables?.arm_version;
+  const armVersion = getArmVersion(); // 6, 7, 8, etc. or null
   const platform = process.platform; // 'darwin', 'linux', etc.
 
   console.table({
