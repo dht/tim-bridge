@@ -10,7 +10,7 @@ import {
   setDoc,
 } from '@firebase/firestore';
 import 'dotenv/config';
-import { identifyDevice } from './device';
+import { identifyDevice } from './device.js';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY ?? process.env.VITE_FIREBASE_API_KEY,
