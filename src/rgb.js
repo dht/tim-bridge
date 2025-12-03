@@ -96,7 +96,7 @@ async function newEffect(fn) {
 
 export async function setStatus(mode) {
   currentStatus = mode;
-
+  console.log('setStatus RECEIVED:', mode);
   switch (mode) {
     case 'GENERATING':
       // slow blue pulse
