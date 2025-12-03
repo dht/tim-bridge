@@ -53,7 +53,10 @@ export async function runPattern(pattern) {
       if (effectId !== myId) return;
 
       await setColor(COLORS[step.color]); // ← lookup named color
-      if (step.duration > 0) await delay(step.duration);
+      const delayMs = step.duration > 0 ? step.duration : pattern.loop ? 50 : 0;
+      if (delayMs > 0) await delay(delayMs); // prevent busy-loop on zero-duration loops
+
+      if (effectId !== myId) return;
     }
   } while (pattern.loop && effectId === myId);
 }

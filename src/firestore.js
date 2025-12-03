@@ -116,6 +116,57 @@ export async function clearCollection(name) {
   await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
 }
 
+export function listenToCollectionLongPull(collectionName, onChange, options = {}) {
+  const db = getFirestore();
+
+  // User-configurable polling interval, default 3000ms
+  const interval = options.interval || 3000;
+
+  // Cache of last seen data so we only fire callbacks on actual changes
+  let lastState = new Map();
+  let isRunning = true;
+
+  async function poll() {
+    if (!isRunning) return;
+
+    try {
+      const ref = collection(db, collectionName);
+      const snapshot = await getDocs(ref);
+
+      snapshot.forEach(doc => {
+        const id = doc.id;
+        const data = doc.data();
+
+        const cached = lastState.get(id);
+        const serialized = JSON.stringify(data);
+
+        // Only send event if the document changed
+        if (!cached || cached !== serialized) {
+          lastState.set(id, serialized);
+
+          onChange({
+            id,
+            data,
+            source: 'long-poll',
+          });
+        }
+      });
+    } catch (err) {
+      console.error('❌ Long-poll Firestore error:', err);
+    }
+
+    setTimeout(poll, interval);
+  }
+
+  poll();
+
+  return {
+    stop() {
+      isRunning = false;
+    },
+  };
+}
+
 /*
 const INSTALLATION_ID = 'TS-001';
 const FRESH_WINDOW_MS = 30_000; // 30s

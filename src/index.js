@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import fs from 'fs-extra';
 import path from 'path';
-import { listenToCollection } from './firestore.js';
+import { listenToCollectionLongPull } from './firestore.js';
 import { callbacks } from './installations/installations_map.js';
 import { setStatus } from './rgb/rgb.js';
 
@@ -58,38 +58,7 @@ async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  listenToCollection('machines', onChange);
+  listenToCollectionLongPull('machines', onChange);
 }
 
 run();
-
-//
-// ---------------------------------------------------------
-// FIRESTORE POLLING EVERY 10 SECONDS
-// ---------------------------------------------------------
-// const db = getFirestore();
-//
-// setInterval(async () => {
-//   try {
-//     const ref = doc(db, 'machines', MACHINE_ID);
-//     const snapshot = await getDoc(ref);
-
-//     if (!snapshot.exists()) return;
-
-//     const data = snapshot.data();
-//     const status = data.status;
-
-//     console.log('🔄 Firestore Poll (10s):', status);
-
-//     if (!status) return;
-
-//     lastKnownStatus = status;
-
-//     const ledMode = mapStatusToLedMode(status);
-//     console.log('🔄 Polling → LED Mode:', ledMode);
-//     setStatus(ledMode);
-
-//   } catch (err) {
-//     console.error('❌ Polling Firestore error:', err);
-//   }
-// }, 10_000);

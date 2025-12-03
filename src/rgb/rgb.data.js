@@ -12,7 +12,7 @@ export const PATTERNS = {
     steps: [
       { color: 'green', duration: 0 }, // 🔵 uses named color
     ],
-    loop: true,
+    loop: false,
   },
 
   '2a.GENERATING': {
@@ -30,7 +30,7 @@ export const PATTERNS = {
 
   '3a.PLAYBACK': {
     steps: [{ color: 'purple', duration: 0 }],
-    loop: true,
+    loop: false,
   },
 
   '3b.DONE': {
@@ -48,6 +48,6 @@ export const PATTERNS = {
 
   '0.ERROR': {
     steps: [{ color: 'red', duration: 0 }],
-    loop: true,
+    loop: false,
   },
 };
