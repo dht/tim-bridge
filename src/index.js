@@ -30,7 +30,7 @@ async function run() {
     lastKnownStatus = data.status || lastKnownStatus;
 
     // Map for RGB
-    console.log('🔥 Live Update Status → LED Mode:', lastKnownStatus, '→', ledMode);
+    console.log('🔥 Live Update Status → LED Mode:', lastKnownStatus);
     setStatus(lastKnownStatus);
 
     // Run installation-specific logic (A-001.js)
