@@ -1,1 +1,7 @@
-npm test
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "⬆️  Auto bumping version…"
+npm version patch --no-git-tag-version
+
+git add package.json package-lock.json
