@@ -1,9 +1,9 @@
-import "dotenv/config";
-import { listenToCollection } from "./firestore.js";
-import { callbacks } from "./installations/installations_map.js";
-import { setStatus } from "./rgb.js";   // <-- your renamed file
+import 'dotenv/config';
+import { listenToCollection } from './firestore.js';
+import { callbacks } from './installations/installations_map.js';
+import { setStatus } from './rgb.js'; // <-- your renamed file
 
-const MACHINE_ID = "A-001";
+const MACHINE_ID = 'A-001';
 
 let lastKnownStatus = null;
 
@@ -11,7 +11,7 @@ async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  listenToCollection("machines", (change) => {
+  listenToCollection('machines', change => {
     const { id, data } = change || {};
     if (id !== MACHINE_ID || !data) return;
 
@@ -32,11 +32,15 @@ async function run() {
 run();
 
 // ---------------------------------------------------------
-// FIRESTORE POLLING EVERY 10 SECONDS
+// POLLING FIRESTORE EVERY 10 SECONDS
 // ---------------------------------------------------------
+import { doc, getDoc, getFirestore } from '@firebase/firestore';
+
+const db = getFirestore();
+
 setInterval(async () => {
   try {
-    const ref = doc(db, "machines", MACHINE_ID);
+    const ref = doc(db, 'machines', MACHINE_ID);
     const snapshot = await getDoc(ref);
 
     if (!snapshot.exists()) return;
@@ -44,14 +48,13 @@ setInterval(async () => {
     const data = snapshot.data();
     const status = data.status;
 
-    console.log("🔄 Polling: Firestore status =", status);
+    console.log('🔄 Firestore Poll (10s):', status);
 
     if (status) {
       lastKnownStatus = status;
       setStatus(status);
     }
-
   } catch (err) {
-    console.error("❌ Polling Firestore error:", err);
+    console.error('❌ Polling Firestore error:', err);
   }
 }, 10_000);
