@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import fs from 'fs-extra';
 import path from 'path';
-import { listenToCollectionLongPull } from './firestore.js';
+import { listenToCollection, listenToCollectionLongPull } from './firestore.js';
 import { callbacks } from './installations/installations_map.js';
 import { setStatus } from './rgb/rgb.js';
 
@@ -56,7 +56,7 @@ async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  listenToCollectionLongPull('machines', onChange);
+  listenToCollection('machines', onChange);
 }
 
 run();

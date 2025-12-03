@@ -10,6 +10,7 @@ import {
   setDoc,
 } from '@firebase/firestore';
 import 'dotenv/config';
+import { identifyDevice } from './device';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY ?? process.env.VITE_FIREBASE_API_KEY,
@@ -26,7 +27,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export function listenToCollection(name, callback) {
+export function listenToCollectionSockets(name, callback) {
   if (!name) {
     throw new Error('listenToCollection requires a collection name');
   }
@@ -116,7 +117,7 @@ export async function clearCollection(name) {
   await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
 }
 
-export function listenToCollectionLongPull(collectionName, onChange, options = {}) {
+export function listenToCollectionShortPull(collectionName, onChange, options = {}) {
   const db = getFirestore();
 
   // User-configurable polling interval, default 3000ms
@@ -167,38 +168,21 @@ export function listenToCollectionLongPull(collectionName, onChange, options = {
   };
 }
 
-/*
-const INSTALLATION_ID = 'TS-001';
-const FRESH_WINDOW_MS = 30_000; // 30s
+export function listenToCollection(collectionName, callback) {
+  // Detect CPU architecture
+  const device = identifyDevice();
 
+  const isPiZero1 = device === 'pi-zero-1';
 
+  const useShortPoll = isPiZero1;
 
-process.on('SIGINT', () => {
-  stopAudio();
-  process.exit(0);
-});
-process.on('SIGTERM', () => {
-  stopAudio();
-  process.exit(0);
-});
+  console.log(
+    `Listening to Firestore collection "${collectionName}" using device type: ${device} → ${
+      useShortPoll ? 'short-poll' : 'realtime onSnapshot'
+    }`
+  );
 
-function run() {
-  console.log('Listening to Firestore collection "installations"...');
-  console.log(`Installation ID: ${INSTALLATION_ID}`);
+  const method = useShortPoll ? listenToCollectionShortPull : listenToCollectionSockets;
 
-  listenToCollection('machines', (change) => {
-    const { id, data } = change || {};
-    if (id !== INSTALLATION_ID || !data) return;
-
-    const { mp3Url, mp3UrlChangeTs } = data;
-    const delta = Date.now() - mp3UrlChangeTs;
-    console.log('mp3Url:', mp3Url, 'delta(ms):', delta);
-
-    if (mp3Url && delta < FRESH_WINDOW_MS) {
-      // simply play the latest url (replaces any current playback)
-      playMp3(mp3Url);
-    }
-  });
+  return method(collectionName, callback);
 }
-
-*/
