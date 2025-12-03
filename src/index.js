@@ -47,23 +47,6 @@ run();
 
 //
 // ---------------------------------------------------------
-// HEARTBEAT: re-apply LED mode every 5 seconds
-// ---------------------------------------------------------
-console.log('💓 Heartbeat started.');
-
-setInterval(() => {
-  console.log('💓 Tick');
-
-  if (!lastKnownStatus) return;
-
-  const ledMode = mapStatusToLedMode(lastKnownStatus);
-  console.log('[RGB heartbeat] refreshing LED status:', ledMode);
-  setStatus(ledMode);
-}, 5000);
-
-
-//
-// ---------------------------------------------------------
 // FIRESTORE POLLING EVERY 10 SECONDS
 // ---------------------------------------------------------
 setInterval(async () => {
