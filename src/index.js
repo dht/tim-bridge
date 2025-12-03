@@ -32,15 +32,26 @@ async function run() {
 run();
 
 // ---------------------------------------------------------
-// HEARTBEAT: refresh RGB every 5 seconds
+// FIRESTORE POLLING EVERY 10 SECONDS
 // ---------------------------------------------------------
-console.log("💓 Heartbeat started.");
+setInterval(async () => {
+  try {
+    const ref = doc(db, "machines", MACHINE_ID);
+    const snapshot = await getDoc(ref);
 
-setInterval(() => {
-  console.log("💓 Tick");
+    if (!snapshot.exists()) return;
 
-  if (lastKnownStatus) {
-    console.log("[RGB heartbeat] refreshing status:", lastKnownStatus);
-    setStatus(lastKnownStatus);
+    const data = snapshot.data();
+    const status = data.status;
+
+    console.log("🔄 Polling: Firestore status =", status);
+
+    if (status) {
+      lastKnownStatus = status;
+      setStatus(status);
+    }
+
+  } catch (err) {
+    console.error("❌ Polling Firestore error:", err);
   }
-}, 5000);
+}, 10_000);
