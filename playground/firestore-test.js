@@ -1,36 +1,61 @@
-const admin = require("firebase-admin");
-require("dotenv").config();
-const fs = require("fs-extra");
+const admin = require('firebase-admin');
+require('dotenv').config();
+const fs = require('fs-extra');
 
-var serviceAccount = require("./service_account.json");
+var serviceAccount = require('./service_account.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://tim-os-default-rtdb.firebaseio.com",
+  databaseURL: 'https://tim-os-default-rtdb.firebaseio.com',
 });
 
+const delay = ms => new Promise(res => setTimeout(res, ms));
+
 // fetch all the firestore data
-const { getFirestore } = require("firebase-admin/firestore");
+const { getFirestore } = require('firebase-admin/firestore');
 const db = getFirestore();
 
 async function changeMachine(machineId, change) {
-  const ref = db.collection("machines").doc(machineId);
+  const ref = db.collection('machines').doc(machineId);
   await ref.set(change, { merge: true });
   console.log(`Updated machine "${machineId}" with:`, change);
 }
 
 async function main() {
-  const itemId = "A-001";
+  const itemId = 'A-001';
 
-  const change = {
-    lightStatus: "TWO", // ONE, TWO, NONE or BOTH
-    mp3Url: "https://tim-os.web.app/voice3.mp3",
-    mp3UrlTs: Date.now(),
-  };
+  const arr = [
+    '1.IDLE',
+    '2a.GENERATING',
+    '2b.READY',
+    '3a.PLAYBACK',
+    '3b.DONE',
+    '4.RESETTING',
+    '0.ERROR',
+  ];
 
-  await changeMachine(itemId, change);
+  for (const status of arr) {
+    console.log(`\n--- Setting status to "${status}" ---`);
+    await changeMachine(itemId, {
+      status: status,
+    });
+    await delay(4000);
+  }
 
-  console.log("✅ Done");
+  console.log('✅ Done');
 }
 
 main().catch(console.error);
+
+/*
+export const checkpoints = {
+  : checkpointStart,
+  : checkpointGenerating,
+  : checkpointPlayback,
+  : checkpointReady,
+  : checkpointDone,
+  : checkpointReset,
+  : checkpointError,
+};
+
+*/

@@ -2,12 +2,9 @@ import 'dotenv/config';
 import { listenToCollection } from './firestore.js';
 import { callbacks } from './installations/installations_map.js';
 import { setStatus } from './rgb.js';
-import { mapStatusToLedMode } from './statusMapper.js';   // <-- NEW
-
-import { doc, getDoc, getFirestore } from '@firebase/firestore';
+import { mapStatusToLedMode } from './statusMapper.js'; // <-- NEW
 
 const MACHINE_ID = 'A-001';
-const db = getFirestore();
 
 let lastKnownStatus = null;
 
@@ -44,32 +41,33 @@ async function run() {
 
 run();
 
-
 //
 // ---------------------------------------------------------
 // FIRESTORE POLLING EVERY 10 SECONDS
 // ---------------------------------------------------------
-setInterval(async () => {
-  try {
-    const ref = doc(db, 'machines', MACHINE_ID);
-    const snapshot = await getDoc(ref);
+// const db = getFirestore();
+//
+// setInterval(async () => {
+//   try {
+//     const ref = doc(db, 'machines', MACHINE_ID);
+//     const snapshot = await getDoc(ref);
 
-    if (!snapshot.exists()) return;
+//     if (!snapshot.exists()) return;
 
-    const data = snapshot.data();
-    const status = data.status;
+//     const data = snapshot.data();
+//     const status = data.status;
 
-    console.log('🔄 Firestore Poll (10s):', status);
+//     console.log('🔄 Firestore Poll (10s):', status);
 
-    if (!status) return;
+//     if (!status) return;
 
-    lastKnownStatus = status;
+//     lastKnownStatus = status;
 
-    const ledMode = mapStatusToLedMode(status);
-    console.log('🔄 Polling → LED Mode:', ledMode);
-    setStatus(ledMode);
+//     const ledMode = mapStatusToLedMode(status);
+//     console.log('🔄 Polling → LED Mode:', ledMode);
+//     setStatus(ledMode);
 
-  } catch (err) {
-    console.error('❌ Polling Firestore error:', err);
-  }
-}, 10_000);
+//   } catch (err) {
+//     console.error('❌ Polling Firestore error:', err);
+//   }
+// }, 10_000);
