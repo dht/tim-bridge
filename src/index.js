@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import fs from 'fs-extra';
 import path from 'path';
-import { listenToCollection, listenToCollectionLongPull } from './firestore.js';
+import { listenToCollection } from './firestore.js';
 import { callbacks } from './installations/installations_map.js';
 import { setStatus } from './rgb/rgb.js';
 
