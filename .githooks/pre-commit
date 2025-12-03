@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# If package.json already has a staged version change, avoid bumping twice.
+if git diff --cached -- package.json | grep -q '"version"'; then
+  echo "package.json version already staged; skipping auto bump."
+  exit 0
+fi
+
+node scripts/bump-version.js
+git add package.json
