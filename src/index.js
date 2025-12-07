@@ -5,7 +5,7 @@ import { listenToCollection } from './firestore.js';
 import { callbacks } from './installations/installations_map.js';
 import { setStatus } from './rgb/rgb.js';
 
-const MACHINE_ID = 'A-001';
+const MACHINE_ID = 'A-901';
 
 let lastKnownStatus = null;
 
