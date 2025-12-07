@@ -1,5 +1,7 @@
 // A-002: TV
 
+import { stopAudio } from "../audio.js";
+
 export async function onChange(data) {
   const { mp3Url, mp3UrlTs, status } = data;
 
@@ -8,6 +10,13 @@ export async function onChange(data) {
   if (status) {
     console.log("LED status:", status);
     setStatus(status);
+  }
+
+  // If status is RESETTING → immediately stop any current audio
+  if (status === "4.RESETTING") {
+    console.log("🔇 Status is 4.RESETTING → stopping audio playback");
+    stopAudio();
+    return; // nothing more to do for this transition
   }
 
   if (!mp3Url) return;

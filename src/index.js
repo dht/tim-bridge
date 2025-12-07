@@ -1,15 +1,16 @@
-import 'dotenv/config';
-import fs from 'fs-extra';
-import path from 'path';
-import { listenToCollection } from './firestore.js';
-import { callbacks } from './installations/installations_map.js';
-import { setStatus } from './rgb/rgb.js';
+import "dotenv/config";
+import fs from "fs-extra";
+import path from "path";
+import { logDevice } from "./device.js";
+import { listenToCollection } from "./firestore.js";
+import { callbacks } from "./installations/index.js";
+import { setStatus } from "./rgb/rgb.js";
 
-const MACHINE_ID = 'A-901';
+const MACHINE_ID = "A-901";
 
 let lastKnownStatus = null;
 
-const packageJsonPath = path.resolve('./package.json');
+const packageJsonPath = path.resolve("./package.json");
 const p = fs.readJsonSync(packageJsonPath);
 
 console.log(`=== TIM BRIDGE v${p.version} STARTING ===`);
@@ -20,8 +21,10 @@ const logCrash = (type, err) => {
   console.error(`❌ ${type}:`, message);
 };
 
-process.on('uncaughtException', err => logCrash('Uncaught Exception', err));
-process.on('unhandledRejection', err => logCrash('Unhandled Rejection', err));
+logDevice();
+
+process.on("uncaughtException", (err) => logCrash("Uncaught Exception", err));
+process.on("unhandledRejection", (err) => logCrash("Unhandled Rejection", err));
 
 function onChange(change) {
   try {
@@ -32,7 +35,6 @@ function onChange(change) {
     lastKnownStatus = data.status || lastKnownStatus;
 
     // Map for RGB
-    console.log('🔥 Live Update Status → LED Mode:', lastKnownStatus);
     setStatus(lastKnownStatus);
 
     // Run installation-specific logic (A-001.js)
@@ -44,7 +46,7 @@ function onChange(change) {
 
     callback(data);
   } catch (err) {
-    console.error('❌ onChange error:', err);
+    console.error("❌ onChange error:", err);
   }
 }
 
@@ -56,7 +58,7 @@ async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  listenToCollection('machines', onChange);
+  listenToCollection("machines", onChange);
 }
 
 run();

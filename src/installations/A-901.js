@@ -1,61 +1,34 @@
-// A-901: open Chromium in a normal window when GENERATING, close when RESETTING or ANY other status
+// A-901: open browser in a normal window when GENERATING,
+// close when RESETTING or ANY other status
 
-import { spawn } from 'node:child_process';
+import { closeBrowser, openBrowser } from "../browser.js";
 
-let browser = null;
-let lastStatus = null; // <-- Track previous status
+let lastStatus = null;
 
-const URL = 'https://tim-os.web.app/A-901/edge/running';
-const BROWSER_CMD = 'chromium'; // Bookworm binary name
-
-function openBrowser() {
-  if (browser && !browser.killed) {
-    console.log('Chromium already running.');
-    return;
-  }
-
-  console.log('Opening Chromium (normal window)…');
-
-  browser = spawn(
-    BROWSER_CMD,
-    ['--noerrdialogs', '--disable-infobars', '--disable-session-crashed-bubble', URL],
-    {
-      stdio: 'ignore',
-      detached: true,
-    }
-  );
-
-  browser.unref();
-}
-
-function closeBrowser() {
-  console.log('Closing Chromium…');
-
-  try {
-    spawn('pkill', ['-f', BROWSER_CMD], { stdio: 'ignore' });
-  } catch (err) {
-    console.error('Failed to close Chromium:', err);
-  }
-
-  browser = null;
-}
+const URL = "https://tim-os.web.app/A-901/edge/running";
 
 export async function onChange(data) {
   const { status } = data;
   if (!status) return;
 
-  console.log('A-901 status:', status, '(last:', lastStatus, ')');
+  console.log(status);
 
-  // --- NEW LOGIC ---
-  // If previous state was GENERATING and it changes to ANYTHING else → close Chromium
-  if (lastStatus === 'GENERATING' && status !== 'GENERATING') {
-    closeBrowser();
-  }
-  // ------------------
-
-  if (status === '3a.PLAYBACK') {
-    openBrowser();
+  if (status === "3a.PLAYBACK") {
+    openBrowser(URL);
   }
 
-  lastStatus = status; // <- Update previous status
+  if (lastStatus === "3a.PLAYBACK") {
+    switch (status) {
+      case "3b.DONE":
+        console.log("Playback completed naturally.");
+        closeBrowser();
+        break;
+      case "4.RESETTING":
+        console.log("Playback stopped manually.");
+        closeBrowser();
+        break;
+    }
+  }
+
+  lastStatus = status;
 }

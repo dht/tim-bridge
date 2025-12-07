@@ -1,5 +1,5 @@
 // firebase.ts
-import { initializeApp } from '@firebase/app';
+import { initializeApp } from "@firebase/app";
 import {
   collection,
   deleteDoc,
@@ -8,17 +8,22 @@ import {
   getFirestore,
   onSnapshot,
   setDoc,
-} from '@firebase/firestore';
-import 'dotenv/config';
-import { identifyDevice } from './device.js';
+} from "@firebase/firestore";
+import "dotenv/config";
+import { identifyDevice } from "./device.js";
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY ?? process.env.VITE_FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN ?? process.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID ?? process.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET ?? process.env.VITE_FIREBASE_STORAGE_BUCKET,
+  authDomain:
+    process.env.FIREBASE_AUTH_DOMAIN ?? process.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId:
+    process.env.FIREBASE_PROJECT_ID ?? process.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket:
+    process.env.FIREBASE_STORAGE_BUCKET ??
+    process.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId:
-    process.env.FIREBASE_MESSAGING_SENDER_ID ?? process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    process.env.FIREBASE_MESSAGING_SENDER_ID ??
+    process.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.FIREBASE_APP_ID ?? process.env.VITE_FIREBASE_APP_ID,
 };
 
@@ -29,32 +34,32 @@ const db = getFirestore(app);
 
 export function listenToCollectionSockets(name, callback) {
   if (!name) {
-    throw new Error('listenToCollection requires a collection name');
+    throw new Error("listenToCollection requires a collection name");
   }
-  if (typeof callback !== 'function') {
-    throw new Error('listenToCollection requires a callback function');
+  if (typeof callback !== "function") {
+    throw new Error("listenToCollection requires a callback function");
   }
 
   const collectionRef = collection(db, name);
   let isInitialLoad = true;
 
-  const unsubscribe = onSnapshot(collectionRef, snapshot => {
+  const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
     if (isInitialLoad) {
       // skip initial batch of 'added' events
       isInitialLoad = false;
       return;
     }
 
-    snapshot.docChanges().forEach(change => {
+    snapshot.docChanges().forEach((change) => {
       const id = change.doc.id;
       const data = change.doc.data();
 
-      if (change.type === 'added') {
-        callback({ type: 'create', id, data });
-      } else if (change.type === 'modified') {
-        callback({ type: 'update', id, data });
-      } else if (change.type === 'removed') {
-        callback({ type: 'delete', id });
+      if (change.type === "added") {
+        callback({ type: "create", id, data });
+      } else if (change.type === "modified") {
+        callback({ type: "update", id, data });
+      } else if (change.type === "removed") {
+        callback({ type: "delete", id });
       }
     });
   });
@@ -64,9 +69,9 @@ export function listenToCollectionSockets(name, callback) {
 
 export function crud(collectionName) {
   return {
-    add: async values => {
+    add: async (values) => {
       if (!values) {
-        throw new Error('crud.add requires a values object');
+        throw new Error("crud.add requires a values object");
       }
 
       const { id, ...rest } = values;
@@ -84,7 +89,7 @@ export function crud(collectionName) {
     },
     update: async (id, change) => {
       if (!id) {
-        throw new Error('crud.update requires a document id');
+        throw new Error("crud.update requires a document id");
       }
       const ref = doc(ensureInitialized(), collectionName, id);
 
@@ -95,14 +100,14 @@ export function crud(collectionName) {
 
       await setDoc(ref, newChange, { merge: true });
     },
-    delete: async id => {
+    delete: async (id) => {
       if (!id) {
-        throw new Error('crud.delete requires a document id');
+        throw new Error("crud.delete requires a document id");
       }
       const ref = doc(ensureInitialized(), collectionName, id);
       await deleteDoc(ref);
     },
-    listen: callback => {
+    listen: (callback) => {
       return listenToCollection(collectionName, callback);
     },
   };
@@ -114,10 +119,14 @@ export async function clearCollection(name) {
   // You would need to delete documents individually or use a batch operation.
   console.log(`Clearing collection: ${name}`);
   const snapshot = await getDocs(collectionRef);
-  await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
+  await Promise.all(snapshot.docs.map((doc) => deleteDoc(doc.ref)));
 }
 
-export function listenToCollectionShortPull(collectionName, onChange, options = {}) {
+export function listenToCollectionShortPull(
+  collectionName,
+  onChange,
+  options = {}
+) {
   const db = getFirestore();
 
   // User-configurable polling interval, default 3000ms
@@ -134,7 +143,7 @@ export function listenToCollectionShortPull(collectionName, onChange, options = 
       const ref = collection(db, collectionName);
       const snapshot = await getDocs(ref);
 
-      snapshot.forEach(doc => {
+      snapshot.forEach((doc) => {
         const id = doc.id;
         const data = doc.data();
 
@@ -148,12 +157,12 @@ export function listenToCollectionShortPull(collectionName, onChange, options = 
           onChange({
             id,
             data,
-            source: 'long-poll',
+            source: "long-poll",
           });
         }
       });
     } catch (err) {
-      console.error('❌ Long-poll Firestore error:', err);
+      console.error("❌ Long-poll Firestore error:", err);
     }
 
     setTimeout(poll, interval);
@@ -170,19 +179,22 @@ export function listenToCollectionShortPull(collectionName, onChange, options = 
 
 export function listenToCollection(collectionName, callback) {
   // Detect CPU architecture
-  const device = identifyDevice();
+  const info = identifyDevice();
+  const device = info.device;
 
-  const isPiZero1 = device === 'pi-zero-1';
+  const isPiZero1 = device === "pi-zero-1";
 
   const useShortPoll = isPiZero1;
 
   console.log(
     `Listening to Firestore collection "${collectionName}" using device type: ${device} → ${
-      useShortPoll ? 'short-poll' : 'realtime onSnapshot'
+      useShortPoll ? "short-poll" : "realtime onSnapshot"
     }`
   );
 
-  const method = useShortPoll ? listenToCollectionShortPull : listenToCollectionSockets;
+  const method = useShortPoll
+    ? listenToCollectionShortPull
+    : listenToCollectionSockets;
 
   return method(collectionName, callback);
 }
