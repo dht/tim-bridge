@@ -21,7 +21,7 @@ SD cards:
 | 2      | V     | 64 bit               | Main - messed up with lunch defs |
 | 3      | X     | 32 Bit normal trixie | Not working anymore              |
 | 4      | V     | 32 Bit               | for Pi0                          |
-| 5      | ?     | 64 Bit               | works                            |
+| 5      | ?     | 64 Bit               | 2SD copied                            |
 
 Raspberry Pi4 works is compatible and better with 64 bit,
 Raspberry Pi Zero isn't compatible with 64 bit
