@@ -53,7 +53,7 @@ export async function onChange(data) {
   }
   // ------------------
 
-  if (status === 'GENERATING') {
+  if (status === '3a.PLAYBACK') {
     openBrowser();
   }
 
