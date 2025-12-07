@@ -8,13 +8,14 @@ let lastStatus = null;
 const URL = "https://tim-os.web.app/A-901/edge/running";
 
 export async function onChange(data) {
-  const { status } = data;
+  const { status, params } = data;
+
   if (!status) return;
 
   console.log(status);
 
   if (status === "3a.PLAYBACK") {
-    openBrowser(URL);
+    openBrowser(URL + "?language=" + (params?.language || "en"));
   }
 
   if (lastStatus === "3a.PLAYBACK") {
