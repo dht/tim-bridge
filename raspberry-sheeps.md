@@ -21,13 +21,18 @@ SD cards:
 | 2      | V     | 64 bit               | Main - messed up with lunch defs |
 | 3      | X     | 32 Bit normal trixie | Not working anymore              |
 | 4      | V     | 32 Bit               | for Pi0                          |
-| 5      | ?     | 64 Bit               | 2SD copied                            |
+| 5      | V     | 64 Bit               | 2SD copied                       |
+| 6      | ?     | 64 Bit               | 2SD copied                       |
 
 Raspberry Pi4 works is compatible and better with 64 bit,
 Raspberry Pi Zero isn't compatible with 64 bit
 
 # Remote SSH control over a raspberry Pi on the SAME WIFI:
+
 # Look for the raspberry name, the first line in the Pi terminal
+
 # Something like: admin@SD5 and add .local
+
 # than: ssh admin@SD5.local ... are you sure? ~> yes.
+
 # type exit to exit.
