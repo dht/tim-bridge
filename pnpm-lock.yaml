@@ -23,6 +23,9 @@ importers:
       fs-extra:
         specifier: ^11.3.2
         version: 11.3.2
+      pca9685:
+        specifier: ^5.0.0
+        version: 5.0.0
       pigpio:
         specifier: ^3.3.1
         version: 3.3.1
@@ -172,6 +175,9 @@ packages:
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
 
+  '@types/debug@4.1.5':
+    resolution: {integrity: sha512-Q1y515GcOdTHgagaVFhHnIFQ38ygs/kmxdNpvpou+raI9UO3YZcHDngBSYKQklcKlvA7iuQlmIKbzvmxcOE9CQ==}
+
   '@types/express-serve-static-core@4.19.7':
     resolution: {integrity: sha512-FvPtiIf1LfhzsaIXhv/PHan/2FeQBbtBDtfX2QfvPxdUelMDEckK08SM6nqo1MIZY3RUlfA+HV8+hFUSio78qg==}
 
@@ -180,6 +186,9 @@ packages:
 
   '@types/http-errors@2.0.5':
     resolution: {integrity: sha512-r8Tayk8HJnX0FztbZN7oVqGccWgw98T/0neJphO91KkmOzug1KkofZURD4UaD5uH8AqcFLfdPErnBod0u71/qg==}
+
+  '@types/i2c-bus@5.1.2':
+    resolution: {integrity: sha512-Zph1a3TZnvU8yUEhR8Yvv+Fv61dE3WQ2gMs4B2KgBUuKYE73quagMvmUN9EvRIbf4B+zq1WKMYjLOafdNus1ig==}
 
   '@types/jsonwebtoken@9.0.10':
     resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
@@ -455,6 +464,10 @@ packages:
     engines: {node: '>=18'}
     hasBin: true
 
+  i2c-bus@5.2.3:
+    resolution: {integrity: sha512-kzFgU0OSIZlaeUUa+VK7L+kkxnj4feimCVQDOPrzj0cTaB+hNweTsO8/j7QvW2gRgWQ7ds5IpfFjpBrX+fMNng==}
+    engines: {node: '>=10.0.0'}
+
   idb@7.1.1:
     resolution: {integrity: sha512-gchesWBzyvGHRO9W8tzUWFDycow5gwjvFKfyV9FF32Y7F50yZMp7mP+T2mJIWFx49zicqyC4uefHM17o6xKIVQ==}
 
@@ -585,6 +598,10 @@ packages:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
     engines: {node: '>=10'}
 
+  pca9685@5.0.0:
+    resolution: {integrity: sha512-3YFh4YJg8aCX3l+xB1PSojpI6AjNpS5QbSAJDfJoftft1SVNzZAE386XFqB8YiVy3ur7DWbafXHcA5ZfA7uUHw==}
+    engines: {node: '>=8.0.0'}
+
   pigpio@3.3.1:
     resolution: {integrity: sha512-z7J55K14IwWkA+oW5JHzWcgwThFAuJ7IzV3A2//yRm4jJ2DTU0DHIy91DB0siOi12rvvlrIhRetEuAo0ztF/vQ==}
     engines: {node: '>=10.0.0'}
@@ -616,6 +633,10 @@ packages:
   rpio@2.4.2:
     resolution: {integrity: sha512-SiWw2VorgUh+0hbu6eJkRGG+luvS9BboXz6PQl8Z49kJ+8Nn7R/b4ohybLIYSMbQqcW1WYqSooadDuv1VOAiFw==}
     engines: {node: '>=0.8'}
+
+  rxjs@6.6.7:
+    resolution: {integrity: sha512-hTdwr+7yYNIT5n4AMYp85KA6yw2Va0FLa3Rguvbpa4W3I5xynaBZo41cM3XM+4Q6fRMj3sBYIR1VAmZMXYJvRQ==}
+    engines: {npm: '>=2.0.0'}
 
   safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
@@ -654,6 +675,9 @@ packages:
 
   tr46@0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
+
+  tslib@1.14.1:
+    resolution: {integrity: sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg==}
 
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
@@ -907,6 +931,8 @@ snapshots:
     dependencies:
       '@types/node': 24.10.0
 
+  '@types/debug@4.1.5': {}
+
   '@types/express-serve-static-core@4.19.7':
     dependencies:
       '@types/node': 24.10.0
@@ -922,6 +948,10 @@ snapshots:
       '@types/serve-static': 1.15.10
 
   '@types/http-errors@2.0.5': {}
+
+  '@types/i2c-bus@5.1.2':
+    dependencies:
+      '@types/node': 24.10.0
 
   '@types/jsonwebtoken@9.0.10':
     dependencies:
@@ -1287,6 +1317,11 @@ snapshots:
 
   husky@9.1.7: {}
 
+  i2c-bus@5.2.3:
+    dependencies:
+      bindings: 1.5.0
+      nan: 2.23.1
+
   idb@7.1.1: {}
 
   inherits@2.0.4:
@@ -1422,6 +1457,16 @@ snapshots:
       yocto-queue: 0.1.0
     optional: true
 
+  pca9685@5.0.0:
+    dependencies:
+      '@types/debug': 4.1.5
+      '@types/i2c-bus': 5.1.2
+      debug: 4.4.3
+      i2c-bus: 5.2.3
+      rxjs: 6.6.7
+    transitivePeerDependencies:
+      - supports-color
+
   pigpio@3.3.1:
     dependencies:
       bindings: 1.5.0
@@ -1474,6 +1519,10 @@ snapshots:
       bindings: 1.5.0
       nan: 2.23.1
 
+  rxjs@6.6.7:
+    dependencies:
+      tslib: 1.14.1
+
   safe-buffer@5.2.1: {}
 
   semver@7.7.3: {}
@@ -1520,6 +1569,8 @@ snapshots:
     optional: true
 
   tr46@0.0.3: {}
+
+  tslib@1.14.1: {}
 
   tslib@2.8.1: {}
 
