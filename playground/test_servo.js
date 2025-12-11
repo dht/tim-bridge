@@ -1,22 +1,23 @@
-import { Pca9685Driver } from "pca9685";
-import { setTimeout as wait } from "node:timers/promises";
+import i2c from 'i2c-bus';
+import { setTimeout as wait } from 'node:timers/promises';
+import { Pca9685Driver } from 'pca9685';
 
 const options = {
-  i2c: require("i2c-bus").openSync(1), // Bus 1 on Pi
-  address: 0x40,                       // Default PCA9685 I2C address
-  frequency: 50,                       // 50Hz for servos
-  debug: false
+  i2c: i2c.openSync(1), // Bus 1 on Pi
+  address: 0x40, // Default PCA9685 I2C address
+  frequency: 50, // 50Hz for servos
+  debug: false,
 };
 
 const channel = 0; // your servo's channel
 
-const pwm = new Pca9685Driver(options, async (err) => {
+const pwm = new Pca9685Driver(options, async err => {
   if (err) {
-    console.error("❌ PCA9685 init failed:", err);
+    console.error('❌ PCA9685 init failed:', err);
     process.exit(1);
   }
 
-  console.log("✅ PCA9685 ready. Moving servo...");
+  console.log('✅ PCA9685 ready. Moving servo...');
 
   // Helper: convert angle → duty cycle
   function angleToDuty(angle) {
@@ -29,20 +30,20 @@ const pwm = new Pca9685Driver(options, async (err) => {
 
   // Move to 0°
   pwm.setPulseLength(channel, angleToDuty(0));
-  console.log("→ 0°");
+  console.log('→ 0°');
   await wait(1000);
 
   // Move to 90°
   pwm.setPulseLength(channel, angleToDuty(90));
-  console.log("→ 90°");
+  console.log('→ 90°');
   await wait(1000);
 
   // Move to 180°
   pwm.setPulseLength(channel, angleToDuty(180));
-  console.log("→ 180°");
+  console.log('→ 180°');
   await wait(1000);
 
-  console.log("Done.");
+  console.log('Done.');
   process.exit(0);
 });
 
