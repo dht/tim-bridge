@@ -8,7 +8,8 @@ const PCA_ADDR = 0x40;
 const FREQ = 50;
 
 // Channels to test (1–6, no 0)
-const CHANNELS = [1, 2, 3, 4, 5, 6];
+// const CHANNELS = [1, 2, 3, 4, 5, 6];
+const CHANNELS = [1];
 
 // Servo calibration
 const CENTER_MS = 1.5;
