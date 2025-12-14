@@ -68,10 +68,10 @@ const pwm = new Pca9685Driver(
       await wait(1500);
 
       // ±45° test
-      moveByDegrees(pwm, -10);
+      moveByDegrees(pwm, -30);
       await wait(1200);
 
-      moveByDegrees(pwm, +10);
+      moveByDegrees(pwm, +30);
       await wait(1200);
 
       // Back to center
