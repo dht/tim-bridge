@@ -5,7 +5,7 @@ import { Pca9685Driver } from "pca9685";
 // ================== CONFIG ==================
 const I2C_BUS = 1;
 const PCA_ADDR = 0x40;
-const CHANNEL = 1;
+const CHANNEL = 2;
 const FREQ = 50;
 
 // Servo calibration
