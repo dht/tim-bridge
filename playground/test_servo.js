@@ -1,6 +1,6 @@
-import i2c from "i2c-bus";
-import { setTimeout as wait } from "node:timers/promises";
-import { Pca9685Driver } from "pca9685";
+import i2c from 'i2c-bus';
+import { setTimeout as wait } from 'node:timers/promises';
+import { Pca9685Driver } from 'pca9685';
 
 // ================== CONFIG ==================
 const I2C_BUS = 1;
@@ -9,7 +9,7 @@ const CHANNEL = 0;
 const FREQ = 50;
 
 // Servo calibration
-const CENTER_MS = 1.5;          // center pulse
+const CENTER_MS = 1.5; // center pulse
 const MS_PER_DEGREE = 1.0 / 180; // ≈0.0055 ms per degree (tune later)
 
 // Safety limits (assembled arm!)
@@ -35,16 +35,14 @@ function moveByDegrees(pwm, deg) {
   const safeMs = clamp(targetMs, MIN_MS, MAX_MS);
   const ticks = msToTicks(safeMs);
 
-  console.log(
-    `🦾 Move ${deg}° → ${safeMs.toFixed(3)} ms → ${ticks} ticks`
-  );
+  console.log(`🦾 Move ${deg}° → ${safeMs.toFixed(3)} ms → ${ticks} ticks`);
 
   pwm.setPulseRange(CHANNEL, 0, ticks);
 }
 
 // ============================================
 
-console.log("🔧 Opening I2C bus...");
+console.log('🔧 Opening I2C bus...');
 const i2cBus = i2c.openSync(I2C_BUS);
 
 const pwm = new Pca9685Driver(
@@ -54,15 +52,15 @@ const pwm = new Pca9685Driver(
     frequency: FREQ,
     debug: false,
   },
-  async (err) => {
+  async err => {
     if (err) {
-      console.error("❌ PCA9685 init failed:", err);
+      console.error('❌ PCA9685 init failed:', err);
       process.exit(1);
     }
 
-    console.log("✅ PCA9685 ready");
+    console.log('✅ PCA9685 ready');
     console.log(`📡 Channel ${CHANNEL}`);
-    console.log("");
+    console.log('');
 
     try {
       // Center
@@ -70,21 +68,21 @@ const pwm = new Pca9685Driver(
       await wait(1500);
 
       // ±45° test
-      moveByDegrees(pwm, -30);
+      moveByDegrees(pwm, -10);
       await wait(1200);
 
-      moveByDegrees(pwm, +30);
+      moveByDegrees(pwm, +10);
       await wait(1200);
 
       // Back to center
       moveByDegrees(pwm, 0);
       await wait(1200);
 
-      console.log("✅ Degree-based movement test completed");
+      console.log('✅ Degree-based movement test completed');
     } catch (e) {
-      console.error("💥 Runtime error:", e);
+      console.error('💥 Runtime error:', e);
     } finally {
-      console.log("🛑 Shutting down");
+      console.log('🛑 Shutting down');
       process.exit(0);
     }
   }
