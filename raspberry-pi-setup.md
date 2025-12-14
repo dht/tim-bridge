@@ -224,3 +224,12 @@ From inside `tim-bridge`:
 ```bash
 node src/index.js
 ```
+
+For servos:
+give permissions to i2c:
+
+```bash
+sudo usermod -aG i2c $USER
+sudo usermod -aG gpio $USER
+
+```
