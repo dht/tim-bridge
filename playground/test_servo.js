@@ -19,7 +19,7 @@ const MIN_MS = 1.2;
 const MAX_MS = 1.8;
 
 // Test angle
-const TEST_DEG = 30;
+const TEST_DEG = 5;
 // ============================================
 
 function msToTicks(ms) {
