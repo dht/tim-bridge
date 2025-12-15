@@ -246,7 +246,7 @@
                 <span class="chip"><span class="dot joint"></span>Joint</span>
                 <span class="chip"><span class="dot link"></span>Link</span>
                 <span class="chip"
-                  ><span class="dot range"></span>Dial 0–180 range</span
+                  ><span class="dot range"></span>Dial range</span
                 >
                 <span class="chip"
                   ><span class="dot zero"></span>Zero indicator</span
@@ -293,7 +293,8 @@
         <div class="hd">
           <div class="title">Servo Calibration</div>
           <div class="hint">
-            Set “Zero offset” so the real arm matches the dial’s zero line.
+            Adjust the raw servo angles; dials show the 0–180° motion on a
+            ground-aligned circle.
           </div>
         </div>
         <div class="bd controls" id="controls"></div>
@@ -333,11 +334,12 @@
           {
             id: 2,
             name: "Servo #2 (Shoulder pitch)",
-            desc: "Side view. 0° = -45° back from straight top.",
+            desc: "Side view. 0° = 45° back from straight up (top/back).",
             min: 0,
             max: 180,
-            // We define “straight top” as +Z. “-45 back” means tilted toward -X.
-            // In our internal polar (0°=+X, 90°=+Z): back-from-top by 45° is 135°.
+            clockwise: true,
+            // We define “straight top” as +Z. “45° back” means tilted toward -X.
+            // Clockwise sweep: 0=135° (top-left), 90=45° (top-right), 180=315° (bottom-right).
             dialZeroDirDeg: 135,
           },
           {
@@ -346,28 +348,26 @@
             desc: "Side view. 0° is 180° opposite from servo #2 direction.",
             min: 0,
             max: 180,
-            // This dial is “relative” in practice, but we still render a consistent dial.
-            // We set the visual zero to “down” by default; you calibrate with offset.
-            dialZeroDirDeg: 270,
+            // Visual zero aligned to ground (down).
+            dialZeroDirDeg: 90,
           },
           {
             id: 4,
             name: "Servo #4 (Wrist pitch)",
-            desc: "Side view. 0° reference is the same as servo #3.",
-            min: 0,
-            max: 180,
-            dialZeroDirDeg: 270,
+            desc: "Side view. Relative wrist pitch: -90°..+90° around servo #3.",
+            min: -90,
+            max: 90,
+            dialZeroDirDeg: 90,
           },
         ];
 
-        // State: user-adjustable angle and "zero offset" (both degrees)
-        // Effective angle = angleDeg + zeroOffsetDeg
+        // State: user-adjustable angle (degrees)
         const state = {
           servos: {
-            1: { angleDeg: 90, zeroOffsetDeg: 0 },
-            2: { angleDeg: 90, zeroOffsetDeg: 0 },
-            3: { angleDeg: 90, zeroOffsetDeg: 0 },
-            4: { angleDeg: 90, zeroOffsetDeg: 0 },
+            1: { angleDeg: 90 },
+            2: { angleDeg: 0 },
+            3: { angleDeg: 90 },
+            4: { angleDeg: -90 },
           },
         };
 
@@ -423,44 +423,9 @@
           rowAngle.appendChild(ra);
           rowAngle.appendChild(na);
 
-          const rowZero = document.createElement("div");
-          rowZero.className = "row";
-          const lz = document.createElement("label");
-          lz.textContent = "Zero offset";
-          const rz = document.createElement("input");
-          rz.type = "range";
-          rz.min = -180;
-          rz.max = 180;
-          rz.step = 1;
-          rz.value = state.servos[spec.id].zeroOffsetDeg;
-          const nz = document.createElement("input");
-          nz.type = "number";
-          nz.step = 1;
-          nz.value = state.servos[spec.id].zeroOffsetDeg;
-
-          rowZero.appendChild(lz);
-          rowZero.appendChild(rz);
-          rowZero.appendChild(nz);
-
-          const rowEff = document.createElement("div");
-          rowEff.className = "row";
-          const le = document.createElement("label");
-          le.textContent = "Effective";
-          const eff = document.createElement("div");
-          eff.style.color = "var(--text)";
-          eff.style.fontSize = "12px";
-          eff.style.padding = "6px 0";
-          const spacer = document.createElement("div");
-          spacer.textContent = "";
-          rowEff.appendChild(le);
-          rowEff.appendChild(eff);
-          rowEff.appendChild(spacer);
-
           meta.appendChild(name);
           meta.appendChild(desc);
           meta.appendChild(rowAngle);
-          meta.appendChild(rowZero);
-          meta.appendChild(rowEff);
 
           wrap.appendChild(dial);
           wrap.appendChild(meta);
@@ -470,27 +435,10 @@
             state.servos[spec.id].angleDeg = v;
             ra.value = v;
             na.value = v;
-            updateEffective();
-          }
-          function syncFromZero(v) {
-            v = clamp(Math.round(+v || 0), -180, 180);
-            state.servos[spec.id].zeroOffsetDeg = v;
-            rz.value = v;
-            nz.value = v;
-            updateEffective();
-          }
-          function updateEffective() {
-            const s = state.servos[spec.id];
-            const effective = s.angleDeg + s.zeroOffsetDeg;
-            eff.textContent = `${effective}° (angle ${s.angleDeg} + offset ${s.zeroOffsetDeg})`;
           }
 
           ra.addEventListener("input", () => syncFromAngle(ra.value));
           na.addEventListener("change", () => syncFromAngle(na.value));
-          rz.addEventListener("input", () => syncFromZero(rz.value));
-          nz.addEventListener("change", () => syncFromZero(nz.value));
-
-          updateEffective();
 
           return { wrap, dial, spec };
         }
@@ -569,43 +517,46 @@
           ctx.stroke();
           ctx.restore();
 
-          // Highlighted movement range: 180° (0..180 in servo-units), mapped onto dial starting from spec.dialZeroDirDeg
-          // We draw this arc as a thick ring segment.
-          const start = degToRad(spec.dialZeroDirDeg);
-          const end = start + Math.PI; // 180°
+          // Highlighted movement range mapped around dial, respecting clockwise/ccw
+          const clockwise = !!spec.clockwise;
+          const spanDeg = spec.max - spec.min;
+          const spanRad = degToRad(spanDeg) * (clockwise ? -1 : 1);
+          const start = degToRad(spec.dialZeroDirDeg + spec.min);
+          const end = start + spanRad;
           ctx.save();
           ctx.lineWidth = Math.max(3, r * 0.12);
           ctx.strokeStyle = colRange;
           ctx.lineCap = "round";
           ctx.globalAlpha = 0.9;
           ctx.beginPath();
-          ctx.arc(cx, cy, r * 0.86, start, end);
+          ctx.arc(cx, cy, r * 0.86, start, end, clockwise);
           ctx.stroke();
           ctx.restore();
 
           // Zero indicator line (mechanical 0 reference on dial)
+          const zeroDir = degToRad(spec.dialZeroDirDeg);
           ctx.save();
           ctx.strokeStyle = colZero;
           ctx.lineWidth = Math.max(2, r * 0.06);
           ctx.beginPath();
           ctx.moveTo(cx, cy);
           ctx.lineTo(
-            cx + Math.cos(start) * r * 0.95,
-            cy + Math.sin(start) * r * 0.95
+            cx + Math.cos(zeroDir) * r * 0.95,
+            cy + Math.sin(zeroDir) * r * 0.95
           );
           ctx.stroke();
           ctx.restore();
 
-          // Current needle (effective angle, clamped visualization across 0..180 range)
+          // Current needle (effective angle, clamped visualization across servo range)
           const s = state.servos[spec.id];
-          const effective = s.angleDeg + s.zeroOffsetDeg;
+          const effective = s.angleDeg;
 
-          // Map servo angle units [0..180] across the highlighted arc (π radians).
-          // If outside 0..180, still draw it but color as warning and clamp for arc mapping.
+          // Map servo angle units across the highlighted arc.
+          // If outside min..max, still draw it but color as warning and clamp for arc mapping.
           const inRange = effective >= spec.min && effective <= spec.max;
           const mapped = clamp(effective, spec.min, spec.max);
           const t = (mapped - spec.min) / (spec.max - spec.min); // 0..1
-          const needleAng = start + t * Math.PI;
+          const needleAng = start + t * spanRad;
 
           ctx.save();
           ctx.strokeStyle = inRange ? colNeedle : colWarn;
@@ -642,8 +593,8 @@
             x: cx + Math.cos(end) * r * 1.15,
             y: cy + Math.sin(end) * r * 1.15,
           };
-          ctx.fillText("0", p0.x, p0.y);
-          ctx.fillText("180", p180.x, p180.y);
+          ctx.fillText(`${spec.min}`, p0.x, p0.y);
+          ctx.fillText(`${spec.max}`, p180.x, p180.y);
 
           // Effective numeric at bottom
           ctx.font = `${Math.max(
@@ -660,16 +611,17 @@
         // -----------------------------
         function computeSidePose() {
           // Side view plane: X to the right (forward), Z up.
-          // Servo #2 "0": -45° back from straight top => absolute angle 135° (from +X ccw).
+          // Servo #2 "0": 45° back from straight top => absolute angle 135° (from +X ccw).
+          // Increasing shoulder angle rotates clockwise (toward +X).
           // Servo #3 "0": 180° opposite from servo #2 => link3 absolute = abs2 + 180 + servo3Eff
           // Servo #4 "0": same as servo3 => link4 absolute = abs3 + servo4Eff
-          const s2 = state.servos[2].angleDeg + state.servos[2].zeroOffsetDeg;
-          const s3 = state.servos[3].angleDeg + state.servos[3].zeroOffsetDeg;
-          const s4 = state.servos[4].angleDeg + state.servos[4].zeroOffsetDeg;
+          const s2 = state.servos[2].angleDeg;
+          const s3 = state.servos[3].angleDeg;
+          const s4 = state.servos[4].angleDeg;
 
           const shoulder = { x: 0, z: geom.baseToShoulderZ };
 
-          const abs2 = degToRad(135 + s2);
+          const abs2 = degToRad(135 - s2);
           const elbow = {
             x: shoulder.x + Math.cos(abs2) * geom.L2,
             z: shoulder.z + Math.sin(abs2) * geom.L2,
@@ -832,7 +784,7 @@
           // Use side-view "reach" (horizontal x from base to each joint) and rotate by yaw.
           const pose = computeSidePose();
 
-          const yaw = state.servos[1].angleDeg + state.servos[1].zeroOffsetDeg;
+          const yaw = state.servos[1].angleDeg;
 
           // Mapping requirement:
           // servo1: 0 = left, 180 = right.
