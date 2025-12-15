@@ -1,6 +1,6 @@
 {
   "name": "client-node-bridge",
-  "version": "1.0.28",
+  "version": "1.0.29",
   "description": "",
   "main": "src/index.js",
   "type": "module",
