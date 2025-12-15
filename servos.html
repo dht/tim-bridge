@@ -89,7 +89,7 @@
       }
       .viewRow {
         display: grid;
-        grid-template-columns: 1fr 0.45fr; /* side view bigger, top view smaller */
+        grid-template-columns: 1fr 0.45fr;
         gap: 12px;
         align-items: start;
       }
@@ -108,7 +108,7 @@
       }
       .servoCard {
         display: grid;
-        grid-template-columns: 140px 1fr;
+        grid-template-columns: 1fr;
         gap: 10px;
         align-items: center;
         padding: 10px;
@@ -130,24 +130,25 @@
       }
       .row {
         display: grid;
-        grid-template-columns: 86px 1fr 60px;
+        grid-template-columns: 110px 1fr;
         gap: 8px;
         align-items: center;
       }
       .row label {
         color: var(--muted);
         font-size: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 6px;
+      }
+      .row .angleValue {
+        color: var(--text);
+        font-weight: 650;
+        font-size: 12px;
       }
       input[type="range"] {
         width: 100%;
-      }
-      input[type="number"] {
-        width: 100%;
-        padding: 6px 8px;
-        border-radius: 8px;
-        border: 1px solid #1d2a3d;
-        background: #0b0f14;
-        color: var(--text);
       }
       .legend {
         display: flex;
@@ -209,14 +210,12 @@
     <header>
       <h1>Robotic Arm Calibration (Servos 1–4)</h1>
       <div class="sub">
-        Purpose: visually calibrate each servo’s <b>mechanical 0°</b> using a
-        dial (360° outline + 180° motion range) and see the resulting arm pose
-        in <b>side</b> and <b>top</b> projections.
+        Purpose: visually calibrate each servo’s <b>mechanical 0°</b> and see
+        the resulting arm pose in <b>side</b> and <b>top</b> projections.
       </div>
     </header>
 
     <main>
-      <!-- Views -->
       <section class="card">
         <div class="hd">
           <div class="title">Arm Views</div>
@@ -288,13 +287,11 @@
         </div>
       </section>
 
-      <!-- Calibration dials / controls -->
       <section class="card">
         <div class="hd">
           <div class="title">Servo Calibration</div>
           <div class="hint">
-            Adjust the raw servo angles; dials show the 0–180° motion on a
-            ground-aligned circle.
+            Adjust the raw servo angles; views update live with your changes.
           </div>
         </div>
         <div class="bd controls" id="controls"></div>
@@ -315,59 +312,43 @@
         // -----------------------------
         const geom = {
           baseToShoulderZ: 6.0,
-          L2: 10.5, // shoulder->elbow
-          L3: 14.5, // elbow->wrist
-          L4: 7.0, // wrist->end effector (servo #5 location)
+          L2: 10.5,
+          L3: 14.5,
+          L4: 7.0,
         };
 
-        // Servo ranges for dials (0..180 emphasized, 360 outline always shown)
         const servoSpecs = [
           {
             id: 1,
             name: "Servo #1 (Base yaw)",
             desc: "Top view rotation. 0° = left from base; 180° = right from base.",
-            min: 0,
-            max: 180,
-            // Dial: 0 at left on the dial for this servo
-            dialZeroDirDeg: 180,
           },
           {
             id: 2,
             name: "Servo #2 (Shoulder pitch)",
             desc: "Side view. 0° = 45° back from straight up (top/back).",
-            min: 0,
-            max: 180,
-            clockwise: true,
-            // We define “straight top” as +Z. “45° back” means tilted toward -X.
-            // Clockwise sweep: 0=135° (top-left), 90=45° (top-right), 180=315° (bottom-right).
-            dialZeroDirDeg: 135,
           },
           {
             id: 3,
             name: "Servo #3 (Elbow pitch)",
             desc: "Side view. 0° is 180° opposite from servo #2 direction.",
-            min: 0,
-            max: 180,
-            // Visual zero aligned to ground (down).
-            dialZeroDirDeg: 90,
           },
           {
             id: 4,
             name: "Servo #4 (Wrist pitch)",
             desc: "Side view. Relative wrist pitch: -90°..+90° around servo #3.",
-            min: -90,
-            max: 90,
-            dialZeroDirDeg: 90,
           },
         ];
 
-        // State: user-adjustable angle (degrees)
+        const ANGLE_MIN = 0;
+        const ANGLE_MAX = 180;
+
         const state = {
           servos: {
             1: { angleDeg: 90 },
             2: { angleDeg: 0 },
             3: { angleDeg: 90 },
-            4: { angleDeg: -90 },
+            4: { angleDeg: 90 },
           },
         };
 
@@ -387,12 +368,6 @@
           const wrap = document.createElement("div");
           wrap.className = "servoCard";
 
-          const dial = document.createElement("canvas");
-          dial.width = 260;
-          dial.height = 260;
-          dial.style.width = "140px";
-          dial.style.height = "140px";
-
           const meta = document.createElement("div");
           meta.className = "servoMeta";
 
@@ -407,46 +382,44 @@
           const rowAngle = document.createElement("div");
           rowAngle.className = "row";
           const la = document.createElement("label");
-          la.textContent = "Angle";
+          const lt = document.createElement("span");
+          lt.textContent = "Angle";
+          la.appendChild(lt);
+          const lv = document.createElement("span");
+          lv.className = "angleValue";
+          lv.textContent = `${state.servos[spec.id].angleDeg}°`;
+          la.appendChild(lv);
           const ra = document.createElement("input");
           ra.type = "range";
-          ra.min = spec.min;
-          ra.max = spec.max;
+          ra.min = ANGLE_MIN;
+          ra.max = ANGLE_MAX;
           ra.step = 1;
           ra.value = state.servos[spec.id].angleDeg;
-          const na = document.createElement("input");
-          na.type = "number";
-          na.step = 1;
-          na.value = state.servos[spec.id].angleDeg;
 
           rowAngle.appendChild(la);
           rowAngle.appendChild(ra);
-          rowAngle.appendChild(na);
 
           meta.appendChild(name);
           meta.appendChild(desc);
           meta.appendChild(rowAngle);
 
-          wrap.appendChild(dial);
           wrap.appendChild(meta);
 
           function syncFromAngle(v) {
-            v = clamp(Math.round(+v || 0), spec.min, spec.max);
+            v = clamp(Math.round(+v || 0), ANGLE_MIN, ANGLE_MAX);
             state.servos[spec.id].angleDeg = v;
             ra.value = v;
-            na.value = v;
+            lv.textContent = `${v}°`;
           }
 
           ra.addEventListener("input", () => syncFromAngle(ra.value));
-          na.addEventListener("change", () => syncFromAngle(na.value));
 
-          return { wrap, dial, spec };
+          return { wrap, spec };
         }
 
-        const servoUIs = servoSpecs.map((spec) => {
-          const ui = buildServoCard(spec);
-          controls.appendChild(ui.wrap);
-          return ui;
+        servoSpecs.forEach((spec) => {
+          const { wrap } = buildServoCard(spec);
+          controls.appendChild(wrap);
         });
 
         // -----------------------------
@@ -491,130 +464,10 @@
           ctx.restore();
         }
 
-        function drawDial(canvas, spec) {
-          const { w, h } = resizeCanvasToCSSPixels(canvas);
-          const ctx = canvas.getContext("2d");
-          clear(ctx, w, h);
-
-          const cx = w / 2,
-            cy = h / 2;
-          const r = Math.min(w, h) * 0.4;
-
-          const css = getComputedStyle(document.documentElement);
-          const colOutline = "#2a3950";
-          const colRange = css.getPropertyValue("--range").trim();
-          const colZero = css.getPropertyValue("--zero").trim();
-          const colNeedle = css.getPropertyValue("--accent").trim();
-          const colText = css.getPropertyValue("--muted").trim();
-          const colWarn = css.getPropertyValue("--danger").trim();
-
-          // Outer 360° outline
-          ctx.save();
-          ctx.lineWidth = Math.max(2, r * 0.08);
-          ctx.strokeStyle = colOutline;
-          ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, Math.PI * 2);
-          ctx.stroke();
-          ctx.restore();
-
-          // Highlighted movement range mapped around dial, respecting clockwise/ccw
-          const clockwise = !!spec.clockwise;
-          const spanDeg = spec.max - spec.min;
-          const spanRad = degToRad(spanDeg) * (clockwise ? -1 : 1);
-          const start = degToRad(spec.dialZeroDirDeg + spec.min);
-          const end = start + spanRad;
-          ctx.save();
-          ctx.lineWidth = Math.max(3, r * 0.12);
-          ctx.strokeStyle = colRange;
-          ctx.lineCap = "round";
-          ctx.globalAlpha = 0.9;
-          ctx.beginPath();
-          ctx.arc(cx, cy, r * 0.86, start, end, clockwise);
-          ctx.stroke();
-          ctx.restore();
-
-          // Zero indicator line (mechanical 0 reference on dial)
-          const zeroDir = degToRad(spec.dialZeroDirDeg);
-          ctx.save();
-          ctx.strokeStyle = colZero;
-          ctx.lineWidth = Math.max(2, r * 0.06);
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.lineTo(
-            cx + Math.cos(zeroDir) * r * 0.95,
-            cy + Math.sin(zeroDir) * r * 0.95
-          );
-          ctx.stroke();
-          ctx.restore();
-
-          // Current needle (effective angle, clamped visualization across servo range)
-          const s = state.servos[spec.id];
-          const effective = s.angleDeg;
-
-          // Map servo angle units across the highlighted arc.
-          // If outside min..max, still draw it but color as warning and clamp for arc mapping.
-          const inRange = effective >= spec.min && effective <= spec.max;
-          const mapped = clamp(effective, spec.min, spec.max);
-          const t = (mapped - spec.min) / (spec.max - spec.min); // 0..1
-          const needleAng = start + t * spanRad;
-
-          ctx.save();
-          ctx.strokeStyle = inRange ? colNeedle : colWarn;
-          ctx.lineWidth = Math.max(2, r * 0.07);
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.lineTo(
-            cx + Math.cos(needleAng) * r * 0.9,
-            cy + Math.sin(needleAng) * r * 0.9
-          );
-          ctx.stroke();
-          // Center cap
-          ctx.fillStyle = inRange ? colNeedle : colWarn;
-          ctx.beginPath();
-          ctx.arc(cx, cy, Math.max(3, r * 0.1), 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-
-          // Labels: 0 and 180 around the arc ends
-          ctx.save();
-          ctx.fillStyle = colText;
-          ctx.font = `${Math.max(
-            10,
-            Math.floor(r * 0.25)
-          )}px ui-sans-serif, system-ui, sans-serif`;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-
-          const p0 = {
-            x: cx + Math.cos(start) * r * 1.15,
-            y: cy + Math.sin(start) * r * 1.15,
-          };
-          const p180 = {
-            x: cx + Math.cos(end) * r * 1.15,
-            y: cy + Math.sin(end) * r * 1.15,
-          };
-          ctx.fillText(`${spec.min}`, p0.x, p0.y);
-          ctx.fillText(`${spec.max}`, p180.x, p180.y);
-
-          // Effective numeric at bottom
-          ctx.font = `${Math.max(
-            11,
-            Math.floor(r * 0.22)
-          )}px ui-sans-serif, system-ui, sans-serif`;
-          ctx.fillText(`${effective}°`, cx, cy + r * 1.18);
-
-          ctx.restore();
-        }
-
         // -----------------------------
         // Kinematics & views
         // -----------------------------
         function computeSidePose() {
-          // Side view plane: X to the right (forward), Z up.
-          // Servo #2 "0": 45° back from straight top => absolute angle 135° (from +X ccw).
-          // Increasing shoulder angle rotates clockwise (toward +X).
-          // Servo #3 "0": 180° opposite from servo #2 => link3 absolute = abs2 + 180 + servo3Eff
-          // Servo #4 "0": same as servo3 => link4 absolute = abs3 + servo4Eff
           const s2 = state.servos[2].angleDeg;
           const s3 = state.servos[3].angleDeg;
           const s4 = state.servos[4].angleDeg;
@@ -627,13 +480,15 @@
             z: shoulder.z + Math.sin(abs2) * geom.L2,
           };
 
-          const abs3 = degToRad(135 + s2 + 180 + s3);
+          // Elbow mapping (flipped so +90 is not mirrored)
+          const abs3 = abs2 + degToRad(s3 - 180);
+
           const wrist = {
             x: elbow.x + Math.cos(abs3) * geom.L3,
             z: elbow.z + Math.sin(abs3) * geom.L3,
           };
 
-          const abs4 = degToRad(135 + s2 + 180 + s3 + s4);
+          const abs4 = abs3 + degToRad(-(s4 - 90));
           const end = {
             x: wrist.x + Math.cos(abs4) * geom.L4,
             z: wrist.z + Math.sin(abs4) * geom.L4,
@@ -648,7 +503,6 @@
           const ctx = canvas.getContext("2d");
           clear(ctx, w, h);
 
-          // Scale: fit arm within view
           const pose = computeSidePose();
           const pts = [
             { x: 0, z: 0 },
@@ -658,7 +512,6 @@
             pose.end,
           ];
 
-          // Compute bounds in cm
           let minX = Infinity,
             maxX = -Infinity,
             minZ = Infinity,
@@ -670,7 +523,6 @@
             maxZ = Math.max(maxZ, p.z);
           }
 
-          // Add padding bounds
           const pad = 6;
           minX -= pad;
           maxX += pad;
@@ -685,17 +537,14 @@
           const sz = (h - margin * 2) / rangeZ;
           const s = Math.min(sx, sz);
 
-          // Transform: cm -> px
           const toPx = (p) => ({
             x: margin + (p.x - minX) * s,
-            y: h - (margin + (p.z - minZ) * s), // invert y so Z up
+            y: h - (margin + (p.z - minZ) * s),
           });
 
-          // Grid: 5cm
           const stepPx = 5 * s;
           if (stepPx >= 14) drawGrid(ctx, w, h, stepPx);
 
-          // Axes / base
           const css = getComputedStyle(document.documentElement);
           const colBase = css.getPropertyValue("--accent").trim();
           const colLink = css.getPropertyValue("--link").trim();
@@ -712,7 +561,6 @@
           ctx.stroke();
           ctx.restore();
 
-          // Draw links
           const p0 = toPx({ x: 0, z: 0 });
           const p1 = toPx(pose.shoulder);
           const p2 = toPx(pose.elbow);
@@ -724,22 +572,18 @@
           ctx.lineCap = "round";
           ctx.strokeStyle = colLink;
 
-          // Base->Shoulder (vertical standoff)
           ctx.beginPath();
           ctx.moveTo(p0.x, p0.y);
           ctx.lineTo(p1.x, p1.y);
           ctx.stroke();
-          // Shoulder->Elbow
           ctx.beginPath();
           ctx.moveTo(p1.x, p1.y);
           ctx.lineTo(p2.x, p2.y);
           ctx.stroke();
-          // Elbow->Wrist
           ctx.beginPath();
           ctx.moveTo(p2.x, p2.y);
           ctx.lineTo(p3.x, p3.y);
           ctx.stroke();
-          // Wrist->End (servo #5 location, drawn but not controlled)
           ctx.globalAlpha = 0.75;
           ctx.beginPath();
           ctx.moveTo(p3.x, p3.y);
@@ -747,7 +591,6 @@
           ctx.stroke();
           ctx.restore();
 
-          // Joints
           function joint(pt, r, fill) {
             ctx.save();
             ctx.fillStyle = fill;
@@ -762,7 +605,6 @@
           joint(p3, 7, colJoint);
           joint(p4, 5, "#cbd5e1");
 
-          // Labels
           ctx.save();
           ctx.fillStyle = colText;
           ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
@@ -780,33 +622,24 @@
           const ctx = canvas.getContext("2d");
           clear(ctx, w, h);
 
-          // Top view is a projection:
-          // Use side-view "reach" (horizontal x from base to each joint) and rotate by yaw.
           const pose = computeSidePose();
-
           const yaw = state.servos[1].angleDeg;
 
-          // Mapping requirement:
-          // servo1: 0 = left, 180 = right.
-          // In canvas polar (0°=+X), "left" is 180°, "right" is 0°.
-          // We map yaw across 180° span: dirDeg = 180 - yaw
           const dir = degToRad(180 - yaw);
 
           const base = { x: 0, y: 0 };
-          const shoulderXY = { x: 0, y: 0 }; // shoulder is above base; same XY in top view
+          const shoulderXY = { x: 0, y: 0 };
 
           function rot(r) {
             return { x: Math.cos(dir) * r, y: Math.sin(dir) * r };
           }
 
-          // Radii are side-view X positions (distance forward/back along X)
           const elbowXY = rot(pose.elbow.x);
           const wristXY = rot(pose.wrist.x);
           const endXY = rot(pose.end.x);
 
           const pts = [base, shoulderXY, elbowXY, wristXY, endXY];
 
-          // bounds
           let minX = Infinity,
             maxX = -Infinity,
             minY = Infinity,
@@ -837,7 +670,6 @@
             y: margin + (p.y - minY) * s,
           });
 
-          // Grid 5cm (only if visible)
           const stepPx = 5 * s;
           if (stepPx >= 16) drawGrid(ctx, w, h, stepPx);
 
@@ -848,12 +680,10 @@
           const colText = css.getPropertyValue("--muted").trim();
 
           const p0 = toPx(base);
-          const p1 = toPx(shoulderXY);
           const p2 = toPx(elbowXY);
           const p3 = toPx(wristXY);
           const p4 = toPx(endXY);
 
-          // Links
           ctx.save();
           ctx.lineWidth = 5;
           ctx.lineCap = "round";
@@ -862,7 +692,7 @@
           ctx.beginPath();
           ctx.moveTo(p0.x, p0.y);
           ctx.lineTo(p2.x, p2.y);
-          ctx.stroke(); // base to elbow (projected)
+          ctx.stroke();
           ctx.beginPath();
           ctx.moveTo(p2.x, p2.y);
           ctx.lineTo(p3.x, p3.y);
@@ -874,7 +704,6 @@
           ctx.stroke();
           ctx.restore();
 
-          // Joints
           function joint(pt, r, fill) {
             ctx.save();
             ctx.fillStyle = fill;
@@ -888,7 +717,6 @@
           joint(p3, 6.5, colJoint);
           joint(p4, 5, "#cbd5e1");
 
-          // Yaw arrow + labels
           ctx.save();
           ctx.strokeStyle = colBase;
           ctx.lineWidth = 2;
@@ -910,20 +738,12 @@
         // Render loop
         // -----------------------------
         function render() {
-          // Dials
-          for (const ui of servoUIs) drawDial(ui.dial, ui.spec);
-
-          // Views
           drawSideView();
           drawTopView();
-
           requestAnimationFrame(render);
         }
 
-        window.addEventListener("resize", () => {
-          // next frame reflows; canvases will be resized in draw functions
-        });
-
+        window.addEventListener("resize", () => {});
         render();
       })();
     </script>
