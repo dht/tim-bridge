@@ -4,3 +4,4 @@ node_modules
 src/service_account.json
 playground/service_account.json
 package-lock.json
+md-output.pdf

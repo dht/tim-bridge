@@ -1,5 +1,5 @@
- pandoc verify-circuit.md \
-  -o verify-circuit.pdf \
+ pandoc md-input.md \
+  -o md-output.pdf \
   --pdf-engine=tectonic \
   -V geometry:margin=8mm \
   -V geometry:includeheadfoot
