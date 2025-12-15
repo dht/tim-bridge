@@ -1,4 +1,3 @@
-```markdown
 # Verifying Well-Soldered Wires
 
 ## General Guidance + Servo → Raspberry Pi PCA9685 (16-Channel Servo Hat)
@@ -248,4 +247,3 @@ If needed, this guide can be extended with:
 - Ground-loop prevention strategies
 
 End of guide.
-```

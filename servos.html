@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>6DOF Arm Calibration View (Servos 1–4)</title>
+    <style>
+      :root {
+        --bg: #0b0f14;
+        --panel: #121a24;
+        --panel2: #0f1620;
+        --text: #e7eef8;
+        --muted: #a9b6c8;
+        --grid: #253246;
+        --accent: #58a6ff;
+        --range: #2dd4bf;
+        --zero: #f59e0b;
+        --link: #a78bfa;
+        --joint: #e879f9;
+        --danger: #fb7185;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+          Arial, "Noto Sans", "Liberation Sans", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+      header {
+        padding: 16px 18px;
+        border-bottom: 1px solid #1d2a3d;
+        background: linear-gradient(180deg, #0c121b, #0b0f14);
+      }
+      header h1 {
+        margin: 0 0 6px 0;
+        font-size: 16px;
+        font-weight: 650;
+      }
+      header .sub {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.35;
+      }
+      main {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 14px;
+        padding: 14px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid #1d2a3d;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .card .hd {
+        padding: 12px 12px 10px;
+        border-bottom: 1px solid #1d2a3d;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .card .hd .title {
+        font-weight: 650;
+      }
+      .card .hd .hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .card .bd {
+        padding: 12px;
+      }
+      .views {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .viewWrap {
+        background: var(--panel2);
+        border: 1px solid #1d2a3d;
+        border-radius: 10px;
+        padding: 10px;
+      }
+      .viewRow {
+        display: grid;
+        grid-template-columns: 1fr 0.45fr; /* side view bigger, top view smaller */
+        gap: 12px;
+        align-items: start;
+      }
+      canvas {
+        width: 100%;
+        height: auto;
+        display: block;
+        background: #0a0e13;
+        border: 1px solid #1d2a3d;
+        border-radius: 10px;
+      }
+
+      .controls {
+        display: grid;
+        gap: 12px;
+      }
+      .servoCard {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 10px;
+        align-items: center;
+        padding: 10px;
+        border: 1px solid #1d2a3d;
+        border-radius: 10px;
+        background: var(--panel2);
+      }
+      .servoMeta {
+        display: grid;
+        gap: 8px;
+      }
+      .servoMeta .name {
+        font-weight: 650;
+      }
+      .servoMeta .desc {
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.3;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 86px 1fr 60px;
+        gap: 8px;
+        align-items: center;
+      }
+      .row label {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      input[type="range"] {
+        width: 100%;
+      }
+      input[type="number"] {
+        width: 100%;
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 1px solid #1d2a3d;
+        background: #0b0f14;
+        color: var(--text);
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 8px;
+      }
+      .chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #fff;
+      }
+      .dot.range {
+        background: var(--range);
+      }
+      .dot.zero {
+        background: var(--zero);
+      }
+      .dot.link {
+        background: var(--link);
+      }
+      .dot.joint {
+        background: var(--joint);
+      }
+      .dot.base {
+        background: var(--accent);
+      }
+      .dot.limit {
+        background: var(--danger);
+      }
+      footer {
+        padding: 10px 14px 18px;
+        max-width: 1200px;
+        margin: 0 auto;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      @media (max-width: 980px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+        .viewRow {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <h1>Robotic Arm Calibration (Servos 1–4)</h1>
+      <div class="sub">
+        Purpose: visually calibrate each servo’s <b>mechanical 0°</b> using a
+        dial (360° outline + 180° motion range) and see the resulting arm pose
+        in <b>side</b> and <b>top</b> projections.
+      </div>
+    </header>
+
+    <main>
+      <!-- Views -->
+      <section class="card">
+        <div class="hd">
+          <div class="title">Arm Views</div>
+          <div class="hint">
+            Side view prioritized; top view smaller (projection only).
+          </div>
+        </div>
+        <div class="bd views">
+          <div class="viewRow">
+            <div class="viewWrap">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: baseline;
+                  margin: 0 0 8px 2px;
+                "
+              >
+                <div style="font-weight: 650">Side View (Servo #2–#4)</div>
+                <div style="color: var(--muted); font-size: 12px">
+                  Units: cm (scaled)
+                </div>
+              </div>
+              <canvas id="sideCanvas" width="900" height="520"></canvas>
+              <div class="legend">
+                <span class="chip"><span class="dot base"></span>Base</span>
+                <span class="chip"><span class="dot joint"></span>Joint</span>
+                <span class="chip"><span class="dot link"></span>Link</span>
+                <span class="chip"
+                  ><span class="dot range"></span>Dial 0–180 range</span
+                >
+                <span class="chip"
+                  ><span class="dot zero"></span>Zero indicator</span
+                >
+                <span class="chip"
+                  ><span class="dot limit"></span>Out of range cue</span
+                >
+              </div>
+            </div>
+
+            <div class="viewWrap">
+              <div
+                style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: baseline;
+                  margin: 0 0 8px 2px;
+                "
+              >
+                <div style="font-weight: 650">Top View (Servo #1 yaw)</div>
+                <div style="color: var(--muted); font-size: 12px">
+                  Smaller (less important)
+                </div>
+              </div>
+              <canvas id="topCanvas" width="520" height="520"></canvas>
+              <div
+                style="
+                  color: var(--muted);
+                  font-size: 12px;
+                  margin-top: 8px;
+                  line-height: 1.35;
+                "
+              >
+                Servo #1 mapping: <b>0° = left</b> from base,
+                <b>180° = right</b> from base.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Calibration dials / controls -->
+      <section class="card">
+        <div class="hd">
+          <div class="title">Servo Calibration</div>
+          <div class="hint">
+            Set “Zero offset” so the real arm matches the dial’s zero line.
+          </div>
+        </div>
+        <div class="bd controls" id="controls"></div>
+      </section>
+    </main>
+
+    <footer>
+      Geometry used (cm): Shoulder axis is <b>6</b> above base. Shoulder→Elbow:
+      <b>10.5</b>, Elbow→Wrist: <b>14.5</b>, Wrist→End (servo #5 position):
+      <b>7</b>. Servos #5 (grip position) and grip spin/open are ignored in
+      controls; servo #5 is drawn as the final 7 cm segment.
+    </footer>
+
+    <script>
+      (() => {
+        // -----------------------------
+        // Model / configuration
+        // -----------------------------
+        const geom = {
+          baseToShoulderZ: 6.0,
+          L2: 10.5, // shoulder->elbow
+          L3: 14.5, // elbow->wrist
+          L4: 7.0, // wrist->end effector (servo #5 location)
+        };
+
+        // Servo ranges for dials (0..180 emphasized, 360 outline always shown)
+        const servoSpecs = [
+          {
+            id: 1,
+            name: "Servo #1 (Base yaw)",
+            desc: "Top view rotation. 0° = left from base; 180° = right from base.",
+            min: 0,
+            max: 180,
+            // Dial: 0 at left on the dial for this servo
+            dialZeroDirDeg: 180,
+          },
+          {
+            id: 2,
+            name: "Servo #2 (Shoulder pitch)",
+            desc: "Side view. 0° = -45° back from straight top.",
+            min: 0,
+            max: 180,
+            // We define “straight top” as +Z. “-45 back” means tilted toward -X.
+            // In our internal polar (0°=+X, 90°=+Z): back-from-top by 45° is 135°.
+            dialZeroDirDeg: 135,
+          },
+          {
+            id: 3,
+            name: "Servo #3 (Elbow pitch)",
+            desc: "Side view. 0° is 180° opposite from servo #2 direction.",
+            min: 0,
+            max: 180,
+            // This dial is “relative” in practice, but we still render a consistent dial.
+            // We set the visual zero to “down” by default; you calibrate with offset.
+            dialZeroDirDeg: 270,
+          },
+          {
+            id: 4,
+            name: "Servo #4 (Wrist pitch)",
+            desc: "Side view. 0° reference is the same as servo #3.",
+            min: 0,
+            max: 180,
+            dialZeroDirDeg: 270,
+          },
+        ];
+
+        // State: user-adjustable angle and "zero offset" (both degrees)
+        // Effective angle = angleDeg + zeroOffsetDeg
+        const state = {
+          servos: {
+            1: { angleDeg: 90, zeroOffsetDeg: 0 },
+            2: { angleDeg: 90, zeroOffsetDeg: 0 },
+            3: { angleDeg: 90, zeroOffsetDeg: 0 },
+            4: { angleDeg: 90, zeroOffsetDeg: 0 },
+          },
+        };
+
+        // -----------------------------
+        // DOM: build calibration blocks
+        // -----------------------------
+        const controls = document.getElementById("controls");
+
+        function clamp(v, a, b) {
+          return Math.max(a, Math.min(b, v));
+        }
+        function degToRad(d) {
+          return (d * Math.PI) / 180;
+        }
+
+        function buildServoCard(spec) {
+          const wrap = document.createElement("div");
+          wrap.className = "servoCard";
+
+          const dial = document.createElement("canvas");
+          dial.width = 260;
+          dial.height = 260;
+          dial.style.width = "140px";
+          dial.style.height = "140px";
+
+          const meta = document.createElement("div");
+          meta.className = "servoMeta";
+
+          const name = document.createElement("div");
+          name.className = "name";
+          name.textContent = spec.name;
+
+          const desc = document.createElement("div");
+          desc.className = "desc";
+          desc.textContent = spec.desc;
+
+          const rowAngle = document.createElement("div");
+          rowAngle.className = "row";
+          const la = document.createElement("label");
+          la.textContent = "Angle";
+          const ra = document.createElement("input");
+          ra.type = "range";
+          ra.min = spec.min;
+          ra.max = spec.max;
+          ra.step = 1;
+          ra.value = state.servos[spec.id].angleDeg;
+          const na = document.createElement("input");
+          na.type = "number";
+          na.step = 1;
+          na.value = state.servos[spec.id].angleDeg;
+
+          rowAngle.appendChild(la);
+          rowAngle.appendChild(ra);
+          rowAngle.appendChild(na);
+
+          const rowZero = document.createElement("div");
+          rowZero.className = "row";
+          const lz = document.createElement("label");
+          lz.textContent = "Zero offset";
+          const rz = document.createElement("input");
+          rz.type = "range";
+          rz.min = -180;
+          rz.max = 180;
+          rz.step = 1;
+          rz.value = state.servos[spec.id].zeroOffsetDeg;
+          const nz = document.createElement("input");
+          nz.type = "number";
+          nz.step = 1;
+          nz.value = state.servos[spec.id].zeroOffsetDeg;
+
+          rowZero.appendChild(lz);
+          rowZero.appendChild(rz);
+          rowZero.appendChild(nz);
+
+          const rowEff = document.createElement("div");
+          rowEff.className = "row";
+          const le = document.createElement("label");
+          le.textContent = "Effective";
+          const eff = document.createElement("div");
+          eff.style.color = "var(--text)";
+          eff.style.fontSize = "12px";
+          eff.style.padding = "6px 0";
+          const spacer = document.createElement("div");
+          spacer.textContent = "";
+          rowEff.appendChild(le);
+          rowEff.appendChild(eff);
+          rowEff.appendChild(spacer);
+
+          meta.appendChild(name);
+          meta.appendChild(desc);
+          meta.appendChild(rowAngle);
+          meta.appendChild(rowZero);
+          meta.appendChild(rowEff);
+
+          wrap.appendChild(dial);
+          wrap.appendChild(meta);
+
+          function syncFromAngle(v) {
+            v = clamp(Math.round(+v || 0), spec.min, spec.max);
+            state.servos[spec.id].angleDeg = v;
+            ra.value = v;
+            na.value = v;
+            updateEffective();
+          }
+          function syncFromZero(v) {
+            v = clamp(Math.round(+v || 0), -180, 180);
+            state.servos[spec.id].zeroOffsetDeg = v;
+            rz.value = v;
+            nz.value = v;
+            updateEffective();
+          }
+          function updateEffective() {
+            const s = state.servos[spec.id];
+            const effective = s.angleDeg + s.zeroOffsetDeg;
+            eff.textContent = `${effective}° (angle ${s.angleDeg} + offset ${s.zeroOffsetDeg})`;
+          }
+
+          ra.addEventListener("input", () => syncFromAngle(ra.value));
+          na.addEventListener("change", () => syncFromAngle(na.value));
+          rz.addEventListener("input", () => syncFromZero(rz.value));
+          nz.addEventListener("change", () => syncFromZero(nz.value));
+
+          updateEffective();
+
+          return { wrap, dial, spec };
+        }
+
+        const servoUIs = servoSpecs.map((spec) => {
+          const ui = buildServoCard(spec);
+          controls.appendChild(ui.wrap);
+          return ui;
+        });
+
+        // -----------------------------
+        // Drawing helpers
+        // -----------------------------
+        function resizeCanvasToCSSPixels(canvas) {
+          const rect = canvas.getBoundingClientRect();
+          const dpr = Math.max(1, window.devicePixelRatio || 1);
+          const w = Math.max(2, Math.floor(rect.width * dpr));
+          const h = Math.max(2, Math.floor(rect.height * dpr));
+          if (canvas.width !== w || canvas.height !== h) {
+            canvas.width = w;
+            canvas.height = h;
+          }
+          return { w, h, dpr };
+        }
+
+        function clear(ctx, w, h) {
+          ctx.clearRect(0, 0, w, h);
+          ctx.fillStyle = "#0a0e13";
+          ctx.fillRect(0, 0, w, h);
+        }
+
+        function drawGrid(ctx, w, h, stepPx) {
+          ctx.save();
+          ctx.lineWidth = 1;
+          ctx.strokeStyle =
+            getComputedStyle(document.documentElement)
+              .getPropertyValue("--grid")
+              .trim() || "#253246";
+          ctx.globalAlpha = 0.8;
+          ctx.beginPath();
+          for (let x = 0; x <= w; x += stepPx) {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, h);
+          }
+          for (let y = 0; y <= h; y += stepPx) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(w, y);
+          }
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        function drawDial(canvas, spec) {
+          const { w, h } = resizeCanvasToCSSPixels(canvas);
+          const ctx = canvas.getContext("2d");
+          clear(ctx, w, h);
+
+          const cx = w / 2,
+            cy = h / 2;
+          const r = Math.min(w, h) * 0.4;
+
+          const css = getComputedStyle(document.documentElement);
+          const colOutline = "#2a3950";
+          const colRange = css.getPropertyValue("--range").trim();
+          const colZero = css.getPropertyValue("--zero").trim();
+          const colNeedle = css.getPropertyValue("--accent").trim();
+          const colText = css.getPropertyValue("--muted").trim();
+          const colWarn = css.getPropertyValue("--danger").trim();
+
+          // Outer 360° outline
+          ctx.save();
+          ctx.lineWidth = Math.max(2, r * 0.08);
+          ctx.strokeStyle = colOutline;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+
+          // Highlighted movement range: 180° (0..180 in servo-units), mapped onto dial starting from spec.dialZeroDirDeg
+          // We draw this arc as a thick ring segment.
+          const start = degToRad(spec.dialZeroDirDeg);
+          const end = start + Math.PI; // 180°
+          ctx.save();
+          ctx.lineWidth = Math.max(3, r * 0.12);
+          ctx.strokeStyle = colRange;
+          ctx.lineCap = "round";
+          ctx.globalAlpha = 0.9;
+          ctx.beginPath();
+          ctx.arc(cx, cy, r * 0.86, start, end);
+          ctx.stroke();
+          ctx.restore();
+
+          // Zero indicator line (mechanical 0 reference on dial)
+          ctx.save();
+          ctx.strokeStyle = colZero;
+          ctx.lineWidth = Math.max(2, r * 0.06);
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(
+            cx + Math.cos(start) * r * 0.95,
+            cy + Math.sin(start) * r * 0.95
+          );
+          ctx.stroke();
+          ctx.restore();
+
+          // Current needle (effective angle, clamped visualization across 0..180 range)
+          const s = state.servos[spec.id];
+          const effective = s.angleDeg + s.zeroOffsetDeg;
+
+          // Map servo angle units [0..180] across the highlighted arc (π radians).
+          // If outside 0..180, still draw it but color as warning and clamp for arc mapping.
+          const inRange = effective >= spec.min && effective <= spec.max;
+          const mapped = clamp(effective, spec.min, spec.max);
+          const t = (mapped - spec.min) / (spec.max - spec.min); // 0..1
+          const needleAng = start + t * Math.PI;
+
+          ctx.save();
+          ctx.strokeStyle = inRange ? colNeedle : colWarn;
+          ctx.lineWidth = Math.max(2, r * 0.07);
+          ctx.beginPath();
+          ctx.moveTo(cx, cy);
+          ctx.lineTo(
+            cx + Math.cos(needleAng) * r * 0.9,
+            cy + Math.sin(needleAng) * r * 0.9
+          );
+          ctx.stroke();
+          // Center cap
+          ctx.fillStyle = inRange ? colNeedle : colWarn;
+          ctx.beginPath();
+          ctx.arc(cx, cy, Math.max(3, r * 0.1), 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+
+          // Labels: 0 and 180 around the arc ends
+          ctx.save();
+          ctx.fillStyle = colText;
+          ctx.font = `${Math.max(
+            10,
+            Math.floor(r * 0.25)
+          )}px ui-sans-serif, system-ui, sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+
+          const p0 = {
+            x: cx + Math.cos(start) * r * 1.15,
+            y: cy + Math.sin(start) * r * 1.15,
+          };
+          const p180 = {
+            x: cx + Math.cos(end) * r * 1.15,
+            y: cy + Math.sin(end) * r * 1.15,
+          };
+          ctx.fillText("0", p0.x, p0.y);
+          ctx.fillText("180", p180.x, p180.y);
+
+          // Effective numeric at bottom
+          ctx.font = `${Math.max(
+            11,
+            Math.floor(r * 0.22)
+          )}px ui-sans-serif, system-ui, sans-serif`;
+          ctx.fillText(`${effective}°`, cx, cy + r * 1.18);
+
+          ctx.restore();
+        }
+
+        // -----------------------------
+        // Kinematics & views
+        // -----------------------------
+        function computeSidePose() {
+          // Side view plane: X to the right (forward), Z up.
+          // Servo #2 "0": -45° back from straight top => absolute angle 135° (from +X ccw).
+          // Servo #3 "0": 180° opposite from servo #2 => link3 absolute = abs2 + 180 + servo3Eff
+          // Servo #4 "0": same as servo3 => link4 absolute = abs3 + servo4Eff
+          const s2 = state.servos[2].angleDeg + state.servos[2].zeroOffsetDeg;
+          const s3 = state.servos[3].angleDeg + state.servos[3].zeroOffsetDeg;
+          const s4 = state.servos[4].angleDeg + state.servos[4].zeroOffsetDeg;
+
+          const shoulder = { x: 0, z: geom.baseToShoulderZ };
+
+          const abs2 = degToRad(135 + s2);
+          const elbow = {
+            x: shoulder.x + Math.cos(abs2) * geom.L2,
+            z: shoulder.z + Math.sin(abs2) * geom.L2,
+          };
+
+          const abs3 = degToRad(135 + s2 + 180 + s3);
+          const wrist = {
+            x: elbow.x + Math.cos(abs3) * geom.L3,
+            z: elbow.z + Math.sin(abs3) * geom.L3,
+          };
+
+          const abs4 = degToRad(135 + s2 + 180 + s3 + s4);
+          const end = {
+            x: wrist.x + Math.cos(abs4) * geom.L4,
+            z: wrist.z + Math.sin(abs4) * geom.L4,
+          };
+
+          return { shoulder, elbow, wrist, end };
+        }
+
+        function drawSideView() {
+          const canvas = document.getElementById("sideCanvas");
+          const { w, h } = resizeCanvasToCSSPixels(canvas);
+          const ctx = canvas.getContext("2d");
+          clear(ctx, w, h);
+
+          // Scale: fit arm within view
+          const pose = computeSidePose();
+          const pts = [
+            { x: 0, z: 0 },
+            pose.shoulder,
+            pose.elbow,
+            pose.wrist,
+            pose.end,
+          ];
+
+          // Compute bounds in cm
+          let minX = Infinity,
+            maxX = -Infinity,
+            minZ = Infinity,
+            maxZ = -Infinity;
+          for (const p of pts) {
+            minX = Math.min(minX, p.x);
+            maxX = Math.max(maxX, p.x);
+            minZ = Math.min(minZ, p.z);
+            maxZ = Math.max(maxZ, p.z);
+          }
+
+          // Add padding bounds
+          const pad = 6;
+          minX -= pad;
+          maxX += pad;
+          minZ -= pad;
+          maxZ += pad;
+
+          const rangeX = Math.max(1e-6, maxX - minX);
+          const rangeZ = Math.max(1e-6, maxZ - minZ);
+
+          const margin = 34;
+          const sx = (w - margin * 2) / rangeX;
+          const sz = (h - margin * 2) / rangeZ;
+          const s = Math.min(sx, sz);
+
+          // Transform: cm -> px
+          const toPx = (p) => ({
+            x: margin + (p.x - minX) * s,
+            y: h - (margin + (p.z - minZ) * s), // invert y so Z up
+          });
+
+          // Grid: 5cm
+          const stepPx = 5 * s;
+          if (stepPx >= 14) drawGrid(ctx, w, h, stepPx);
+
+          // Axes / base
+          const css = getComputedStyle(document.documentElement);
+          const colBase = css.getPropertyValue("--accent").trim();
+          const colLink = css.getPropertyValue("--link").trim();
+          const colJoint = css.getPropertyValue("--joint").trim();
+          const colText = css.getPropertyValue("--muted").trim();
+
+          const basePx = toPx({ x: 0, z: 0 });
+          ctx.save();
+          ctx.strokeStyle = "#2a3950";
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(0, basePx.y);
+          ctx.lineTo(w, basePx.y);
+          ctx.stroke();
+          ctx.restore();
+
+          // Draw links
+          const p0 = toPx({ x: 0, z: 0 });
+          const p1 = toPx(pose.shoulder);
+          const p2 = toPx(pose.elbow);
+          const p3 = toPx(pose.wrist);
+          const p4 = toPx(pose.end);
+
+          ctx.save();
+          ctx.lineWidth = 6;
+          ctx.lineCap = "round";
+          ctx.strokeStyle = colLink;
+
+          // Base->Shoulder (vertical standoff)
+          ctx.beginPath();
+          ctx.moveTo(p0.x, p0.y);
+          ctx.lineTo(p1.x, p1.y);
+          ctx.stroke();
+          // Shoulder->Elbow
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+          // Elbow->Wrist
+          ctx.beginPath();
+          ctx.moveTo(p2.x, p2.y);
+          ctx.lineTo(p3.x, p3.y);
+          ctx.stroke();
+          // Wrist->End (servo #5 location, drawn but not controlled)
+          ctx.globalAlpha = 0.75;
+          ctx.beginPath();
+          ctx.moveTo(p3.x, p3.y);
+          ctx.lineTo(p4.x, p4.y);
+          ctx.stroke();
+          ctx.restore();
+
+          // Joints
+          function joint(pt, r, fill) {
+            ctx.save();
+            ctx.fillStyle = fill;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+          joint(p0, 8, colBase);
+          joint(p1, 7, colJoint);
+          joint(p2, 7, colJoint);
+          joint(p3, 7, colJoint);
+          joint(p4, 5, "#cbd5e1");
+
+          // Labels
+          ctx.save();
+          ctx.fillStyle = colText;
+          ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+          ctx.fillText("Base", p0.x + 10, p0.y - 10);
+          ctx.fillText("Shoulder (+6cm)", p1.x + 10, p1.y - 10);
+          ctx.fillText("Elbow (+10.5cm)", p2.x + 10, p2.y - 10);
+          ctx.fillText("Wrist (+14.5cm)", p3.x + 10, p3.y - 10);
+          ctx.fillText("End (+7cm)", p4.x + 10, p4.y - 10);
+          ctx.restore();
+        }
+
+        function drawTopView() {
+          const canvas = document.getElementById("topCanvas");
+          const { w, h } = resizeCanvasToCSSPixels(canvas);
+          const ctx = canvas.getContext("2d");
+          clear(ctx, w, h);
+
+          // Top view is a projection:
+          // Use side-view "reach" (horizontal x from base to each joint) and rotate by yaw.
+          const pose = computeSidePose();
+
+          const yaw = state.servos[1].angleDeg + state.servos[1].zeroOffsetDeg;
+
+          // Mapping requirement:
+          // servo1: 0 = left, 180 = right.
+          // In canvas polar (0°=+X), "left" is 180°, "right" is 0°.
+          // We map yaw across 180° span: dirDeg = 180 - yaw
+          const dir = degToRad(180 - yaw);
+
+          const base = { x: 0, y: 0 };
+          const shoulderXY = { x: 0, y: 0 }; // shoulder is above base; same XY in top view
+
+          function rot(r) {
+            return { x: Math.cos(dir) * r, y: Math.sin(dir) * r };
+          }
+
+          // Radii are side-view X positions (distance forward/back along X)
+          const elbowXY = rot(pose.elbow.x);
+          const wristXY = rot(pose.wrist.x);
+          const endXY = rot(pose.end.x);
+
+          const pts = [base, shoulderXY, elbowXY, wristXY, endXY];
+
+          // bounds
+          let minX = Infinity,
+            maxX = -Infinity,
+            minY = Infinity,
+            maxY = -Infinity;
+          for (const p of pts) {
+            minX = Math.min(minX, p.x);
+            maxX = Math.max(maxX, p.x);
+            minY = Math.min(minY, p.y);
+            maxY = Math.max(maxY, p.y);
+          }
+          const pad = 6;
+          minX -= pad;
+          maxX += pad;
+          minY -= pad;
+          maxY += pad;
+
+          const rangeX = Math.max(1e-6, maxX - minX);
+          const rangeY = Math.max(1e-6, maxY - minY);
+
+          const margin = 28;
+          const s = Math.min(
+            (w - 2 * margin) / rangeX,
+            (h - 2 * margin) / rangeY
+          );
+
+          const toPx = (p) => ({
+            x: margin + (p.x - minX) * s,
+            y: margin + (p.y - minY) * s,
+          });
+
+          // Grid 5cm (only if visible)
+          const stepPx = 5 * s;
+          if (stepPx >= 16) drawGrid(ctx, w, h, stepPx);
+
+          const css = getComputedStyle(document.documentElement);
+          const colBase = css.getPropertyValue("--accent").trim();
+          const colLink = css.getPropertyValue("--link").trim();
+          const colJoint = css.getPropertyValue("--joint").trim();
+          const colText = css.getPropertyValue("--muted").trim();
+
+          const p0 = toPx(base);
+          const p1 = toPx(shoulderXY);
+          const p2 = toPx(elbowXY);
+          const p3 = toPx(wristXY);
+          const p4 = toPx(endXY);
+
+          // Links
+          ctx.save();
+          ctx.lineWidth = 5;
+          ctx.lineCap = "round";
+          ctx.strokeStyle = colLink;
+
+          ctx.beginPath();
+          ctx.moveTo(p0.x, p0.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke(); // base to elbow (projected)
+          ctx.beginPath();
+          ctx.moveTo(p2.x, p2.y);
+          ctx.lineTo(p3.x, p3.y);
+          ctx.stroke();
+          ctx.globalAlpha = 0.75;
+          ctx.beginPath();
+          ctx.moveTo(p3.x, p3.y);
+          ctx.lineTo(p4.x, p4.y);
+          ctx.stroke();
+          ctx.restore();
+
+          // Joints
+          function joint(pt, r, fill) {
+            ctx.save();
+            ctx.fillStyle = fill;
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+          }
+          joint(p0, 8, colBase);
+          joint(p2, 6.5, colJoint);
+          joint(p3, 6.5, colJoint);
+          joint(p4, 5, "#cbd5e1");
+
+          // Yaw arrow + labels
+          ctx.save();
+          ctx.strokeStyle = colBase;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(p0.x, p0.y);
+          ctx.lineTo(
+            p0.x + Math.cos(dir) * Math.min(w, h) * 0.35,
+            p0.y + Math.sin(dir) * Math.min(w, h) * 0.35
+          );
+          ctx.stroke();
+          ctx.fillStyle = colText;
+          ctx.font = "12px ui-sans-serif, system-ui, sans-serif";
+          ctx.fillText(`Yaw effective: ${yaw}°`, 10, 18);
+          ctx.fillText("0°=Left, 180°=Right", 10, 34);
+          ctx.restore();
+        }
+
+        // -----------------------------
+        // Render loop
+        // -----------------------------
+        function render() {
+          // Dials
+          for (const ui of servoUIs) drawDial(ui.dial, ui.spec);
+
+          // Views
+          drawSideView();
+          drawTopView();
+
+          requestAnimationFrame(render);
+        }
+
+        window.addEventListener("resize", () => {
+          // next frame reflows; canvases will be resized in draw functions
+        });
+
+        render();
+      })();
+    </script>
+  </body>
+</html>
