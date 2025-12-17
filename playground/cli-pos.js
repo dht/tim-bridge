@@ -2,39 +2,28 @@
 
 import i2c from 'i2c-bus';
 import { Pca9685Driver } from 'pca9685';
+import readline from 'readline';
 
 // ================= CONFIG =================
 const I2C_BUS = 1;
 const PCA_ADDR = 0x40;
 const FREQ = 50;
 
-// calibrated for YOUR MG996R setup
-const CENTER_MS = 1.5;
-const MS_PER_DEGREE = 1.0 / 120;
-
 const MIN_MS = 0.5;
 const MAX_MS = 2.5;
+const CENTER_MS = 1.5;
+const MS_PER_DEGREE = 1.0 / 120;
 // ==========================================
 
 // ---------- Positions ----------
 const POSITIONS = {
   pos1: {
-    1: 90,  // base
-    2: 0,   // shoulder
-    3: 90,  // elbow
-    4: 90,  // wrist
-    // future positions go here
+    1: 90,
+    2: 0,
+    3: 90,
+    4: 90,
   },
 };
-
-// ---------- CLI ----------
-const args = process.argv.slice(2);
-const posName = args[0];
-
-function getArg(flag) {
-  const i = args.indexOf(flag);
-  return i !== -1 ? Number(args[i + 1]) : null;
-}
 
 // ---------- Helpers ----------
 function degToMs(deg) {
@@ -50,6 +39,19 @@ function moveToAngle(pwm, channel, deg) {
   console.log(`🦾 CH${channel} → ${deg}° (${ms.toFixed(3)} ms)`);
 }
 
+function applyPosition(pwm, name) {
+  const pos = POSITIONS[name];
+  if (!pos) {
+    console.log(`❌ Unknown position: ${name}`);
+    return;
+  }
+
+  console.log(`📍 Moving to position: ${name}`);
+  for (const ch of Object.keys(pos)) {
+    moveToAngle(pwm, Number(ch), pos[ch]);
+  }
+}
+
 // ---------- Init ----------
 const i2cBus = i2c.openSync(I2C_BUS);
 
@@ -58,7 +60,6 @@ const pwm = new Pca9685Driver(
     i2c: i2cBus,
     address: PCA_ADDR,
     frequency: FREQ,
-    debug: false,
   },
   (err) => {
     if (err) {
@@ -68,32 +69,44 @@ const pwm = new Pca9685Driver(
 
     console.log('✅ PCA9685 ready');
 
-    // ----- POSITION MODE -----
-    if (POSITIONS[posName]) {
-      console.log(`📍 Moving to position: ${posName}`);
-
-      const pos = POSITIONS[posName];
-      for (const ch of Object.keys(pos)) {
-        moveToAngle(pwm, Number(ch), pos[ch]);
-      }
-
-    // ----- ABS MODE (cli-abs compatible) -----
-    } else {
-      const ch = getArg('-n');
-      const deg = getArg('-d');
-
-      if (ch == null || deg == null) {
-        console.error('❌ Usage: cli-pos.js pos1  OR  -n <ch> -d <deg>');
-        process.exit(1);
-      }
-
-      moveToAngle(pwm, ch, deg);
+    // apply initial position if provided
+    const initial = process.argv[2];
+    if (initial) {
+      applyPosition(pwm, initial);
     }
 
-    // 🔒 IMPORTANT PART 🔒
-    console.log('🔒 Holding position (PWM active). Press Ctrl+C to release.');
+    console.log('🔒 Holding position (PWM active)');
+    console.log('👉 Enter commands: pos1 | -n <ch> -d <deg>');
 
-    // keep Node alive → PWM keeps running → servos hold torque
-    setInterval(() => {}, 1000);
+    // ---------- Interactive input ----------
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      prompt: '> ',
+    });
+
+    rl.prompt();
+
+    rl.on('line', (line) => {
+      const args = line.trim().split(/\s+/);
+
+      if (args[0].startsWith('pos')) {
+        applyPosition(pwm, args[0]);
+      } else if (args[0] === '-n') {
+        const ch = Number(args[1]);
+        const dIndex = args.indexOf('-d');
+        const deg = dIndex !== -1 ? Number(args[dIndex + 1]) : null;
+
+        if (ch && deg !== null) {
+          moveToAngle(pwm, ch, deg);
+        } else {
+          console.log('❌ Usage: -n <ch> -d <deg>');
+        }
+      } else {
+        console.log('❓ Unknown command');
+      }
+
+      rl.prompt();
+    });
   }
 );
