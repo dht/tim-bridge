@@ -16,7 +16,7 @@ const MIN_MS = 0.8;
 const MAX_MS = 2.2;
 
 // ✅ Only these channels
-const SERVO_CHANNELS = [1];
+const SERVO_CHANNELS = [1, 2, 3, 4];
 
 const STEP_DELAY_MS = 1000;
 // ==================
