@@ -9,29 +9,28 @@ const I2C_BUS = 1;
 const PCA_ADDR = 0x40;
 const FREQ = 50;
 
-const CENTER_MS = 1.5;
-const MS_PER_DEGREE = 1 / 120;
+// Same safe range as cli-servo-abs.js
+const MIN_MS = 0.5;   // 0°
+const MAX_MS = 2.5;   // 180°
+const CENTER_DEG = 90;
 
-const MIN_MS = 0.8;
-const MAX_MS = 2.2;
+// Only these channels
+const SERVO_CHANNELS = [1];
 
-// ✅ Only these channels
-const SERVO_CHANNELS = [1, 2, 3, 4, 5, 15];
-
-const STEP_DELAY_MS = 700;
+const STEP_DELAY_MS = 1000;
 // ==================
 
 // ---- CLI ----
 const args = process.argv.slice(2);
 function getArg(flag) {
   const i = args.indexOf(flag);
-  return i !== -1 ? Number(args[i + 1]) : null;
+  return i !== -1 ? Number(args[i + 1]) : NaN;
 }
 
 const D = getArg("-d");
 
-if (Number.isNaN(D)) {
-  console.error("Usage: node check-all-servo-by-d.js -d <degrees>");
+if (Number.isNaN(D) || D <= 0) {
+  console.error("Usage: node check-all-servos-by-d.js -d <degrees>");
   process.exit(1);
 }
 
@@ -40,25 +39,31 @@ function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v));
 }
 
+function angleToMs(deg) {
+  return MIN_MS + (deg / 180) * (MAX_MS - MIN_MS);
+}
+
 function msToTicks(ms) {
   const periodMs = 1000 / FREQ;
   return Math.round((ms / periodMs) * 4096);
 }
 
-function moveDeg(pwm, ch, deg) {
-  const ms = clamp(
-    CENTER_MS + deg * MS_PER_DEGREE,
-    MIN_MS,
-    MAX_MS
-  );
+function moveToAngle(pwm, ch, deg) {
+  const safeDeg = clamp(deg, 0, 180);
+  const ms = angleToMs(safeDeg);
   const ticks = msToTicks(ms);
+
+  console.log(
+    `  CH${ch} → ${safeDeg}° → ${ms.toFixed(3)} ms → ${ticks} ticks`
+  );
+
   pwm.setPulseRange(ch, 0, ticks);
 }
 
 // ---- Main ----
 const i2cBus = i2c.openSync(I2C_BUS);
 
-const pwm = new Pca9685Driver(
+new Pca9685Driver(
   {
     i2c: i2cBus,
     address: PCA_ADDR,
@@ -71,21 +76,23 @@ const pwm = new Pca9685Driver(
       process.exit(1);
     }
 
-    console.log(`🔎 Checking servos [${SERVO_CHANNELS.join(", ")}] with ±${D}°`);
+    console.log(
+      `🔎 Checking servos [${SERVO_CHANNELS.join(", ")}] with ±${D}°`
+    );
 
     for (const ch of SERVO_CHANNELS) {
       console.log(`\n🦾 Channel ${ch}`);
 
-      moveDeg(pwm, ch, 0);
+      moveToAngle(pwm, ch, CENTER_DEG);
       await wait(STEP_DELAY_MS);
 
-      moveDeg(pwm, ch, +D / 2);
+      moveToAngle(pwm, ch, CENTER_DEG + D);
       await wait(STEP_DELAY_MS);
 
-      moveDeg(pwm, ch, -D);
+      moveToAngle(pwm, ch, CENTER_DEG - D);
       await wait(STEP_DELAY_MS);
 
-      moveDeg(pwm, ch, 0);
+      moveToAngle(pwm, ch, CENTER_DEG);
       await wait(STEP_DELAY_MS);
     }
 
