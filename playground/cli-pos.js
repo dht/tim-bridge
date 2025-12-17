@@ -24,9 +24,10 @@ function degToMs(deg) {
 
 function moveToAngle(pwm, ch, deg) {
   const ms = degToMs(deg);
-  pwm.setPulseRange(ch, 0, ms);
+  pwm.setPulseLength(ch, ms * 1000); // ✅ microseconds
   console.log(`🦾 CH${ch} → ${deg}° (${ms.toFixed(3)} ms)`);
 }
+
 
 // ---- INIT ----
 const i2cBus = i2c.openSync(I2C_BUS);
