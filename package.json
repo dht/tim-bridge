@@ -11,8 +11,7 @@
     "pm2:restart": "pm2 restart ecosystem.config.cjs || pm2 start ecosystem.config.cjs",
     "pm2:stop": "pm2 stop tim-bridge",
     "pm2:logs": "pm2 logs tim-bridge",
-    "bump:patch": "node scripts/bump-version.js",
-    "prepare": "husky"
+    "bump:patch": "node scripts/bump-version.js"
   },
   "keywords": [],
   "author": "",
