@@ -4,7 +4,7 @@ import i2c from 'i2c-bus';
 import { Pca9685Driver } from 'pca9685';
 import readline from 'readline';
 
-// ================= CONFIG =================
+// ===== CONFIG =====
 const I2C_BUS = 1;
 const PCA_ADDR = 0x40;
 const FREQ = 50;
@@ -13,19 +13,8 @@ const MIN_MS = 0.5;
 const MAX_MS = 2.5;
 const CENTER_MS = 1.5;
 const MS_PER_DEGREE = 1.0 / 120;
-// ==========================================
+// ==================
 
-// ---------- Positions ----------
-const POSITIONS = {
-  pos1: {
-    1: 90,
-    2: 0,
-    3: 90,
-    4: 90,
-  },
-};
-
-// ---------- Helpers ----------
 function degToMs(deg) {
   return Math.min(
     MAX_MS,
@@ -33,26 +22,13 @@ function degToMs(deg) {
   );
 }
 
-function moveToAngle(pwm, channel, deg) {
+function moveToAngle(pwm, ch, deg) {
   const ms = degToMs(deg);
-  pwm.setPulseRange(channel, 0, ms);
-  console.log(`🦾 CH${channel} → ${deg}° (${ms.toFixed(3)} ms)`);
+  pwm.setPulseRange(ch, 0, ms);
+  console.log(`🦾 CH${ch} → ${deg}° (${ms.toFixed(3)} ms)`);
 }
 
-function applyPosition(pwm, name) {
-  const pos = POSITIONS[name];
-  if (!pos) {
-    console.log(`❌ Unknown position: ${name}`);
-    return;
-  }
-
-  console.log(`📍 Moving to position: ${name}`);
-  for (const ch of Object.keys(pos)) {
-    moveToAngle(pwm, Number(ch), pos[ch]);
-  }
-}
-
-// ---------- Init ----------
+// ---- INIT ----
 const i2cBus = i2c.openSync(I2C_BUS);
 
 const pwm = new Pca9685Driver(
@@ -68,17 +44,9 @@ const pwm = new Pca9685Driver(
     }
 
     console.log('✅ PCA9685 ready');
+    console.log('🔒 Holding servos (PWM active)');
+    console.log('👉 Commands: -n <ch> -d <deg>');
 
-    // apply initial position if provided
-    const initial = process.argv[2];
-    if (initial) {
-      applyPosition(pwm, initial);
-    }
-
-    console.log('🔒 Holding position (PWM active)');
-    console.log('👉 Enter commands: pos1 | -n <ch> -d <deg>');
-
-    // ---------- Interactive input ----------
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
@@ -90,22 +58,25 @@ const pwm = new Pca9685Driver(
     rl.on('line', (line) => {
       const args = line.trim().split(/\s+/);
 
-      if (args[0].startsWith('pos')) {
-        applyPosition(pwm, args[0]);
-      } else if (args[0] === '-n') {
-        const ch = Number(args[1]);
-        const dIndex = args.indexOf('-d');
-        const deg = dIndex !== -1 ? Number(args[dIndex + 1]) : null;
+      const nIdx = args.indexOf('-n');
+      const dIdx = args.indexOf('-d');
 
-        if (ch && deg !== null) {
-          moveToAngle(pwm, ch, deg);
-        } else {
-          console.log('❌ Usage: -n <ch> -d <deg>');
-        }
-      } else {
-        console.log('❓ Unknown command');
+      if (nIdx === -1 || dIdx === -1) {
+        console.log('❌ Usage: -n <ch> -d <deg>');
+        rl.prompt();
+        return;
       }
 
+      const ch = Number(args[nIdx + 1]);
+      const deg = Number(args[dIdx + 1]);
+
+      if (Number.isNaN(ch) || Number.isNaN(deg)) {
+        console.log('❌ Invalid numbers');
+        rl.prompt();
+        return;
+      }
+
+      moveToAngle(pwm, ch, deg);
       rl.prompt();
     });
   }
