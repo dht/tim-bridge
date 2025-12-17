@@ -11,23 +11,17 @@ const FREQ = 50;
 
 const MIN_MS = 0.5;
 const MAX_MS = 2.5;
-const CENTER_MS = 1.5;
-const MS_PER_DEGREE = 1.0 / 120;
 // ==================
 
 function degToMs(deg) {
-  return Math.min(
-    MAX_MS,
-    Math.max(MIN_MS, CENTER_MS + deg * MS_PER_DEGREE)
-  );
+  return MIN_MS + (deg / 180) * (MAX_MS - MIN_MS);
 }
 
 function moveToAngle(pwm, ch, deg) {
   const ms = degToMs(deg);
-  pwm.setPulseLength(ch, ms * 1000); // ✅ microseconds
+  pwm.setPulseLength(ch, ms * 1000); // microseconds
   console.log(`🦾 CH${ch} → ${deg}° (${ms.toFixed(3)} ms)`);
 }
-
 
 // ---- INIT ----
 const i2cBus = i2c.openSync(I2C_BUS);
