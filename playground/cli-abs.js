@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 
-import i2c from 'i2c-bus';
-import { Pca9685Driver } from 'pca9685';
+import {
+  clamp,
+  msToTicks,
+  openPca9685,
+  setServoPulseRangeTicks,
+} from "../src/servos.js";
 
 // ===== CONFIG =====
 const I2C_BUS = 1;
@@ -23,41 +27,30 @@ function getArg(flag) {
   return i !== -1 ? args[i + 1] : null;
 }
 
-const channel = Number(getArg('-n'));
-const angle = Number(getArg('-d'));
+const channel = Number(getArg("-n"));
+const angle = Number(getArg("-d"));
 
 if (Number.isNaN(channel) || Number.isNaN(angle)) {
-  console.error('Usage: node cli-servo-abs.js -n <channel> -d <0..180>');
+  console.error("Usage: node cli-servo-abs.js -n <channel> -d <0..180>");
   process.exit(1);
 }
 
 // ---- Helpers ----
-function clamp(v, min, max) {
-  return Math.max(min, Math.min(max, v));
-}
-
 function angleToMs(deg) {
   return MIN_MS + (deg / 180) * (MAX_MS - MIN_MS);
 }
 
-function msToTicks(ms) {
-  const periodMs = 1000 / FREQ;
-  return Math.round((ms / periodMs) * 4096);
-}
-
 // ---- Main ----
-const i2cBus = i2c.openSync(I2C_BUS);
-
-const pwm = new Pca9685Driver(
+const { pwm } = openPca9685(
   {
-    i2c: i2cBus,
+    i2cBusNumber: I2C_BUS,
     address: PCA_ADDR,
-    frequency: FREQ,
+    frequencyHz: FREQ,
     debug: false,
   },
-  err => {
+  (err) => {
     if (err) {
-      console.error('PCA9685 init failed:', err);
+      console.error("PCA9685 init failed:", err);
       process.exit(1);
     }
 
@@ -65,10 +58,12 @@ const pwm = new Pca9685Driver(
     const ms = angleToMs(safeAngle);
     const ticks = msToTicks(ms);
 
-    console.log(`CH${channel} → ${safeAngle}° → ${ms.toFixed(3)} ms → ${ticks} ticks`);
+    console.log(
+      `CH${channel} → ${safeAngle}° → ${ms.toFixed(3)} ms → ${ticks} ticks`
+    );
 
-    pwm.setPulseRange(channel, 0, ticks);
+    setServoPulseRangeTicks(pwm, channel, ticks);
 
-    console.log('Holding position. Ctrl+C to exit.');
+    console.log("Holding position. Ctrl+C to exit.");
   }
 );

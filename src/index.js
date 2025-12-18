@@ -58,7 +58,9 @@ async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  listenToCollection("machines", onChange);
+  const collection = MACHINE_ID === "A-003" ? "state" : "machines";
+
+  listenToCollection(collection, onChange);
 }
 
 run();

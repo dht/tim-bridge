@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
-import i2c from 'i2c-bus';
-import { Pca9685Driver } from 'pca9685';
-import readline from 'readline';
+import readline from "readline";
+import { openPca9685, setServoAngleDeg } from "../src/servos.js";
 
 // ===== CONFIG =====
 const I2C_BUS = 1;
@@ -13,51 +12,47 @@ const MIN_MS = 0.5;
 const MAX_MS = 2.5;
 // ==================
 
-function degToMs(deg) {
-  return MIN_MS + (deg / 180) * (MAX_MS - MIN_MS);
-}
-
 function moveToAngle(pwm, ch, deg) {
-  const ms = degToMs(deg);
-  pwm.setPulseLength(ch, ms * 1000); // microseconds
+  const { ms } = setServoAngleDeg(pwm, ch, deg, {
+    minMs: MIN_MS,
+    maxMs: MAX_MS,
+  });
   console.log(`🦾 CH${ch} → ${deg}° (${ms.toFixed(3)} ms)`);
 }
 
 // ---- INIT ----
-const i2cBus = i2c.openSync(I2C_BUS);
-
-const pwm = new Pca9685Driver(
+const { pwm } = openPca9685(
   {
-    i2c: i2cBus,
+    i2cBusNumber: I2C_BUS,
     address: PCA_ADDR,
-    frequency: FREQ,
+    frequencyHz: FREQ,
   },
   (err) => {
     if (err) {
-      console.error('❌ PCA9685 init failed', err);
+      console.error("❌ PCA9685 init failed", err);
       process.exit(1);
     }
 
-    console.log('✅ PCA9685 ready');
-    console.log('🔒 Holding servos (PWM active)');
-    console.log('👉 Commands: -n <ch> -d <deg>');
+    console.log("✅ PCA9685 ready");
+    console.log("🔒 Holding servos (PWM active)");
+    console.log("👉 Commands: -n <ch> -d <deg>");
 
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
-      prompt: '> ',
+      prompt: "> ",
     });
 
     rl.prompt();
 
-    rl.on('line', (line) => {
+    rl.on("line", (line) => {
       const args = line.trim().split(/\s+/);
 
-      const nIdx = args.indexOf('-n');
-      const dIdx = args.indexOf('-d');
+      const nIdx = args.indexOf("-n");
+      const dIdx = args.indexOf("-d");
 
       if (nIdx === -1 || dIdx === -1) {
-        console.log('❌ Usage: -n <ch> -d <deg>');
+        console.log("❌ Usage: -n <ch> -d <deg>");
         rl.prompt();
         return;
       }
@@ -66,7 +61,7 @@ const pwm = new Pca9685Driver(
       const deg = Number(args[dIdx + 1]);
 
       if (Number.isNaN(ch) || Number.isNaN(deg)) {
-        console.log('❌ Invalid numbers');
+        console.log("❌ Invalid numbers");
         rl.prompt();
         return;
       }

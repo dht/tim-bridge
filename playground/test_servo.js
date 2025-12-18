@@ -1,6 +1,10 @@
-import i2c from 'i2c-bus';
-import { setTimeout as wait } from 'node:timers/promises';
-import { Pca9685Driver } from 'pca9685';
+import { setTimeout as wait } from "node:timers/promises";
+import {
+  clamp,
+  msToTicks,
+  openPca9685,
+  setServoPulseRangeMs,
+} from "../src/servos.js";
 
 // ================== CONFIG ==================
 const I2C_BUS = 1;
@@ -23,46 +27,37 @@ const MAX_MS = 1.8;
 const TEST_DEG = 5;
 // ============================================
 
-function msToTicks(ms) {
-  const periodMs = 1000 / FREQ;
-  return Math.round((ms / periodMs) * 4096);
-}
-
-function clamp(v, min, max) {
-  return Math.max(min, Math.min(max, v));
-}
-
 function moveByDegrees(pwm, channel, deg) {
   const targetMs = CENTER_MS + deg * MS_PER_DEGREE;
   const safeMs = clamp(targetMs, MIN_MS, MAX_MS);
   const ticks = msToTicks(safeMs);
 
-  console.log(`🦾 CH${channel} → ${deg}° → ${safeMs.toFixed(3)} ms → ${ticks} ticks`);
+  console.log(
+    `🦾 CH${channel} → ${deg}° → ${safeMs.toFixed(3)} ms → ${ticks} ticks`
+  );
 
-  pwm.setPulseRange(channel, 0, ticks);
+  setServoPulseRangeMs(pwm, channel, safeMs, { frequencyHz: FREQ });
 }
 
 // ============================================
 
-console.log('🔧 Opening I2C bus...');
-const i2cBus = i2c.openSync(I2C_BUS);
-
-const pwm = new Pca9685Driver(
+console.log("🔧 Opening I2C bus...");
+const { pwm } = openPca9685(
   {
-    i2c: i2cBus,
+    i2cBusNumber: I2C_BUS,
     address: PCA_ADDR,
-    frequency: FREQ,
+    frequencyHz: FREQ,
     debug: false,
   },
-  async err => {
+  async (err) => {
     if (err) {
-      console.error('❌ PCA9685 init failed:', err);
+      console.error("❌ PCA9685 init failed:", err);
       process.exit(1);
     }
 
-    console.log('✅ PCA9685 ready');
-    console.log('🔁 Testing channels 1 → 6 (±30°)');
-    console.log('');
+    console.log("✅ PCA9685 ready");
+    console.log("🔁 Testing channels 1 → 6 (±30°)");
+    console.log("");
 
     try {
       for (const ch of CHANNELS) {
@@ -81,11 +76,11 @@ const pwm = new Pca9685Driver(
         await wait(1400); // total ≈ 5s per channel
       }
 
-      console.log('\n✅ Channel sweep completed');
+      console.log("\n✅ Channel sweep completed");
     } catch (e) {
-      console.error('💥 Runtime error:', e);
+      console.error("💥 Runtime error:", e);
     } finally {
-      console.log('🛑 Shutting down');
+      console.log("🛑 Shutting down");
       process.exit(0);
     }
   }

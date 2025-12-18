@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
-import i2c from 'i2c-bus';
-import { setTimeout as wait } from 'node:timers/promises';
-import { Pca9685Driver } from 'pca9685';
+import { setTimeout as wait } from "node:timers/promises";
+import {
+  clamp,
+  msToTicks,
+  openPca9685,
+  setServoPulseRangeTicks,
+} from "../src/servos.js";
 
 // ================== CONFIG ==================
 const I2C_BUS = 1;
@@ -26,40 +30,27 @@ function getArg(flag, def = null) {
   return i !== -1 ? args[i + 1] : def;
 }
 
-const channel = Number(getArg('-n'));
-const degrees = Number(getArg('-d', 0)); // DEFAULT 0°
+const channel = Number(getArg("-n"));
+const degrees = Number(getArg("-d", 0)); // DEFAULT 0°
 
 if (Number.isNaN(channel)) {
-  console.error('Usage: servo -n <channel> [-d <degrees>]');
+  console.error("Usage: servo -n <channel> [-d <degrees>]");
   process.exit(1);
 }
 
 // ---------- Helpers ----------
-function msToTicks(ms) {
-  const periodMs = 1000 / FREQ;
-  return Math.round((ms / periodMs) * 4096);
-}
-
-function clamp(v, min, max) {
-  return Math.max(min, Math.min(max, v));
-}
-
 // ---------- Main ----------
-console.log('🔧 Opening I2C bus...');
-const i2cBus = i2c.openSync(I2C_BUS);
-
-let pwm;
-
-pwm = new Pca9685Driver(
+console.log("🔧 Opening I2C bus...");
+const { pwm } = openPca9685(
   {
-    i2c: i2cBus,
+    i2cBusNumber: I2C_BUS,
     address: PCA_ADDR,
-    frequency: FREQ,
+    frequencyHz: FREQ,
     debug: false,
   },
-  async err => {
+  async (err) => {
     if (err) {
-      console.error('❌ PCA9685 init failed:', err);
+      console.error("❌ PCA9685 init failed:", err);
       process.exit(1);
     }
 
@@ -67,15 +58,17 @@ pwm = new Pca9685Driver(
     const safeMs = clamp(targetMs, MIN_MS, MAX_MS);
     const ticks = msToTicks(safeMs);
 
-    console.log(`🦾 CH${channel} → ${degrees}° → ${safeMs.toFixed(3)} ms → ${ticks} ticks`);
+    console.log(
+      `🦾 CH${channel} → ${degrees}° → ${safeMs.toFixed(3)} ms → ${ticks} ticks`
+    );
     console.log(`⏳ Holding position for ${HOLD_TIME_MS / 1000}s…`);
 
-    pwm.setPulseRange(channel, 0, ticks);
+    setServoPulseRangeTicks(pwm, channel, ticks);
 
     // Keep process alive so motion + holding is observable
     await wait(HOLD_TIME_MS);
 
-    console.log('🛑 Done. Exiting (PWM continues on hardware).');
+    console.log("🛑 Done. Exiting (PWM continues on hardware).");
     process.exit(0);
   }
 );

@@ -1,8 +1,12 @@
 #!/usr/bin/env node
 
-import i2c from "i2c-bus";
 import { setTimeout as wait } from "node:timers/promises";
-import { Pca9685Driver } from "pca9685";
+import {
+  clamp,
+  msToTicks,
+  openPca9685,
+  setServoPulseRangeTicks,
+} from "../src/servos.js";
 
 // ===== CONFIG =====
 const I2C_BUS = 1;
@@ -36,42 +40,29 @@ if (Number.isNaN(D)) {
 }
 
 // ---- Helpers ----
-function clamp(v, min, max) {
-  return Math.max(min, Math.min(max, v));
-}
-
-function msToTicks(ms) {
-  const periodMs = 1000 / FREQ;
-  return Math.round((ms / periodMs) * 4096);
-}
-
 function moveDeg(pwm, ch, deg) {
-  const ms = clamp(
-    CENTER_MS + deg * MS_PER_DEGREE,
-    MIN_MS,
-    MAX_MS
-  );
+  const ms = clamp(CENTER_MS + deg * MS_PER_DEGREE, MIN_MS, MAX_MS);
   const ticks = msToTicks(ms);
-  pwm.setPulseRange(ch, 0, ticks);
+  setServoPulseRangeTicks(pwm, ch, ticks);
 }
 
 // ---- Main ----
-const i2cBus = i2c.openSync(I2C_BUS);
-
-const pwm = new Pca9685Driver(
+const { pwm } = openPca9685(
   {
-    i2c: i2cBus,
+    i2cBusNumber: I2C_BUS,
     address: PCA_ADDR,
-    frequency: FREQ,
+    frequencyHz: FREQ,
     debug: false,
   },
-  async err => {
+  async (err) => {
     if (err) {
       console.error("PCA9685 init failed:", err);
       process.exit(1);
     }
 
-    console.log(`🔎 Checking servos [${SERVO_CHANNELS.join(", ")}] with ±${D}°`);
+    console.log(
+      `🔎 Checking servos [${SERVO_CHANNELS.join(", ")}] with ±${D}°`
+    );
 
     for (const ch of SERVO_CHANNELS) {
       console.log(`\n🦾 Channel ${ch}`);
