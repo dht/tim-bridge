@@ -76,3 +76,5 @@ const pwm = new Pca9685Driver(
     });
   }
 );
+
+export function onChange() {}
