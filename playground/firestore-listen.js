@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { playMp3 } from '../src/audio.js';
 import { init, listenToCollection } from '../src/firestore.js';
 
-const MACHINE_ID = 'A-001';
+const MACHINE_ID = process.env.MACHINE_ID;
 const FRESH_WINDOW_MS = 30_000; // 30s
 
 init();
