@@ -1,5 +1,5 @@
-import i2c from "i2c-bus";
-import { Pca9685Driver } from "pca9685";
+import i2c from 'i2c-bus';
+import { Pca9685Driver } from 'pca9685';
 
 /**
  * Defaults
@@ -43,9 +43,7 @@ export function clamp(value, min, max) {
 
 function assertInitialized() {
   if (!pwm || !isReady) {
-    throw new Error(
-      "PCA9685 not initialized. Call init() and wait for completion."
-    );
+    throw new Error('PCA9685 not initialized. Call init() and wait for completion.');
   }
 }
 
@@ -110,17 +108,11 @@ export function setServoAngleDeg(
 export function moveToAngle(channel, degrees) {
   assertInitialized();
 
-  if (
-    !Number.isInteger(channel) ||
-    channel < CHANNEL_MIN ||
-    channel > CHANNEL_MAX
-  ) {
-    throw new Error(
-      `Invalid channel ${channel}. Must be ${CHANNEL_MIN}–${CHANNEL_MAX}.`
-    );
+  if (!Number.isInteger(channel) || channel < CHANNEL_MIN || channel > CHANNEL_MAX) {
+    throw new Error(`Invalid channel ${channel}. Must be ${CHANNEL_MIN}–${CHANNEL_MAX}.`);
   }
   if (!Number.isFinite(degrees)) {
-    throw new Error("Degrees must be a finite number.");
+    throw new Error('Degrees must be a finite number.');
   }
 
   const { ms } = setServoAngleDeg(pwm, channel, degrees, {
@@ -157,8 +149,8 @@ export function openPca9685(
       frequency: frequencyHz,
       debug,
     },
-    (err) => {
-      if (typeof onReady === "function") {
+    err => {
+      if (typeof onReady === 'function') {
         onReady(err, { pwm: driver, i2cBus: bus });
       }
     }
@@ -179,7 +171,7 @@ export function init() {
       address: PCA_ADDR,
       frequencyHz: FREQ,
     },
-    (err) => {
+    err => {
       if (err) {
         throw err;
       }
@@ -198,6 +190,22 @@ export function init() {
  */
 export function shutdown() {
   try {
+    // If PWM driver exists, set all channels to 0 pulse (no output)
+    if (pwm && isReady) {
+      try {
+        for (let ch = CHANNEL_MIN; ch <= CHANNEL_MAX; ch++) {
+          // set pulse length to 0 microseconds to disable output on channel
+          try {
+            setServoPulseLengthUs(pwm, ch, 0);
+          } catch (err) {
+            // ignore per-channel errors
+          }
+        }
+      } catch (err) {
+        // ignore
+      }
+    }
+
     if (i2cBus) i2cBus.closeSync();
   } finally {
     pwm = null;
