@@ -1,4 +1,4 @@
-// houses.js
+// houses
 import { setStatus } from "../rgb/rgb.js";
 import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
 

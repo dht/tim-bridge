@@ -1,32 +1,19 @@
-// A-002: TV
-
-import { stopAudio } from "../audio.js";
+// 2084
+import { setStatus } from "../rgb/rgb.js";
+import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
 
 export async function onChange(data) {
-  const { mp3Url, mp3UrlTs, status } = data;
+  const { timelineUrl, status } = data;
 
-  console.log({ mp3Url, mp3UrlTs, status });
+  if (status) setStatus(status);
 
-  if (status) {
-    console.log("LED status:", status);
-    setStatus(status);
+  if (status === "1.IDLE") {
+    stopPlayback(); // stops audio + cancels timeline loop
+    return;
   }
 
-  // If status is RESETTING → immediately stop any current audio
-  if (status === "4.RESETTING") {
-    console.log("🔇 Status is 4.RESETTING → stopping audio playback");
-    stopAudio();
-    return; // nothing more to do for this transition
-  }
+  if (!timelineUrl) return;
 
-  if (!mp3Url) return;
-  console.log("🎧 Playing mp3Url from Firestore:", mp3Url);
-
-  try {
-    await playMp3(mp3Url); // Wait for the entire playback
-  } catch (err) {
-    console.error("❌ Error playing mp3Url:", err);
-  }
-
-  console.log("✅ Playback + Images completed.");
+  // Fire and forget (internally guarded against overlap)
+  startPlaybackFromTimelineUrl(timelineUrl);
 }
