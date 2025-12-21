@@ -1,0 +1,101 @@
+[
+  {
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "id": "1",
+          "speakerName": "הלל",
+          "text": "אשאל תחילה, שמאי אחי: אם ילד פותח גביע מילקי בעיניים נוצצות, האם נשימתו הראשונה נמשכת אל הענן או אל התהום? ענן הקצפת הוא הפגישה הראשונה עם השמחה; אם תצלול מיד לשוקולד, תעקוף את ההקדמה ותאבד את הלימוד שבסבלנות. הקצפת תחילה—טעימה דקה, משחקית—מכינה את החיך לעומק המתוק שלמטה, כמו פרוזדור לפני קודש הקודשים. וכשם שהתורה ניתנה קמעא קמעא, כך גם המילקי: מן הרך אל העז, מן הלבן אל הכהה, כדי שהלב יעמוד בעושר הטעם.",
+          "duration": 50.44,
+          "cost": 0.185,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-1A.mp3"
+        },
+        {
+          "id": "2",
+          "speakerName": "שמאי",
+          "text": "הלל, שוב אתה בונה גרם מדרגות במקום דלת פשוטה. המילקי נברא דו-שכבתי, לא כשתי בריות נפרדות אלא כמערכת נושאת עומס: קצפת כגג, שוקולד כיסוד. האוכל מן הקצפת לבדה כאילו מפרק את הבית ומותיר יסוד חשוף או גג תלוש — שניהם חוסר סדר. הדרך הראויה היא הישרה: כף מלאה משתי השכבות יחד, שהרי כך תכנן האומן, וכך נשמר האיזון בין אוויריות למשקל. ומי שמתעקש להפריד—אם כבר חוטא בהפרדה—ישקול מלמטה תחילה, שהיסוד קודם לקישוט.",
+          "duration": 38.27,
+          "cost": 0.1403,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-2B.mp3"
+        },
+        {
+          "id": "3",
+          "speakerName": "הלל",
+          "text": "אם כך, שמאי, נבחן את הילד שלא שוקל אלא משתוקק: האם תחנך אותו במקל הנחושת שיאכל \"על פי תכנית המהנדס\" או תתן לו ללקק ענן ולהכיר מתיקות חופשית קודם חוק? אני אומר: הקצפת תחילה היא בית מדרש לרצון—הוא לומד להמתין לשוקולד, לשמור מעט לעתיד, לערבב כראות עיניו; הסדר נולד מבפנים. ואף בעל המפעל, לו נשאל, היה שמח לראות אנשים יוצרים טקסים שונים מאותו גביע, כי מרובה דרכיה של שמחה. לכן, קודם קצפת—אבל בלב שמוכן בשנייה לטבול עד התהום; הסדר נבנה מתוך החירות ולא נגזר עליה מבחוץ.",
+          "duration": 35.08,
+          "cost": 0.1286,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-3A.mp3"
+        },
+        {
+          "id": "4",
+          "speakerName": "שמאי",
+          "text": "את הרצון, הלל, איני מכופף אלא מיישר, כשורת לבנים נכונה. מי שמתרגל לקלף כל קצפת מן המציאות, מחנך עצמו לדחות עומק ולהתמכר לפני השטח; אחר כך יתמה מדוע אין לו סבלנות לעמוד מול קושי. כף היורדת עד השוקולד ומעלה עמה מעט קצפת מלמעלה—זו סדנת אמן במשמעת שמחה: גם עומק, גם רוך, אך במכה אחת מדודה. ודע: ריבוי טקסים בלי עמוד שדרה מוליד בלבול עד שלבסוף אין אדם טועם אלא את עצמו. אני קובע: השוקולד הוא העיקר, ויפה כוחו שיופיע ראשון בצלחת הלשון.",
+          "duration": 37.64,
+          "cost": 0.138,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-4B.mp3"
+        }
+      ],
+      "params": {
+        "topic": "איך אוכלים מילקי?\n\nקודם קצפת או קודם שוקולד?",
+        "preset": "_milki"
+      }
+    }
+  },
+  {
+    "index": 1,
+    "ts": 0,
+    "duration": 50.44,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-1A.mp3",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-1A.jpg",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0
+    }
+  },
+  {
+    "index": 2,
+    "ts": 51.94,
+    "duration": 38.27,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-2B.mp3",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-2B.jpg",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1
+    }
+  },
+  {
+    "index": 3,
+    "ts": 91.71000000000001,
+    "duration": 35.08,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-3A.mp3",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-3A.jpg",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2
+    }
+  },
+  {
+    "index": 4,
+    "ts": 128.29000000000002,
+    "duration": 37.64,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-4B.mp3",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-4B.jpg",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3
+    }
+  },
+  {
+    "index": 5,
+    "ts": 167.43,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]
