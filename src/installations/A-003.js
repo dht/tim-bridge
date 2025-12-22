@@ -35,6 +35,7 @@ export function onChange(data) {
   }
 
   const { base, shoulder, elbow, wristPitch, wristRoll, gripperOpen } = data;
+  console.log({ base, shoulder, elbow, wristPitch, wristRoll, gripperOpen });
 
   if (lastValues.base !== base) {
     moveToAngle(1, base);
