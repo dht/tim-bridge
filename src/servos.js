@@ -26,6 +26,7 @@ const MAX_MS = 2.5;
 
 const CHANNEL_MIN = 0;
 const CHANNEL_MAX = 15;
+const MOVE_DELAY_MS = 500;
 
 /**
  * Internal state
@@ -33,6 +34,7 @@ const CHANNEL_MAX = 15;
 let pwm = null;
 let i2cBus = null;
 let isReady = false;
+let nextMoveAt = 0;
 
 /**
  * Utilities
@@ -131,16 +133,41 @@ export function moveToAngle(channel, degrees) {
     throw new Error('Degrees must be a finite number.');
   }
 
-  const { ms } = setServoAngleDeg(pwm, channel, degrees, {
+  const ms = degToMs(degrees, {
     minMs: MIN_MS,
     maxMs: MAX_MS,
     clampDeg: true,
   });
 
+  const now = Date.now();
+  const scheduledAt = Math.max(now, nextMoveAt);
+  nextMoveAt = scheduledAt + MOVE_DELAY_MS;
+  const delay = scheduledAt - now;
+
+  const doMove = () => {
+    if (!pwm || !isReady) return;
+    try {
+      setServoAngleDeg(pwm, channel, degrees, {
+        minMs: MIN_MS,
+        maxMs: MAX_MS,
+        clampDeg: true,
+      });
+    } catch (err) {
+      console.error('Servo move error:', err);
+    }
+  };
+
+  if (delay > 0) {
+    setTimeout(doMove, delay);
+  } else {
+    doMove();
+  }
+
   return {
     channel,
     degrees: clamp(degrees, DEFAULT_SERVO_MIN_DEG, DEFAULT_SERVO_MAX_DEG),
     ms,
+    scheduledAt,
   };
 }
 
@@ -227,5 +254,6 @@ export function shutdown() {
     pwm = null;
     i2cBus = null;
     isReady = false;
+    nextMoveAt = 0;
   }
 }
