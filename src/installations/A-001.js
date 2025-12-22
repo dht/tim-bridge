@@ -1,13 +1,13 @@
 // houses
-import { setStatus } from "../rgb/rgb.js";
-import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
+import { setStatus } from '../rgb/rgb.js';
+import { startPlaybackFromTimelineUrl, stopPlayback } from '../timeline.js';
 
 export async function onChange(data) {
   const { timelineUrl, status } = data;
 
   if (status) setStatus(status);
 
-  if (status === "1.IDLE") {
+  if (status === '1.IDLE' || status === '4.RESETTING') {
     stopPlayback(); // stops audio + cancels timeline loop
     return;
   }
