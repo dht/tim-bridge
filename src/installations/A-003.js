@@ -4,15 +4,6 @@ let lastValues = {};
 
 init();
 
-// Log initial values after initialization
-console.log('A-003 initialized. Current values:');
-console.log('  base:', lastValues.base);
-console.log('  shoulder:', lastValues.shoulder);
-console.log('  elbow:', lastValues.elbow);
-console.log('  wristPitch:', lastValues.wristPitch);
-console.log('  wristRoll:', lastValues.wristRoll);
-console.log('  gripperOpen:', lastValues.gripperOpen);
-
 export function onChange(data) {
   console.log('A-003 onChange data:', data);
   // If isActive flag is present, control servo power here
@@ -35,8 +26,8 @@ export function onChange(data) {
     }
   }
 
-  const { base, shoulder, elbow, wristPitch, wristRoll, gripperOpen } = data;
-  console.log({ base, shoulder, elbow, wristPitch, wristRoll, gripperOpen });
+  const { isActive, base, shoulder, elbow, wristPitch, wristRoll, gripperOpen } = data;
+  console.log({ isActive, base, shoulder, elbow, wristPitch, wristRoll, gripperOpen });
 
   if (lastValues.base !== base) {
     moveToAngle(1, base);
