@@ -5,6 +5,7 @@ let lastValues = {};
 init();
 
 export function onChange(data) {
+  console.log('A-003 onChange called');
   console.log('A-003 onChange data:', data);
   // If isActive flag is present, control servo power here
   if (typeof data.isActive === 'boolean') {
