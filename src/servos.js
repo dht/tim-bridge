@@ -1,4 +1,4 @@
-import i2c from 'i2c-bus';
+import { createRequire } from 'module';
 import { Pca9685Driver } from 'pca9685';
 
 /**
@@ -35,6 +35,9 @@ let pwm = null;
 let i2cBus = null;
 let isReady = false;
 let nextMoveAt = 0;
+let i2c = null;
+let i2cLoadError = null;
+const require = createRequire(import.meta.url);
 
 /**
  * Utilities
@@ -45,8 +48,28 @@ export function clamp(value, min, max) {
 
 function assertInitialized() {
   if (!pwm || !isReady) {
+    if (i2cLoadError) {
+      throw new Error(`PCA9685 not initialized: ${i2cLoadError.message}`);
+    }
     throw new Error('PCA9685 not initialized. Call init() and wait for completion.');
   }
+}
+
+function loadI2cBus() {
+  if (i2c || i2cLoadError) return { i2c, error: i2cLoadError };
+
+  if (process.platform !== 'linux') {
+    i2cLoadError = new Error('i2c-bus is supported only on Linux platforms.');
+    return { i2c: null, error: i2cLoadError };
+  }
+
+  try {
+    i2c = require('i2c-bus');
+  } catch (err) {
+    i2cLoadError = err;
+  }
+
+  return { i2c, error: i2cLoadError };
 }
 
 /**
@@ -183,7 +206,16 @@ export function openPca9685(
   } = {},
   onReady
 ) {
-  const bus = i2c.openSync(i2cBusNumber);
+  const { i2c: i2cModule, error } = loadI2cBus();
+  if (!i2cModule || error) {
+    const err = error || new Error('i2c-bus module unavailable.');
+    if (typeof onReady === 'function') {
+      onReady(err, { pwm: null, i2cBus: null });
+    }
+    return { pwm: null, i2cBus: null };
+  }
+
+  const bus = i2cModule.openSync(i2cBusNumber);
 
   const driver = new Pca9685Driver(
     {
@@ -216,7 +248,8 @@ export function init() {
     },
     err => {
       if (err) {
-        throw err;
+        console.warn('PCA9685 init skipped:', err.message);
+        return;
       }
       isReady = true;
     }
