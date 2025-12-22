@@ -74,6 +74,22 @@ export function msToTicks(ms, frequencyHz = DEFAULT_SERVO_FREQUENCY_HZ) {
 /**
  * Low-level PWM setters
  */
+export function setServoPulseRangeTicks(pwmInstance, channel, ticks) {
+  const safeTicks = clamp(Math.round(ticks), 0, 4095);
+  pwmInstance.setPulseRange(channel, 0, safeTicks);
+}
+
+export function setServoPulseRangeMs(
+  pwmInstance,
+  channel,
+  ms,
+  { frequencyHz = DEFAULT_SERVO_FREQUENCY_HZ } = {}
+) {
+  const ticks = msToTicks(ms, frequencyHz);
+  setServoPulseRangeTicks(pwmInstance, channel, ticks);
+  return { ticks };
+}
+
 export function setServoPulseLengthUs(pwmInstance, channel, microseconds) {
   pwmInstance.setPulseLength(channel, microseconds);
 }
