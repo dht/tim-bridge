@@ -106,6 +106,7 @@ export function setServoAngleDeg(
  * Public API
  */
 export function moveToAngle(channel, degrees) {
+  return;
   assertInitialized();
 
   if (!Number.isInteger(channel) || channel < CHANNEL_MIN || channel > CHANNEL_MAX) {
