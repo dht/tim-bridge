@@ -21,6 +21,7 @@ const logCrash = (type, err) => {
   console.error(`❌ ${type}:`, message);
 };
 
+setStatus('1.IDLE');
 logDevice();
 
 process.on('uncaughtException', err => logCrash('Uncaught Exception', err));
