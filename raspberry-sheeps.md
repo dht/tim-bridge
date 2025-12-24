@@ -31,6 +31,7 @@ IP to SD
 | 2   | 10.0.0.50 | Claygon      | SD2Pi4   |
 | 5   | 10.0.0.51 | Houses       | SD4pi4   |
 | 6   | 10.0.0.52 | Robotic Arm  | SD6Pi5   |
+| 3   | 10.0.0.53 | Test         | TESTSD3  |
 
 Raspberry Pi4 works is compatible and better with 64 bit,
 Raspberry Pi Zero isn't compatible with 64 bit
