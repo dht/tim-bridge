@@ -15,14 +15,14 @@ Raspberry Pi
 
 SD cards:
 
-| Number | Works | OS Version           | notes                            |
-| ------ | ----- | -------------------- | -------------------------------- |
-| 1      | X     | 32 Bit Buster        | no longer works                  |
-| 2      | V     | 64 bit               | Main - messed up with lunch defs |
-| 3      | X     | 32 Bit normal trixie | Not working anymore              |
-| 4      | V     | 32 Bit               | for Pi0                          |
-| 5      | V     | 64 Bit               | 2SD copied                       |
-| 6      | ?     | 64 Bit               | 2SD copied                       |
+| Number | Works | OS Version    | notes                            |
+| ------ | ----- | ------------- | -------------------------------- |
+| 1      | X     | 32 Bit Buster | no longer works                  |
+| 2      | V     | 64 bit        | Main - messed up with lunch defs |
+| 3      | X     | 64 Bit        | 2SD copied                       |
+| 4      | V     | 32 Bit        | for Pi0                          |
+| 5      | V     | 64 Bit        | 2SD copied                       |
+| 6      | ?     | 64 Bit        | 2SD copied                       |
 
 IP to SD
 

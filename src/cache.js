@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // cache folder next to these modules
-const CACHE_ROOT = path.join(__dirname, "cache");
+const CACHE_ROOT = path.join(__dirname, "../cache");
 
 export function extractSessionId(timelineUrl) {
   // .../sessions/S483/_timeline.json?rnd=...
