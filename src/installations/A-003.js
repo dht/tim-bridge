@@ -1,3 +1,5 @@
+// A-003 is robotic arm
+
 import { init, moveToAngle, shutdown as shutdownServos } from '../servos.js';
 
 let lastValues = {};

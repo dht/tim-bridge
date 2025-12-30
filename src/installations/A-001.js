@@ -1,4 +1,4 @@
-// houses
+// A-001 is houses hillel and shammai
 import { setStatus } from '../rgb/rgb.js';
 import { startPlaybackFromTimelineUrl, stopPlayback } from '../timeline.js';
 

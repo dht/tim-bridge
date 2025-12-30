@@ -1,3 +1,4 @@
+// 901 = Claygon / talking statues
 // A-901: open browser in a normal window when GENERATING,
 // close when RESETTING or ANY other status
 
