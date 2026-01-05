@@ -27,9 +27,6 @@ node -v
 npm -v
 echo "✔ Node should be v20.x above this line"
 
-echo "========== Installing tim-bridge Dependencies =========="
-npm install
-
 echo "========== Installing autojump =========="
 sudo apt install -y autojump
 if ! grep -q autojump ~/.bashrc; then
@@ -61,6 +58,10 @@ npm install -g pm2
 
 # Optional: ensure PM2 uses Node 20
 pm2 update
+
+echo "========== Installing tim-bridge Dependencies =========="
+npm install
+
 
 echo "========== Installation Complete =========="
 echo ""
