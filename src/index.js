@@ -37,7 +37,7 @@ function onChange(change) {
     const delta = Date.now() - (timelineUrlTs || 0);
     const isRecent = delta < 2 * 60 * 1000; // 2 minutes
 
-    if ((timelineUrl && isRecent) || MACHINE_ID === 'A-003') {
+    if ((timelineUrl && isRecent) || MACHINE_ID === 'A-003' || MACHINE_ID === 'A-901') {
       console.log(`🔗 Timeline URL: ${timelineUrl}`);
 
       // Run installation-specific logic (A-001.js)
