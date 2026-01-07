@@ -2,7 +2,9 @@
 // A-901: open browser in a normal window when GENERATING,
 // close when RESETTING or ANY other status
 
-import { closeBrowser, openBrowser } from '../browser.js';
+import { closeBrowser, closeBrowserDelayed, openBrowser } from '../browser.js';
+
+const MAX_SESSION_DURATION_MS = 3 * 60 * 1000; // 3 minutes
 
 let lastStatus = null;
 
@@ -13,20 +15,16 @@ export async function onChange(data) {
 
   if (!status) return;
 
-  console.log(status);
-
-  if (status === '3a.PLAYBACK') {
-    openBrowser(URL + '?language=' + (params?.language || 'en'));
-  }
-
-  if (lastStatus === '3a.PLAYBACK') {
-    switch (status) {
-      case '3b.DONE':
-      case '4.RESETTING':
-      case '1.IDLE':
-        closeBrowser();
-        break;
-    }
+  switch (status) {
+    case '3b.DONE':
+    case '4.RESETTING':
+    case '1.IDLE':
+      closeBrowser();
+      break;
+    case '3a.PLAYBACK':
+      openBrowser(URL + '?language=' + (params?.language || 'en'));
+      closeBrowserDelayed(MAX_SESSION_DURATION_MS);
+      break;
   }
 
   lastStatus = status;
