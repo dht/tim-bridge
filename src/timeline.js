@@ -1,10 +1,10 @@
 // timelinePlayback.js
-import { playMp3, stopAudio } from './audio.js';
-import { cacheSessionFromTimelineUrl } from './cache.js';
-import { turnLights } from './lights.js';
+import { playMp3, stopAudio } from "./audio.js";
+import { turnLights } from "./lights.js";
+import { cacheSessionFromTimelineUrl } from "./cache.js";
 
 function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 let isRunning = false;
@@ -14,13 +14,13 @@ export function stopPlayback() {
   runToken += 1; // cancels any active loop
   stopAudio(); // immediate effect where it matters
   isRunning = false; // best-effort state
-  console.log('🛑 stopPlayback()');
+  console.log("🛑 stopPlayback()");
 }
 
 export async function startPlaybackFromTimelineUrl(timelineUrl) {
   // prevent overlapping runs
   if (isRunning) {
-    console.log('⏳ Playback already running, ignoring new timelineUrl');
+    console.log("⏳ Playback already running, ignoring new timelineUrl");
     return;
   }
 
@@ -28,7 +28,8 @@ export async function startPlaybackFromTimelineUrl(timelineUrl) {
   const myToken = ++runToken;
 
   try {
-    const { sessionId, timeline, resolveLocal } = await cacheSessionFromTimelineUrl(timelineUrl);
+    const { sessionId, timeline, resolveLocal } =
+      await cacheSessionFromTimelineUrl(timelineUrl);
 
     console.log(`✅ Session cached: ${sessionId}. Items: ${timeline.length}`);
 
@@ -46,11 +47,11 @@ export async function startPlaybackFromTimelineUrl(timelineUrl) {
 
       // Play audio if exists
       if (state.mp3Url) {
-        const mp3Url = String(state.mp3Url).split('?')[0];
+        const mp3Url = String(state.mp3Url).split("?")[0];
         const localMp3 = resolveLocal(mp3Url);
 
         if (!localMp3) {
-          console.warn('mp3Url not under /sessions/, skipping:', mp3Url);
+          console.warn("mp3Url not under /sessions/, skipping:", mp3Url);
         } else {
           playMp3(localMp3);
           if (durationSec > 0) await sleep(durationSec * 1000);
@@ -64,16 +65,12 @@ export async function startPlaybackFromTimelineUrl(timelineUrl) {
       await sleep(1500);
     }
 
-    console.log('🏁 Timeline done');
+    console.log("🏁 Timeline done");
   } catch (err) {
-    console.error('❌ Timeline playback error:', err);
+    console.error("❌ Timeline playback error:", err);
   } finally {
     if (runToken === myToken) {
       isRunning = false;
     }
   }
-}
-
-export function isPlaybackActive() {
-  return isRunning;
 }
