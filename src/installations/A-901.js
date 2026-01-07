@@ -22,6 +22,8 @@ export async function onChange(data) {
       closeBrowser();
       break;
     case '3a.PLAYBACK':
+      // closeBrowser();
+      // delay (500)
       openBrowser(URL + '?language=' + (params?.language || 'en'));
       closeBrowserDelayed(MAX_SESSION_DURATION_MS);
       break;
