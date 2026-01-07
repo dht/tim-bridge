@@ -3,6 +3,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { logDevice } from './device.js';
 import { listenToCollection } from './firestore.js';
+import { startIdleLightsMonitor } from './idle-lights.js';
 import { callbacks } from './installations/index.js';
 import { machinesInfo } from './machines.js';
 import { setStatus } from './rgb/rgb.js';
@@ -21,6 +22,9 @@ const RECENT_DELTA_MS = 2 * 60 * 1000; // 2 minutes
 
 setStatus('1.IDLE');
 logDevice();
+
+// HOUSES lights: Keep lights ON when no timeline playback is active
+startIdleLightsMonitor({ intervalMs: 3000 });
 
 const packageJsonPath = path.resolve('./package.json');
 const p = fs.readJsonSync(packageJsonPath);
