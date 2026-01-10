@@ -1,16 +1,28 @@
-import 'dotenv/config';
-import fs from 'fs-extra';
-import path from 'path';
-import { logDevice } from './device.js';
-import { listenToCollection } from './firestore.js';
-import { callbacks } from './installations/index.js';
-import { machinesInfo } from './machines.js';
-import { setStatus } from './rgb/rgb.js';
+import "dotenv/config";
+import fs from "fs-extra";
+import path from "path";
+import { logDevice } from "./device.js";
+import { listenToCollection } from "./firestore.js";
+import { callbacks } from "./installations/index.js";
+import { machinesInfo } from "./machines.js";
+import { setStatus } from "./rgb/rgb.js";
 
+const packageJsonPath = path.resolve("./package.json");
+const p = fs.readJsonSync(packageJsonPath);
+
+const LISTEN_TO_ALL = process.env.LISTEN_TO_ALL === "true";
 const MACHINE_ID = process.env.MACHINE_ID;
 const machineInfo = machinesInfo[MACHINE_ID];
-const playbackFlavour = machineInfo?.playbackFlavour || 'session';
+const playbackFlavour = machineInfo?.playbackFlavour || "session";
 const callback = callbacks[MACHINE_ID];
+
+console.log(`=== TIM BRIDGE v${p.version} STARTING ===`);
+
+if (LISTEN_TO_ALL) {
+  console.log("⚠️  Listening to ALL machines");
+} else {
+  console.log(`🎧 Listening to machine: ${MACHINE_ID}`);
+}
 
 if (!callback) {
   console.warn(`No onChange callback found for MACHINE_ID: ${MACHINE_ID}`);
@@ -19,13 +31,8 @@ if (!callback) {
 
 const RECENT_DELTA_MS = 2 * 60 * 1000; // 2 minutes
 
-setStatus('1.IDLE');
+setStatus("1.IDLE");
 logDevice();
-
-const packageJsonPath = path.resolve('./package.json');
-const p = fs.readJsonSync(packageJsonPath);
-
-console.log(`=== TIM BRIDGE v${p.version} STARTING ===`);
 
 // Catch unexpected crashes so we can see them in logs
 const logCrash = (type, err) => {
@@ -33,14 +40,17 @@ const logCrash = (type, err) => {
   console.error(`❌ ${type}:`, message);
 };
 
-process.on('uncaughtException', err => logCrash('Uncaught Exception', err));
-process.on('unhandledRejection', err => logCrash('Unhandled Rejection', err));
+process.on("uncaughtException", (err) => logCrash("Uncaught Exception", err));
+process.on("unhandledRejection", (err) => logCrash("Unhandled Rejection", err));
 
 // installations with sessions and presets
 function onChangeSession(change) {
   try {
     const { id, data } = change || {};
-    if (id !== MACHINE_ID || !data) return;
+
+    if (id !== MACHINE_ID && !LISTEN_TO_ALL) return;
+
+    if (!data) return;
 
     const { timelineUrl, timelineUrlTs, status } = data;
 
@@ -55,7 +65,7 @@ function onChangeSession(change) {
 
     setStatus(status);
   } catch (err) {
-    console.error('❌ onChange error:', err);
+    console.error("❌ onChange error:", err);
   }
 }
 
@@ -74,7 +84,9 @@ function onChange11Agent(change) {
 
     if (isRecent) {
       if (!callback) {
-        console.warn(`No onChange callback found for MACHINE_ID: ${MACHINE_ID}`);
+        console.warn(
+          `No onChange callback found for MACHINE_ID: ${MACHINE_ID}`
+        );
         return;
       }
 
@@ -84,14 +96,14 @@ function onChange11Agent(change) {
     // Map for RGB
     setStatus(status);
   } catch (err) {
-    console.error('❌ onChange error:', err);
+    console.error("❌ onChange error:", err);
   }
 }
 
 const onChangeMethods = {
   session: onChangeSession,
   realtime: onChangeRealtime,
-  '11agent': onChange11Agent,
+  "11agent": onChange11Agent,
 };
 
 //
@@ -102,7 +114,7 @@ async function run() {
   console.log('Listening to Firestore collection "machines"...');
   console.log(`Machine ID: ${MACHINE_ID}`);
 
-  const collection = MACHINE_ID === 'A-003' ? 'state' : 'machines';
+  const collection = MACHINE_ID === "A-003" ? "state" : "machines";
   const onChange = onChangeMethods[playbackFlavour];
 
   listenToCollection(collection, onChange);
