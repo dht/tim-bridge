@@ -3,121 +3,141 @@ import fs from "fs-extra";
 import path from "path";
 import { logDevice } from "./device.js";
 import { listenToCollection } from "./firestore.js";
-import { callbacks } from "./installations/index.js";
 import { machinesInfo } from "./machines.js";
 import { setStatus } from "./rgb/rgb.js";
-
-const packageJsonPath = path.resolve("./package.json");
-const p = fs.readJsonSync(packageJsonPath);
+import { getIp } from "./ip.js";
+import { getMachineConfig } from "./configs.js";
 
 const LISTEN_TO_ALL = process.env.LISTEN_TO_ALL === "true";
 const MACHINE_ID = process.env.MACHINE_ID;
-const machineInfo = machinesInfo[MACHINE_ID];
-const playbackFlavour = machineInfo?.playbackFlavour || "session";
-const callback = callbacks[MACHINE_ID];
 
-console.log(`=== TIM BRIDGE v${p.version} STARTING ===`);
+const packageJsonPath = path.resolve("./package.json");
 
-if (LISTEN_TO_ALL) {
-  console.log("⚠️  Listening to ALL machines");
-} else {
-  console.log(`🎧 Listening to machine: ${MACHINE_ID}`);
-}
+// Track unsubscribe fns if listenToCollection returns them
+const unsubscribers = new Map();
 
-if (!callback) {
-  console.warn(`No onChange callback found for MACHINE_ID: ${MACHINE_ID}`);
-  process.exit(1);
-}
-
-const RECENT_DELTA_MS = 2 * 60 * 1000; // 2 minutes
-
-setStatus("1.IDLE");
-logDevice();
-
-// Catch unexpected crashes so we can see them in logs
-const logCrash = (type, err) => {
-  const message = err instanceof Error ? err.stack || err.message : err;
-  console.error(`❌ ${type}:`, message);
+const log = {
+  info: (msg, ...args) => console.log(msg, ...args),
+  warn: (msg, ...args) => console.warn(msg, ...args),
+  error: (msg, ...args) => console.error(msg, ...args),
 };
+
+function logCrash(type, err) {
+  const message = err instanceof Error ? err.stack || err.message : String(err);
+  log.error(`❌ ${type}:`, message);
+}
 
 process.on("uncaughtException", (err) => logCrash("Uncaught Exception", err));
 process.on("unhandledRejection", (err) => logCrash("Unhandled Rejection", err));
 
-// installations with sessions and presets
-function onChangeSession(change) {
+async function startMachine(id) {
+  const cfg = getMachineConfig(id);
+  if (!cfg) return;
+
+  const ip = await getIp();
+
+  const { callbacks, predicate, collection } = cfg;
+
+  log.info(`🎧 Machine ID: ${id} (collection: "${collection}")`);
+
+  // If onStart throws, fail that machine without taking down all
   try {
-    const { id, data } = change || {};
-
-    if (id !== MACHINE_ID && !LISTEN_TO_ALL) return;
-
-    if (!data) return;
-
-    const { timelineUrl, timelineUrlTs, status } = data;
-
-    const delta = Date.now() - (timelineUrlTs || 0);
-
-    const isRecent = delta < RECENT_DELTA_MS;
-
-    if (timelineUrl && isRecent) {
-      console.log(`🔗 Timeline URL: ${timelineUrl}`);
-      callback(data);
-    }
-
-    setStatus(status);
+    callbacks.onStart({ ip });
   } catch (err) {
-    console.error("❌ onChange error:", err);
+    logCrash(`onStart failed for ${id}`, err);
+    return;
+  }
+
+  const unsubscribe = listenToCollection(collection, (change) => {
+    // Only react to this machine
+    if (change?.id !== id) return;
+
+    // Optional predicate filter
+    if (predicate && !predicate(change)) return;
+
+    try {
+      callbacks.onChange(change);
+    } catch (err) {
+      logCrash(`onChange failed for ${id}`, err);
+    }
+  });
+
+  // Support optional unsubscribe return
+  if (typeof unsubscribe === "function") {
+    unsubscribers.set(id, unsubscribe);
   }
 }
 
-function onChangeRealtime(change) {}
-
-function onChange11Agent(change) {
+async function cleanupAndExit(code = 0) {
   try {
-    const { id, data } = change || {};
-    if (id !== MACHINE_ID || !data) return;
+    log.info("Cleaning up before exit...");
 
-    const { status, statusTs } = data;
+    const ids = LISTEN_TO_ALL
+      ? Object.keys(machinesInfo)
+      : [MACHINE_ID].filter(Boolean);
 
-    // installations with timelines (like claygon)
-    const delta = Date.now() - (statusTs || 0);
-    const isRecent = delta < RECENT_DELTA_MS;
-
-    if (isRecent) {
-      if (!callback) {
-        console.warn(
-          `No onChange callback found for MACHINE_ID: ${MACHINE_ID}`
-        );
-        return;
+    // Stop firestore listeners first (if supported)
+    for (const id of ids) {
+      const unsub = unsubscribers.get(id);
+      if (typeof unsub === "function") {
+        try {
+          unsub();
+        } catch (err) {
+          logCrash(`Unsubscribe failed for ${id}`, err);
+        }
       }
-
-      callback(data);
     }
 
-    // Map for RGB
-    setStatus(status);
-  } catch (err) {
-    console.error("❌ onChange error:", err);
+    // Call onEnd for each machine
+    for (const id of ids) {
+      const cfg = getMachineConfig(id);
+      if (!cfg) continue;
+
+      try {
+        await cfg.callbacks.onEnd({ ip });
+      } catch (err) {
+        logCrash(`onEnd failed for ${id}`, err);
+      }
+    }
+  } finally {
+    process.exit(code);
   }
 }
 
-const onChangeMethods = {
-  session: onChangeSession,
-  realtime: onChangeRealtime,
-  "11agent": onChange11Agent,
-};
+process.on("SIGINT", () => cleanupAndExit(0));
+process.on("SIGTERM", () => cleanupAndExit(0));
 
-//
-// ---------------------------------------------------------
-// FIRESTORE LIVE LISTENER (onSnapshot)
-// ---------------------------------------------------------
 async function run() {
-  console.log('Listening to Firestore collection "machines"...');
-  console.log(`Machine ID: ${MACHINE_ID}`);
+  const pkg = await fs.readJson(packageJsonPath);
+  const ip = await getIp();
 
-  const collection = MACHINE_ID === "A-003" ? "state" : "machines";
-  const onChange = onChangeMethods[playbackFlavour];
+  log.info(`=== TIM BRIDGE v${pkg.version} STARTING ===`);
+  log.info(`IP Address: ${ip || "not found"}`);
 
-  listenToCollection(collection, onChange);
+  if (LISTEN_TO_ALL) {
+    log.warn("⚠️  Listening to ALL machines");
+  } else {
+    if (!MACHINE_ID) {
+      log.error("Missing env MACHINE_ID (and LISTEN_TO_ALL is not true).");
+      return cleanupAndExit(1);
+    }
+    log.info(`🎧 Listening to machine: ${MACHINE_ID}`);
+  }
+
+  setStatus("1.IDLE");
+  logDevice();
+
+  if (LISTEN_TO_ALL) {
+    for (const machineId of Object.keys(machinesInfo)) {
+      await startMachine(machineId);
+    }
+    return;
+  }
+
+  await startMachine(MACHINE_ID);
 }
 
-run();
+run().catch((err) => {
+  logCrash("Fatal run() error", err);
+  cleanupAndExit(1);
+});

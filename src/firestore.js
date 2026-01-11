@@ -29,6 +29,8 @@ const firebaseConfig = {
 
 // console.log('Firebase config:', firebaseConfig);
 
+console.log("1 ->", 1);
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -75,7 +77,7 @@ export function crud(collectionName) {
       }
 
       const { id, ...rest } = values;
-      const collectionRef = collection(ensureInitialized(), collectionName);
+      const collectionRef = collection(db, collectionName);
       const ref = id ? doc(collectionRef, id) : doc(collectionRef);
 
       const valuesWithTs = {
@@ -91,7 +93,7 @@ export function crud(collectionName) {
       if (!id) {
         throw new Error("crud.update requires a document id");
       }
-      const ref = doc(ensureInitialized(), collectionName, id);
+      const ref = doc(db, collectionName, id);
 
       const newChange = {
         clientTs: Date.now(),
@@ -104,7 +106,7 @@ export function crud(collectionName) {
       if (!id) {
         throw new Error("crud.delete requires a document id");
       }
-      const ref = doc(ensureInitialized(), collectionName, id);
+      const ref = doc(db, collectionName, id);
       await deleteDoc(ref);
     },
     listen: (callback) => {
@@ -114,7 +116,7 @@ export function crud(collectionName) {
 }
 
 export async function clearCollection(name) {
-  const collectionRef = collection(ensureInitialized(), name);
+  const collectionRef = collection(db, name);
   // Note: Firestore does not support direct collection deletion.
   // You would need to delete documents individually or use a batch operation.
   console.log(`Clearing collection: ${name}`);
@@ -198,3 +200,7 @@ export function listenToCollection(collectionName, callback) {
 
   return method(collectionName, callback);
 }
+
+export const updateMachineCreator = (machineId) => (change) => {
+  return crud("machines").update(machineId, change);
+};

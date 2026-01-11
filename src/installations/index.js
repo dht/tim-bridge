@@ -1,15 +1,15 @@
-import { onChange as onChangeA001 } from "./A-001.js";
-import { onChange as onChangeA002 } from "./A-002.js";
-import { onChange as onChangeA003 } from "./A-003.js";
-import { onChange as onChangeA004 } from "./A-004.js";
-import { onChange as onChangeA005 } from "./A-005.js";
-import { onChange as onChangeA901 } from "./A-901.js";
+import { lifecycle as lifecycleA001 } from "./A-001.js";
+import { lifecycle as lifecycleA002 } from "./A-002.js";
+import { lifecycle as lifecycleA003 } from "./A-003.js";
+import { lifecycle as lifecycleA004 } from "./A-004.js";
+import { lifecycle as lifecycleA005 } from "./A-005.js";
+import { lifecycle as lifecycleA901 } from "./A-901.js";
 
-export const callbacks = {
-  "A-001": onChangeA001,
-  "A-002": onChangeA002,
-  "A-003": onChangeA003,
-  "A-004": onChangeA004,
-  "A-005": onChangeA005,
-  "A-901": onChangeA901,
+export const lifecycle = {
+  "A-001": lifecycleA001,
+  "A-002": lifecycleA002,
+  "A-003": lifecycleA003,
+  "A-004": lifecycleA004,
+  "A-005": lifecycleA005,
+  "A-901": lifecycleA901,
 };

@@ -1,22 +1,35 @@
 // A-003 is robotic arm
 
-import { init, moveToAngle, shutdown as shutdownServos } from '../servos.js';
+import { updateMachineCreator } from "../firestore.js";
+import { init, moveToAngle, shutdown as shutdownServos } from "../servos.js";
 
 let lastValues = {};
 
 init();
 
+const updateMachine = updateMachineCreator("A-003");
+
+export async function onStart(data) {
+  const { ip } = data;
+
+  updateMachine({
+    bridgeIp: ip,
+    bridgeStatus: "IDLE",
+    isBridgeOnline: true,
+  });
+}
+
 export function onChange(data) {
-  console.log('A-003 onChange called');
-  console.log('A-003 onChange data:', data);
+  console.log("A-003 onChange called");
+  console.log("A-003 onChange data:", data);
   // If isActive flag is present, control servo power here
-  if (typeof data.isActive === 'boolean') {
+  if (typeof data.isActive === "boolean") {
     if (data.isActive === false) {
-      console.log('A-003: isActive=false — shutting down servos (no power)');
+      console.log("A-003: isActive=false — shutting down servos (no power)");
       try {
         shutdownServos();
       } catch (err) {
-        console.error('A-003: error shutting down servos:', err);
+        console.error("A-003: error shutting down servos:", err);
       }
       return;
     } else {
@@ -24,13 +37,29 @@ export function onChange(data) {
       try {
         init();
       } catch (err) {
-        console.error('A-003: error initializing servos:', err);
+        console.error("A-003: error initializing servos:", err);
       }
     }
   }
 
-  const { isActive, base, shoulder, elbow, wristPitch, wristRoll, gripperOpen } = data;
-  console.log({ isActive, base, shoulder, elbow, wristPitch, wristRoll, gripperOpen });
+  const {
+    isActive,
+    base,
+    shoulder,
+    elbow,
+    wristPitch,
+    wristRoll,
+    gripperOpen,
+  } = data;
+  console.log({
+    isActive,
+    base,
+    shoulder,
+    elbow,
+    wristPitch,
+    wristRoll,
+    gripperOpen,
+  });
 
   if (lastValues.base !== base) {
     moveToAngle(1, base);
@@ -60,11 +89,25 @@ export function onChange(data) {
   lastValues = { ...data };
 
   // Log each value on every change
-  console.log('A-003 onChange values:');
-  console.log('  base:', lastValues.base);
-  console.log('  shoulder:', lastValues.shoulder);
-  console.log('  elbow:', lastValues.elbow);
-  console.log('  wristPitch:', lastValues.wristPitch);
-  console.log('  wristRoll:', lastValues.wristRoll);
-  console.log('  gripperOpen:', lastValues.gripperOpen);
+  console.log("A-003 onChange values:");
+  console.log("  base:", lastValues.base);
+  console.log("  shoulder:", lastValues.shoulder);
+  console.log("  elbow:", lastValues.elbow);
+  console.log("  wristPitch:", lastValues.wristPitch);
+  console.log("  wristRoll:", lastValues.wristRoll);
+  console.log("  gripperOpen:", lastValues.gripperOpen);
 }
+
+export async function onEnd(data) {
+  return updateMachine({
+    bridgeIp: "",
+    bridgeStatus: "OFFLINE",
+    isBridgeOnline: false,
+  });
+}
+
+export const lifecycle = {
+  onStart,
+  onChange,
+  onEnd,
+};
