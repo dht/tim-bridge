@@ -94,6 +94,7 @@ async function cleanupAndExit(code = 0) {
       if (!cfg) continue;
 
       try {
+        const ip = await getIp();
         await cfg.callbacks.onEnd({ ip });
       } catch (err) {
         logCrash(`onEnd failed for ${id}`, err);
