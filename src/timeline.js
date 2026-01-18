@@ -1,7 +1,8 @@
 // timelinePlayback.js
 import { playMp3, stopAudio } from "./audio.js";
 import { cacheSessionFromTimelineUrl } from "./cache.js";
-import { updateMachineCreator } from "./firestore.js";
+import { updateMachineCreator, updateRunCreator } from "./firestore.js";
+import { guid4 } from "./guid.js";
 import { turnLights } from "./lights.js";
 import { log } from "./log.js";
 
@@ -19,8 +20,21 @@ export function stopPlayback() {
   log.info("🛑 stopPlayback()");
 }
 
+function calcTimelineDuration(timeline = []) {
+  try {
+    const lastKeyframe = timeline[timeline.length - 1];
+    if (!lastKeyframe) return 0;
+    const endTs = Number(lastKeyframe.ts);
+    return endTs;
+  } catch {
+    return 0;
+  }
+}
+
 export async function startPlaybackFromTimelineUrl(machineId, timelineUrl) {
   // prevent overlapping runs
+  let isSuccess = true,
+    error = null;
 
   if (isRunning) {
     log.warn("⏳ Playback already running, ignoring new timelineUrl", {
@@ -34,17 +48,30 @@ export async function startPlaybackFromTimelineUrl(machineId, timelineUrl) {
   log.info("timeline: playback start", { machineId, timelineUrl, myToken });
   const updateMachine = updateMachineCreator(machineId);
 
+  const runId = guid4();
+  const updateRun = updateRunCreator(runId);
+
   try {
-    const { sessionId, timeline, resolveLocal } =
+    const { isPreset, sessionId, timeline, resolveLocal } =
       await cacheSessionFromTimelineUrl(machineId, timelineUrl);
 
-    log.info("✅ Session cached", {
+    const duration = await calcTimelineDuration(timeline);
+
+    await updateRun({
+      id: runId,
+      isPreset,
+      machineId,
       sessionId,
-      items: timeline?.length ?? 0,
+      startTs: Date.now(),
+      duration,
+      timelineUrl,
     });
 
     await updateMachine({
       bridgeStatus: "PLAYBACK",
+      lastRunTs: Date.now(),
+      timelineDuration: duration,
+      timelineStartTime: Date.now(),
     });
 
     for (const item of timeline ?? []) {
@@ -91,10 +118,18 @@ export async function startPlaybackFromTimelineUrl(machineId, timelineUrl) {
     log.info("🏁 Timeline done");
   } catch (err) {
     log.error("❌ Timeline playback error:", err);
+    isSuccess = false;
+    error = err;
   } finally {
     if (runToken === myToken) {
       isRunning = false;
     }
+
+    await updateRun({
+      endTs: Date.now(),
+      isSuccess,
+      error: error ? String(error) : "",
+    });
 
     await updateMachine({
       bridgeStatus: "IDLE",

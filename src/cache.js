@@ -125,8 +125,7 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
     bridgeStatus: "CACHING",
   });
 
-  // for tests
-  await delay(5000); // allow status update to propagate
+  await delay(150);
 
   const sessionId = extractSessionId(timelineUrl);
   const sessionDir = path.join(CACHE_ROOT, sessionId);
@@ -191,5 +190,12 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
     sessionDir,
     assetsFailed: assetFailures.length,
   });
-  return { sessionId, sessionDir, timeline, resolveLocal, assetFailures };
+  return {
+    sessionId,
+    sessionDir,
+    isPreset: sessionId.startsWith("_"),
+    timeline,
+    resolveLocal,
+    assetFailures,
+  };
 }

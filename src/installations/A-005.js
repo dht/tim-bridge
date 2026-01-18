@@ -30,6 +30,7 @@ export async function onChange(ev) {
 
 export async function onEnd(data) {
   log.info("A-005 onEnd");
+
   return updateMachine({
     bridgeIp: "",
     bridgeStatus: "OFFLINE",

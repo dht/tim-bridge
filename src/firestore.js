@@ -204,3 +204,7 @@ export function listenToCollection(collectionName, callback) {
 export const updateMachineCreator = (machineId) => (change) => {
   return crud("machines").update(machineId, change);
 };
+
+export const updateRunCreator = (runId) => (change) => {
+  return crud("runs").update(runId, change);
+};
