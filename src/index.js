@@ -1,12 +1,13 @@
 import "dotenv/config";
 import fs from "fs-extra";
 import path from "path";
+import { getMachineConfig } from "./configs.js";
 import { logDevice } from "./device.js";
 import { listenToCollection } from "./firestore.js";
+import { getIp } from "./ip.js";
+import { clearLog, log, logCrash, registerCrashHandlers } from "./log.js";
 import { machinesInfo } from "./machines.js";
 import { setStatus } from "./rgb/rgb.js";
-import { getIp } from "./ip.js";
-import { getMachineConfig } from "./configs.js";
 
 const LISTEN_TO_ALL = process.env.LISTEN_TO_ALL === "true";
 const MACHINE_ID = process.env.MACHINE_ID;
@@ -16,19 +17,7 @@ const packageJsonPath = path.resolve("./package.json");
 // Track unsubscribe fns if listenToCollection returns them
 const unsubscribers = new Map();
 
-const log = {
-  info: (msg, ...args) => console.log(msg, ...args),
-  warn: (msg, ...args) => console.warn(msg, ...args),
-  error: (msg, ...args) => console.error(msg, ...args),
-};
-
-function logCrash(type, err) {
-  const message = err instanceof Error ? err.stack || err.message : String(err);
-  log.error(`❌ ${type}:`, message);
-}
-
-process.on("uncaughtException", (err) => logCrash("Uncaught Exception", err));
-process.on("unhandledRejection", (err) => logCrash("Unhandled Rejection", err));
+registerCrashHandlers();
 
 async function startMachine(id) {
   const cfg = getMachineConfig(id);
@@ -109,6 +98,7 @@ process.on("SIGINT", () => cleanupAndExit(0));
 process.on("SIGTERM", () => cleanupAndExit(0));
 
 async function run() {
+  clearLog();
   const pkg = await fs.readJson(packageJsonPath);
   const ip = await getIp();
 

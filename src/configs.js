@@ -1,4 +1,5 @@
 import { lifecycle } from "./installations/index.js";
+import { log } from "./log.js";
 import { machinesInfo } from "./machines.js";
 import { predicates } from "./predicates/index.js";
 

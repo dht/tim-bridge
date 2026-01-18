@@ -1,6 +1,7 @@
 // A-003 is robotic arm
 
 import { updateMachineCreator } from "../firestore.js";
+import { log } from "../log.js";
 import { init, moveToAngle, shutdown as shutdownServos } from "../servos.js";
 
 let lastValues = {};
@@ -12,6 +13,7 @@ const updateMachine = updateMachineCreator("A-003");
 export async function onStart(data) {
   const { ip } = data;
 
+  log.info("A-003 onStart", { ip });
   updateMachine({
     bridgeIp: ip,
     bridgeStatus: "IDLE",
@@ -19,17 +21,18 @@ export async function onStart(data) {
   });
 }
 
-export function onChange(data) {
-  console.log("A-003 onChange called");
-  console.log("A-003 onChange data:", data);
+export function onChange(ev) {
+  const data = ev.data;
+  log.info("A-003 onChange called");
+  log.info("A-003 onChange data:", data);
   // If isActive flag is present, control servo power here
   if (typeof data.isActive === "boolean") {
     if (data.isActive === false) {
-      console.log("A-003: isActive=false — shutting down servos (no power)");
+      log.info("A-003: isActive=false — shutting down servos (no power)");
       try {
         shutdownServos();
       } catch (err) {
-        console.error("A-003: error shutting down servos:", err);
+        log.error("A-003: error shutting down servos:", err);
       }
       return;
     } else {
@@ -37,7 +40,7 @@ export function onChange(data) {
       try {
         init();
       } catch (err) {
-        console.error("A-003: error initializing servos:", err);
+        log.error("A-003: error initializing servos:", err);
       }
     }
   }
@@ -51,7 +54,7 @@ export function onChange(data) {
     wristRoll,
     gripperOpen,
   } = data;
-  console.log({
+  log.info({
     isActive,
     base,
     shoulder,
@@ -89,16 +92,17 @@ export function onChange(data) {
   lastValues = { ...data };
 
   // Log each value on every change
-  console.log("A-003 onChange values:");
-  console.log("  base:", lastValues.base);
-  console.log("  shoulder:", lastValues.shoulder);
-  console.log("  elbow:", lastValues.elbow);
-  console.log("  wristPitch:", lastValues.wristPitch);
-  console.log("  wristRoll:", lastValues.wristRoll);
-  console.log("  gripperOpen:", lastValues.gripperOpen);
+  log.info("A-003 onChange values:");
+  log.info("  base:", lastValues.base);
+  log.info("  shoulder:", lastValues.shoulder);
+  log.info("  elbow:", lastValues.elbow);
+  log.info("  wristPitch:", lastValues.wristPitch);
+  log.info("  wristRoll:", lastValues.wristRoll);
+  log.info("  gripperOpen:", lastValues.gripperOpen);
 }
 
 export async function onEnd(data) {
+  log.info("A-003 onEnd");
   return updateMachine({
     bridgeIp: "",
     bridgeStatus: "OFFLINE",

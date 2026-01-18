@@ -1,5 +1,6 @@
 // A-001 is houses hillel and shammai
-import { crud, updateMachineCreator } from "../firestore.js";
+import { updateMachineCreator } from "../firestore.js";
+import { log } from "../log.js";
 import { setStatus } from "../rgb/rgb.js";
 import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
 
@@ -8,6 +9,7 @@ const updateMachine = updateMachineCreator("A-001");
 export async function onStart(data) {
   const { ip } = data;
 
+  log.info("A-001 onStart", { ip });
   updateMachine({
     bridgeIp: ip,
     bridgeStatus: "IDLE",
@@ -15,8 +17,13 @@ export async function onStart(data) {
   });
 }
 
-export async function onChange(data) {
-  const { timelineUrl, status } = data;
+export async function onChange(ev) {
+  const { timelineUrl, status } = ev.data;
+
+  log.info("A-001 onChange", {
+    status,
+    hasTimelineUrl: Boolean(timelineUrl),
+  });
 
   setStatus(status);
 
@@ -28,10 +35,12 @@ export async function onChange(data) {
   if (!timelineUrl) return;
 
   // Fire and forget (internally guarded against overlap)
-  startPlaybackFromTimelineUrl(timelineUrl);
+
+  startPlaybackFromTimelineUrl("A-001", timelineUrl);
 }
 
 export async function onEnd(data) {
+  log.info("A-001 onEnd");
   return updateMachine({
     bridgeIp: "",
     bridgeStatus: "OFFLINE",

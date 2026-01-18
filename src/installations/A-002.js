@@ -1,5 +1,6 @@
 // 2084
 import { updateMachineCreator } from "../firestore.js";
+import { log } from "../log.js";
 import { setStatus } from "../rgb/rgb.js";
 import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
 
@@ -8,6 +9,7 @@ const updateMachine = updateMachineCreator("A-002");
 export async function onStart(data) {
   const { ip } = data;
 
+  log.info("A-002 onStart", { ip });
   updateMachine({
     bridgeIp: ip,
     bridgeStatus: "IDLE",
@@ -15,9 +17,13 @@ export async function onStart(data) {
   });
 }
 
-export async function onChange(data) {
-  const { timelineUrl, status } = data;
+export async function onChange(ev) {
+  const { timelineUrl, status } = ev.data;
 
+  log.info("A-002 onChange", {
+    status,
+    hasTimelineUrl: Boolean(timelineUrl),
+  });
   if (status) setStatus(status);
 
   if (status === "1.IDLE") {
@@ -28,10 +34,11 @@ export async function onChange(data) {
   if (!timelineUrl) return;
 
   // Fire and forget (internally guarded against overlap)
-  startPlaybackFromTimelineUrl(timelineUrl);
+  startPlaybackFromTimelineUrl("A-002", timelineUrl);
 }
 
 export async function onEnd(data) {
+  log.info("A-002 onEnd");
   return updateMachine({
     bridgeIp: "",
     bridgeStatus: "OFFLINE",
