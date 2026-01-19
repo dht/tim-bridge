@@ -127,7 +127,7 @@ export async function clearCollection(name) {
 export function listenToCollectionShortPull(
   collectionName,
   onChange,
-  options = {}
+  options = {},
 ) {
   const db = getFirestore();
 
@@ -191,7 +191,7 @@ export function listenToCollection(collectionName, callback) {
   console.log(
     `Listening to Firestore collection "${collectionName}" using device type: ${device} → ${
       useShortPoll ? "short-poll" : "realtime onSnapshot"
-    }`
+    }`,
   );
 
   const method = useShortPoll
@@ -207,4 +207,8 @@ export const updateMachineCreator = (machineId) => (change) => {
 
 export const updateRunCreator = (runId) => (change) => {
   return crud("runs").update(runId, change);
+};
+
+export const updateKeyframe = (keyframeId, change) => {
+  return crud("keyframes").update(keyframeId, change);
 };

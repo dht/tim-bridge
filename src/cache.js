@@ -112,6 +112,16 @@ function collectAssetUrls(timeline) {
   return [...urls];
 }
 
+function fixIds(timeline, { machineId, sessionId }) {
+  return timeline.map((item, index) => {
+    const id = [machineId, sessionId, index].join("|");
+
+    return {
+      id,
+      ...item,
+    };
+  });
+}
 /**
  * Ensures timeline + assets are cached under: cache/<sessionId>/
  * Returns:
@@ -142,10 +152,13 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
     log.info("cache: downloading timeline", { timelineUrl, timelinePath });
     const res = await axios.get(timelineUrl);
     timeline = res.data;
+
+    timeline = fixIds(timeline, { machineId, sessionId });
+
     await fsp.writeFile(
       timelinePath,
       JSON.stringify(timeline, null, 2),
-      "utf-8"
+      "utf-8",
     );
     log.info("cache: timeline saved", { timelinePath });
   }

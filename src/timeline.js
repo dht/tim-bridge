@@ -1,7 +1,11 @@
 // timelinePlayback.js
 import { playMp3, stopAudio } from "./audio.js";
 import { cacheSessionFromTimelineUrl } from "./cache.js";
-import { updateMachineCreator, updateRunCreator } from "./firestore.js";
+import {
+  updateKeyframe,
+  updateMachineCreator,
+  updateRunCreator,
+} from "./firestore.js";
 import { guid4 } from "./guid.js";
 import { turnLights } from "./lights.js";
 import { log } from "./log.js";
@@ -31,6 +35,18 @@ function calcTimelineDuration(timeline = []) {
   }
 }
 
+function syncKeyframes(timeline = [], { machineId, sessionId }) {
+  for (let keyframe of timeline) {
+    console.log("keyframe.id ->", keyframe.id);
+
+    updateKeyframe(keyframe.id, {
+      ...keyframe,
+      machineId,
+      sessionId,
+    });
+  }
+}
+
 export async function startPlaybackFromTimelineUrl(machineId, timelineUrl) {
   // prevent overlapping runs
   let isSuccess = true,
@@ -54,6 +70,8 @@ export async function startPlaybackFromTimelineUrl(machineId, timelineUrl) {
   try {
     const { isPreset, sessionId, timeline, resolveLocal } =
       await cacheSessionFromTimelineUrl(machineId, timelineUrl);
+
+    syncKeyframes(timeline, { machineId, sessionId });
 
     const duration = await calcTimelineDuration(timeline);
 
