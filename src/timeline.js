@@ -2,6 +2,7 @@
 import { playMp3, stopAudio } from "./audio.js";
 import { cacheSessionFromTimelineUrl } from "./cache.js";
 import {
+  clearKeyframesForMachine,
   updateKeyframe,
   updateMachineCreator,
   updateRunCreator,
@@ -35,10 +36,10 @@ function calcTimelineDuration(timeline = []) {
   }
 }
 
-function syncKeyframes(timeline = [], { machineId, sessionId }) {
-  for (let keyframe of timeline) {
-    console.log("keyframe.id ->", keyframe.id);
+async function syncKeyframes(timeline = [], { machineId, sessionId }) {
+  await clearKeyframesForMachine(machineId);
 
+  for (let keyframe of timeline) {
     updateKeyframe(keyframe.id, {
       ...keyframe,
       machineId,

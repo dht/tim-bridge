@@ -203,6 +203,7 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
     sessionDir,
     assetsFailed: assetFailures.length,
   });
+
   return {
     sessionId,
     sessionDir,

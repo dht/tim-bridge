@@ -112,6 +112,27 @@ export function crud(collectionName) {
     listen: (callback) => {
       return listenToCollection(collectionName, callback);
     },
+    getAll: async () => {
+      const collectionRef = collection(db, collectionName);
+      const snapshot = await getDocs(collectionRef);
+      const results = [];
+      snapshot.forEach((doc) => {
+        results.push({ id: doc.id, ...doc.data() });
+      });
+      return results;
+    },
+    deleteByPredicate: async (predicate) => {
+      const collectionRef = collection(db, collectionName);
+      const snapshot = await getDocs(collectionRef);
+      const deletePromises = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (predicate(data)) {
+          deletePromises.push(deleteDoc(doc.ref));
+        }
+      });
+      await Promise.all(deletePromises);
+    },
   };
 }
 
@@ -211,4 +232,11 @@ export const updateRunCreator = (runId) => (change) => {
 
 export const updateKeyframe = (keyframeId, change) => {
   return crud("keyframes").update(keyframeId, change);
+};
+
+export const clearKeyframesForMachine = async (machineId) => {
+  const response = await crud("keyframes").deleteByPredicate(
+    (item) => item.machineId === machineId,
+  );
+  console.log("response ->", response);
 };
