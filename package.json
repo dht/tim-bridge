@@ -18,6 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@abandonware/noble": "1.9.2-26",
     "@firebase/app": "^0.14.4",
     "@firebase/firestore": "^4.9.2",
     "axios": "^1.13.2",
