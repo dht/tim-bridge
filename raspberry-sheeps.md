@@ -20,9 +20,9 @@ SD cards:
 | 1      | X     | 32 Bit Buster | no longer works                  |
 | 2      | V     | 64 bit        | Main - messed up with lunch defs |
 | 3      | X     | 64 Bit        | 2SD copied                       |
-| 4      | V     | 32 Bit        | for Pi0                          |
+| 4      | V     | 32 Bit Legacy | for Pi0                          |
 | 5      | V     | 64 Bit        | 2SD copied                       |
-| 6      | ?     | 64 Bit        | 2SD copied                       |
+| 6      | V     | 64 Bit        | 2SD copied robotic arm           |
 
 IP to SD
 
@@ -32,6 +32,7 @@ IP to SD
 | 5   | 10.0.0.51 | Houses       | SD4pi4   |
 | 6   | 10.0.0.52 | Robotic Arm  | SD6Pi5   |
 | 3   | 10.0.0.53 | Test         | TESTSD3  |
+| 4   | 10.0.0.54 | Pi0 W2       | Pi0W2    |
 
 Raspberry Pi4 works is compatible and better with 64 bit,
 Raspberry Pi Zero isn't compatible with 64 bit
