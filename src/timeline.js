@@ -48,7 +48,11 @@ async function syncKeyframes(timeline = [], { machineId, sessionId }) {
   }
 }
 
-export async function startPlaybackFromTimelineUrl(machineId, timelineUrl) {
+export async function startPlaybackFromTimelineUrl(
+  machineId,
+  timelineUrl,
+  runExtra = {},
+) {
   // prevent overlapping runs
   let isSuccess = true,
     error = null;
@@ -84,6 +88,7 @@ export async function startPlaybackFromTimelineUrl(machineId, timelineUrl) {
       startTs: Date.now(),
       duration,
       timelineUrl,
+      ...runExtra,
     });
 
     await updateMachine({

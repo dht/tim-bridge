@@ -1,83 +1,154 @@
-[2026-01-19T17:12:52.912Z] INFO  === TIM BRIDGE v1.0.36 STARTING ===
-[2026-01-19T17:12:52.912Z] INFO  IP Address: 10.0.0.21
-[2026-01-19T17:12:52.913Z] WARN  ⚠️  Listening to ALL machines
-[2026-01-19T17:12:52.992Z] INFO  🎧 Machine ID: A-001 (collection: "machines")
-[2026-01-19T17:12:52.992Z] INFO  A-001 onStart { ip: '10.0.0.21' }
-[2026-01-19T17:12:53.077Z] INFO  🎧 Machine ID: A-002 (collection: "machines")
-[2026-01-19T17:12:53.077Z] INFO  A-002 onStart { ip: '10.0.0.21' }
-[2026-01-19T17:12:53.155Z] INFO  🎧 Machine ID: A-003 (collection: "state")
-[2026-01-19T17:12:53.155Z] INFO  A-003 onStart { ip: '10.0.0.21' }
-[2026-01-19T17:12:53.243Z] INFO  🎧 Machine ID: A-004 (collection: "machines")
-[2026-01-19T17:12:53.243Z] INFO  A-004 onStart { ip: '10.0.0.21' }
-[2026-01-19T17:12:53.334Z] INFO  🎧 Machine ID: A-005 (collection: "machines")
-[2026-01-19T17:12:53.335Z] INFO  A-005 onStart { ip: '10.0.0.21' }
-[2026-01-19T17:12:53.422Z] INFO  🎧 Machine ID: A-901 (collection: "machines")
-[2026-01-19T17:12:53.422Z] INFO  A-901 onStart { ip: '10.0.0.21' }
-[2026-01-19T17:12:53.566Z] INFO  A-001 onChange { status: '3a.PLAYBACK', hasTimelineUrl: true }
-[2026-01-19T17:12:53.567Z] INFO  timeline: playback start {
+[2026-01-20T16:05:10.156Z] INFO  === TIM BRIDGE v1.0.36 STARTING ===
+[2026-01-20T16:05:10.156Z] INFO  IP Address: 10.0.0.12
+[2026-01-20T16:05:10.156Z] WARN  ⚠️  Listening to ALL machines
+[2026-01-20T16:05:10.266Z] INFO  🎧 Machine ID: A-001 (collection: "machines")
+[2026-01-20T16:05:10.267Z] INFO  A-001 onStart { ip: '10.0.0.12' }
+[2026-01-20T16:05:10.378Z] INFO  🎧 Machine ID: A-002 (collection: "machines")
+[2026-01-20T16:05:10.378Z] INFO  A-002 onStart { ip: '10.0.0.12' }
+[2026-01-20T16:05:10.467Z] INFO  🎧 Machine ID: A-003 (collection: "state")
+[2026-01-20T16:05:10.467Z] INFO  A-003 onStart { ip: '10.0.0.12' }
+[2026-01-20T16:05:10.551Z] INFO  🎧 Machine ID: A-004 (collection: "machines")
+[2026-01-20T16:05:10.551Z] INFO  A-004 onStart { ip: '10.0.0.12' }
+[2026-01-20T16:05:10.734Z] INFO  🎧 Machine ID: A-005 (collection: "machines")
+[2026-01-20T16:05:10.735Z] INFO  A-005 onStart { ip: '10.0.0.12' }
+[2026-01-20T16:05:10.862Z] INFO  🎧 Machine ID: A-901 (collection: "machines")
+[2026-01-20T16:05:10.863Z] INFO  A-901 onStart { ip: '10.0.0.12' }
+[2026-01-20T16:06:40.648Z] INFO  A-001 onChange { status: '3a.PLAYBACK', hasTimelineUrl: true }
+[2026-01-20T16:06:40.656Z] INFO  timeline: playback start {
   machineId: 'A-001',
-  timelineUrl: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/_timeline.json?rnd=0.5005513682334052',
+  timelineUrl: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/_timeline.json?rnd=0.9605340317639793',
   myToken: 1
 }
-[2026-01-19T17:12:53.568Z] INFO  cache: start session cache {
+[2026-01-20T16:06:40.657Z] INFO  cache: start session cache {
   machineId: 'A-001',
-  timelineUrl: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/_timeline.json?rnd=0.5005513682334052'
+  timelineUrl: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/_timeline.json?rnd=0.9605340317639793'
 }
-[2026-01-19T17:12:53.976Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
-[2026-01-19T17:12:53.981Z] INFO  cache: timeline cache hit {
+[2026-01-20T16:06:41.278Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:06:41.280Z] INFO  cache: timeline cache hit {
   timelinePath: '/Users/dht/projects/tim-bridge/cache/_test/timeline.json'
 }
-[2026-01-19T17:12:53.981Z] INFO  cache: caching assets { sessionId: '_test', assetCount: 8 }
-[2026-01-19T17:12:53.982Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
-[2026-01-19T17:12:53.982Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-1A.mp3' }
-[2026-01-19T17:12:53.982Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
-[2026-01-19T17:12:54.292Z] WARN  cache: asset download failed (http) {
+[2026-01-20T16:06:41.285Z] INFO  cache: caching assets { sessionId: '_test', assetCount: 8 }
+[2026-01-20T16:06:41.286Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:06:41.286Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-1A.mp3' }
+[2026-01-20T16:06:41.286Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:06:41.624Z] WARN  cache: asset download failed (http) {
   url: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/line-1A.jpg',
   status: 403
 }
-[2026-01-19T17:12:54.293Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
-[2026-01-19T17:12:54.293Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-2B.mp3' }
-[2026-01-19T17:12:54.293Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
-[2026-01-19T17:12:54.556Z] WARN  cache: asset download failed (http) {
+[2026-01-20T16:06:41.625Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:06:41.627Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-2B.mp3' }
+[2026-01-20T16:06:41.627Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:06:42.045Z] WARN  cache: asset download failed (http) {
   url: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/line-2B.jpg',
   status: 403
 }
-[2026-01-19T17:12:54.557Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
-[2026-01-19T17:12:54.558Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-3A.mp3' }
-[2026-01-19T17:12:54.558Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
-[2026-01-19T17:12:54.828Z] WARN  cache: asset download failed (http) {
+[2026-01-20T16:06:42.046Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:06:42.047Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-3A.mp3' }
+[2026-01-20T16:06:42.048Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:06:42.399Z] WARN  cache: asset download failed (http) {
   url: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/line-3A.jpg',
   status: 403
 }
-[2026-01-19T17:12:54.829Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
-[2026-01-19T17:12:54.832Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-4B.mp3' }
-[2026-01-19T17:12:54.832Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
-[2026-01-19T17:12:55.104Z] WARN  cache: asset download failed (http) {
+[2026-01-20T16:06:42.400Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:06:42.401Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-4B.mp3' }
+[2026-01-20T16:06:42.402Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:06:42.667Z] WARN  cache: asset download failed (http) {
   url: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/line-4B.jpg',
   status: 403
 }
-[2026-01-19T17:12:55.105Z] INFO  cache: session cache complete {
+[2026-01-20T16:06:42.668Z] INFO  cache: session cache complete {
   sessionId: '_test',
   sessionDir: '/Users/dht/projects/tim-bridge/cache/_test',
   assetsFailed: 4
 }
-[2026-01-19T17:12:55.521Z] INFO  timeline: item { hasAudio: false, hasLight: true, durationSec: 0 }
-[2026-01-19T17:12:55.522Z] INFO  timeline: lights { lightStatus: 'NONE' }
-[2026-01-19T17:12:57.024Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 2.77 }
-[2026-01-19T17:12:57.024Z] INFO  timeline: lights { lightStatus: 'ONE' }
-[2026-01-19T17:12:57.025Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-1A.mp3' }
-[2026-01-19T17:13:01.305Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 3.16 }
-[2026-01-19T17:13:01.305Z] INFO  timeline: lights { lightStatus: 'TWO' }
-[2026-01-19T17:13:01.306Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-2B.mp3' }
-[2026-01-19T17:13:05.978Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 2.77 }
-[2026-01-19T17:13:05.980Z] INFO  timeline: lights { lightStatus: 'ONE' }
-[2026-01-19T17:13:05.980Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-3A.mp3' }
-[2026-01-19T17:13:09.167Z] INFO  A-001 onChange { status: '3a.PLAYBACK', hasTimelineUrl: true }
-[2026-01-19T17:13:09.168Z] WARN  ⏳ Playback already running, ignoring new timelineUrl { machineId: 'A-001' }
-[2026-01-19T17:13:10.274Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 2.69 }
-[2026-01-19T17:13:10.275Z] INFO  timeline: lights { lightStatus: 'TWO' }
-[2026-01-19T17:13:10.275Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-4B.mp3' }
-[2026-01-19T17:13:14.473Z] INFO  timeline: item { hasAudio: false, hasLight: true, durationSec: 0 }
-[2026-01-19T17:13:14.474Z] INFO  timeline: lights { lightStatus: 'NONE' }
-[2026-01-19T17:13:15.975Z] INFO  🏁 Timeline done
-[2026-01-19T17:13:16.403Z] INFO  timeline: playback ended { machineId: 'A-001', myToken: 1 }
+[2026-01-20T16:06:43.108Z] INFO  timeline: item { hasAudio: false, hasLight: true, durationSec: 0 }
+[2026-01-20T16:06:43.108Z] INFO  timeline: lights { lightStatus: 'NONE' }
+[2026-01-20T16:06:44.610Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 2.77 }
+[2026-01-20T16:06:44.611Z] INFO  timeline: lights { lightStatus: 'ONE' }
+[2026-01-20T16:06:44.611Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-1A.mp3' }
+[2026-01-20T16:06:48.894Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 3.16 }
+[2026-01-20T16:06:48.906Z] INFO  timeline: lights { lightStatus: 'TWO' }
+[2026-01-20T16:06:48.908Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-2B.mp3' }
+[2026-01-20T16:06:53.574Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 2.77 }
+[2026-01-20T16:06:53.574Z] INFO  timeline: lights { lightStatus: 'ONE' }
+[2026-01-20T16:06:53.574Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-3A.mp3' }
+[2026-01-20T16:06:57.849Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 2.69 }
+[2026-01-20T16:06:57.850Z] INFO  timeline: lights { lightStatus: 'TWO' }
+[2026-01-20T16:06:57.850Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-4B.mp3' }
+[2026-01-20T16:07:02.057Z] INFO  timeline: item { hasAudio: false, hasLight: true, durationSec: 0 }
+[2026-01-20T16:07:02.058Z] INFO  timeline: lights { lightStatus: 'NONE' }
+[2026-01-20T16:07:03.560Z] INFO  🏁 Timeline done
+[2026-01-20T16:07:03.964Z] INFO  timeline: playback ended { machineId: 'A-001', myToken: 1 }
+[2026-01-20T16:07:26.659Z] INFO  A-001 onChange { status: '3a.PLAYBACK', hasTimelineUrl: true }
+[2026-01-20T16:07:26.660Z] INFO  timeline: playback start {
+  machineId: 'A-001',
+  timelineUrl: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/_timeline.json?rnd=0.974140211628749',
+  myToken: 2
+}
+[2026-01-20T16:07:26.661Z] INFO  cache: start session cache {
+  machineId: 'A-001',
+  timelineUrl: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/_timeline.json?rnd=0.974140211628749'
+}
+[2026-01-20T16:07:27.126Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:07:27.128Z] INFO  cache: timeline cache hit {
+  timelinePath: '/Users/dht/projects/tim-bridge/cache/_test/timeline.json'
+}
+[2026-01-20T16:07:27.130Z] INFO  cache: caching assets { sessionId: '_test', assetCount: 8 }
+[2026-01-20T16:07:27.131Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:07:27.132Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-1A.mp3' }
+[2026-01-20T16:07:27.133Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:07:27.605Z] WARN  cache: asset download failed (http) {
+  url: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/line-1A.jpg',
+  status: 403
+}
+[2026-01-20T16:07:27.606Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:07:27.608Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-2B.mp3' }
+[2026-01-20T16:07:27.608Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:07:28.223Z] WARN  cache: asset download failed (http) {
+  url: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/line-2B.jpg',
+  status: 403
+}
+[2026-01-20T16:07:28.223Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:07:28.224Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-3A.mp3' }
+[2026-01-20T16:07:28.225Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:07:28.529Z] WARN  cache: asset download failed (http) {
+  url: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/line-3A.jpg',
+  status: 403
+}
+[2026-01-20T16:07:28.529Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:07:28.530Z] INFO  cache: asset already present { destPath: '/Users/dht/projects/tim-bridge/cache/_test/line-4B.mp3' }
+[2026-01-20T16:07:28.530Z] INFO  cache: ensure dir { path: '/Users/dht/projects/tim-bridge/cache/_test' }
+[2026-01-20T16:07:29.580Z] WARN  cache: asset download failed (http) {
+  url: 'https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_test/line-4B.jpg',
+  status: 403
+}
+[2026-01-20T16:07:29.581Z] INFO  cache: session cache complete {
+  sessionId: '_test',
+  sessionDir: '/Users/dht/projects/tim-bridge/cache/_test',
+  assetsFailed: 4
+}
+[2026-01-20T16:07:29.997Z] INFO  timeline: item { hasAudio: false, hasLight: true, durationSec: 0 }
+[2026-01-20T16:07:29.997Z] INFO  timeline: lights { lightStatus: 'NONE' }
+[2026-01-20T16:07:31.500Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 2.77 }
+[2026-01-20T16:07:31.501Z] INFO  timeline: lights { lightStatus: 'ONE' }
+[2026-01-20T16:07:31.501Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-1A.mp3' }
+[2026-01-20T16:07:35.777Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 3.16 }
+[2026-01-20T16:07:35.777Z] INFO  timeline: lights { lightStatus: 'TWO' }
+[2026-01-20T16:07:35.778Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-2B.mp3' }
+[2026-01-20T16:07:40.447Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 2.77 }
+[2026-01-20T16:07:40.448Z] INFO  timeline: lights { lightStatus: 'ONE' }
+[2026-01-20T16:07:40.448Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-3A.mp3' }
+[2026-01-20T16:07:44.727Z] INFO  timeline: item { hasAudio: true, hasLight: true, durationSec: 2.69 }
+[2026-01-20T16:07:44.728Z] INFO  timeline: lights { lightStatus: 'TWO' }
+[2026-01-20T16:07:44.728Z] INFO  timeline: play mp3 { localMp3: '/Users/dht/projects/tim-bridge/cache/_test/line-4B.mp3' }
+[2026-01-20T16:07:48.926Z] INFO  timeline: item { hasAudio: false, hasLight: true, durationSec: 0 }
+[2026-01-20T16:07:48.926Z] INFO  timeline: lights { lightStatus: 'NONE' }
+[2026-01-20T16:07:50.427Z] INFO  🏁 Timeline done
+[2026-01-20T16:07:50.847Z] INFO  timeline: playback ended { machineId: 'A-001', myToken: 2 }
+[2026-01-20T16:09:04.049Z] INFO  Cleaning up before exit...
+[2026-01-20T16:09:04.243Z] INFO  A-001 onEnd
+[2026-01-20T16:09:04.817Z] INFO  A-002 onEnd
+[2026-01-20T16:09:05.168Z] INFO  A-003 onEnd
+[2026-01-20T16:09:05.493Z] INFO  A-004 onEnd
+[2026-01-20T16:09:05.872Z] INFO  A-005 onEnd
+[2026-01-20T16:09:06.202Z] INFO  A-901 onEnd

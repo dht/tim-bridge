@@ -1,5 +1,6 @@
 // A-001 is houses hillel and shammai
 import { updateMachineCreator } from "../firestore.js";
+import { checkIsDevHost } from "../ip.js";
 import { log } from "../log.js";
 import { setStatus } from "../rgb/rgb.js";
 import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
@@ -18,7 +19,9 @@ export async function onStart(data) {
 }
 
 export async function onChange(ev) {
-  const { timelineUrl, status } = ev.data;
+  const { timelineUrl, status, originWebpageUrl } = ev.data;
+
+  const isDev = checkIsDevHost(originWebpageUrl);
 
   log.info("A-001 onChange", {
     status,
@@ -36,7 +39,10 @@ export async function onChange(ev) {
 
   // Fire and forget (internally guarded against overlap)
 
-  startPlaybackFromTimelineUrl("A-001", timelineUrl);
+  startPlaybackFromTimelineUrl("A-001", timelineUrl, {
+    isDev,
+    originWebpageUrl,
+  });
 }
 
 export async function onEnd(data) {

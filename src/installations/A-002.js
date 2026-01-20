@@ -1,5 +1,6 @@
 // 2084
 import { updateMachineCreator } from "../firestore.js";
+import { checkIsDevHost } from "../ip.js";
 import { log } from "../log.js";
 import { setStatus } from "../rgb/rgb.js";
 import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
@@ -18,7 +19,9 @@ export async function onStart(data) {
 }
 
 export async function onChange(ev) {
-  const { timelineUrl, status } = ev.data;
+  const { timelineUrl, status, originWebpageUrl } = ev.data;
+
+  const isDev = checkIsDevHost(originWebpageUrl);
 
   log.info("A-002 onChange", {
     status,
@@ -34,7 +37,10 @@ export async function onChange(ev) {
   if (!timelineUrl) return;
 
   // Fire and forget (internally guarded against overlap)
-  startPlaybackFromTimelineUrl("A-002", timelineUrl);
+  startPlaybackFromTimelineUrl("A-002", timelineUrl, {
+    isDev,
+    originWebpageUrl,
+  });
 }
 
 export async function onEnd(data) {
