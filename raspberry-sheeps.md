@@ -23,6 +23,7 @@ SD cards:
 | 4      | V     | 32 Bit Legacy | for Pi0                          |
 | 5      | V     | 64 Bit        | 2SD copied                       |
 | 6      | V     | 64 Bit        | 2SD copied robotic arm           |
+| 7      | V     | 32 Bit Legacy | for Pi0                          |
 
 IP to SD
 
@@ -33,6 +34,7 @@ IP to SD
 | 6   | 10.0.0.52 | Robotic Arm  | SD6Pi5   |
 | 3   | 10.0.0.53 | Test         | TESTSD3  |
 | 4   | 10.0.0.54 | Pi0 W2       | Pi0W2    |
+| 7   | 10.0.0.55 | Pi0 W2       | Pi0W2    |
 
 Raspberry Pi4 works is compatible and better with 64 bit,
 Raspberry Pi Zero isn't compatible with 64 bit

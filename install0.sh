@@ -3,10 +3,11 @@
 # ⚠️ IMPORTANT:
 # This script MUST be run from inside the already-cloned repository:
 #
+# create dir, clone git:
+# mkdir projects
+# cd projects/
 # git clone https://github.com/dht/tim-bridge.git
-# sudo apt install -y \
-#  curl \
-#  git \
+
 # Do NOT git clone inside this script.
 # Clone the repo manually beforehand, then run:
 #

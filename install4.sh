@@ -16,11 +16,10 @@ export NVM_DIR="$HOME/.nvm"
 # shellcheck disable=SC1091
 source "$NVM_DIR/nvm.sh"
 
-echo "========== Installing Node.js 10 =========="
+echo "========== Installing Node.js =========="
 nvm install 20
 nvm use 20
 node -v
-echo "install bash: Verify it's v16.20.2 above this line"
 
 echo "========== Verifying Node Installation =========="
 node -v
