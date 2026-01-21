@@ -15,7 +15,6 @@
 #   ./install0.sh
 #
 # -------------------------------------------------
-
 set -e
 
 echo "========== Raspberry Pi Zero 2 W Setup =========="
@@ -70,6 +69,29 @@ node -v
 npm -v
 
 # -------------------------------------------------
+# Install PM2
+# -------------------------------------------------
+echo "========== Installing PM2 =========="
+npm install -g pm2
+
+pm2 -v
+
+# -------------------------------------------------
+# PM2 startup (systemd + NVM)
+# -------------------------------------------------
+echo "========== Configuring PM2 startup =========="
+
+pm2 startup systemd -u "$USER" --hp "$HOME"
+
+# -------------------------------------------------
 # Install project dependencies
 # -------------------------------------------------
-echo "========== Ins
+echo "========== Installing project dependencies =========="
+
+if [ -f package.json ]; then
+  npm install
+else
+  echo "⚠️  package.json not found, skipping npm install"
+fi
+
+echo "========== Setup complete =========="
