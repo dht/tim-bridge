@@ -7,7 +7,11 @@ echo "========== SPI 5-inch ILI9341 + XPT2046 Setup =========="
 # Enable SPI (always)
 # -------------------------------------------------
 echo "Enabling SPI..."
-sudo raspi-config nonint do_spi 0
+- sudo raspi-config nonint do_spi 0
++ if ! grep -q "^dtparam=spi=on" /boot/config.txt; then
++   echo "Enabling SPI via config.txt..."
++   echo "dtparam=spi=on" | sudo tee -a /boot/config.txt
++ fi
 
 # -------------------------------------------------
 # DO NOT disable HDMI (fbcp needs it)
