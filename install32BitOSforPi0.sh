@@ -45,23 +45,6 @@ if ! grep -q autojump ~/.bashrc; then
 fi
 
 # -------------------------------------------------
-# Static IP configuration (wlan0)
-# -------------------------------------------------
-echo "========== Configuring static IP (10.0.0.54) =========="
-
-if ! grep -q "10.0.0.54" /etc/dhcpcd.conf; then
-  sudo tee -a /etc/dhcpcd.conf > /dev/null <<'EOF'
-
-# ---- tim-bridge static IP ----
-interface wlan0
-static ip_address=10.0.0.54/24
-static routers=10.0.0.1
-static domain_name_servers=10.0.0.1 8.8.8.8
-# ------------------------------
-EOF
-fi
-
-# -------------------------------------------------
 # Install NVM
 # -------------------------------------------------
 echo "========== Installing NVM =========="

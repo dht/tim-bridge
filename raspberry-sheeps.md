@@ -23,18 +23,18 @@ SD cards:
 | 4      | V     | 32 Bit Legacy | for Pi0                          |
 | 5      | V     | 64 Bit        | 2SD copied                       |
 | 6      | V     | 64 Bit        | 2SD copied robotic arm           |
-| 7      | V     | 32 Bit Legacy | for Pi0                          |
+| 7      | V     | 32 Bit Legacy | 32Bit can match Pi0              |
 
 IP to SD
 
-| SD  | IP        | Installation | Hostname |
-| --- | --------- | ------------ | -------- |
-| 2   | 10.0.0.50 | Claygon      | SD2Pi4   |
-| 5   | 10.0.0.51 | Houses       | SD4pi4   |
-| 6   | 10.0.0.52 | Robotic Arm  | SD6Pi5   |
-| 3   | 10.0.0.53 | Test         | TESTSD3  |
-| 4   | 10.0.0.54 | Pi0 W2       | Pi0W2    |
-| 7   | 10.0.0.55 | Pi0 W2       | Pi0W2    |
+| SD  | IP        | Installation | OS Version    | Hostname | notes                     |
+| --- | --------- | ------------ | ------------- | -------- | ------------------------- |
+| 2   | 10.0.0.50 | Claygon      | 64 bit        | SD2Pi4   | Main                      |
+| 5   | 10.0.0.51 | Houses       | 64 bit        | SD4pi4   | messed up with lunch defs |
+| 6   | 10.0.0.52 | Robotic Arm  | 64 Bit        | SD6Pi5   | 2SD copied                |
+| 3   | 10.0.0.53 | Pi4 Test     | 64 Bit        | TESTSD3  |                           |
+| 4   | 10.0.0.54 | Pi0 test     | 32 Bit Legacy | Pi0W2    | 32 bit for Pi0 W2         |
+| 7   | 10.0.0.55 | Haiku        | 32 Bit Legacy | Pi0W22   | 32 bit for Pi0 W2         |
 
 Raspberry Pi4 works is compatible and better with 64 bit,
 Raspberry Pi Zero isn't compatible with 64 bit
