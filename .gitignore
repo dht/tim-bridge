@@ -5,3 +5,5 @@ src/service_account.json
 playground/service_account.json
 package-lock.json
 md-output.pdf
+playground/matrix-pixel/.venv/
+playground/matrix-pixel/__pycache__/

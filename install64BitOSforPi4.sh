@@ -35,19 +35,13 @@ echo "========== Installing autojump =========="
 sudo apt install -y autojump
 
 # Enable autojump for bash
+echo "========== Installing autojump =========="
+sudo apt install -y autojump
+
 if ! grep -q "autojump.bash" ~/.bashrc; then
   echo "" >> ~/.bashrc
   echo "# autojump" >> ~/.bashrc
   echo ". /usr/share/autojump/autojump.bash" >> ~/.bashrc
-fi
-
-# Enable autojump for zsh (if used)
-if [ -f ~/.zshrc ]; then
-  if ! grep -q "autojump.zsh" ~/.zshrc; then
-    echo "" >> ~/.zshrc
-    echo "# autojump" >> ~/.zshrc
-    echo ". /usr/share/autojump/autojump.zsh" >> ~/.zshrc
-  fi
 fi
 
 
