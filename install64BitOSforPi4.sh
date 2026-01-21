@@ -32,13 +32,24 @@ echo "========== Installing PM2 =========="
 npm install -g pm2
 
 echo "========== Installing autojump =========="
-sudo apt install autojump
-. /usr/share/autojump/autojump.zsh
-source ~/.zshrc
+sudo apt install -y autojump
 
-# echo "========== Starting PM2 Service =========="
-# pm2 start index.js --name tim --watch
-# pm2 save
+# Enable autojump for bash
+if ! grep -q "autojump.bash" ~/.bashrc; then
+  echo "" >> ~/.bashrc
+  echo "# autojump" >> ~/.bashrc
+  echo ". /usr/share/autojump/autojump.bash" >> ~/.bashrc
+fi
+
+# Enable autojump for zsh (if used)
+if [ -f ~/.zshrc ]; then
+  if ! grep -q "autojump.zsh" ~/.zshrc; then
+    echo "" >> ~/.zshrc
+    echo "# autojump" >> ~/.zshrc
+    echo ". /usr/share/autojump/autojump.zsh" >> ~/.zshrc
+  fi
+fi
+
 
 echo "========== Installation Complete =========="
 echo ""
