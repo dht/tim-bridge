@@ -1,6 +1,6 @@
 // type PlaybackFlavours = 'session' | 'realtime' | '11agent';
 
-export const machinesInfo = {
+export const machinesInfoDev = {
   "A-001-dev": {
     id: "A-001-dev",
     productId: "A-001",
@@ -43,4 +43,23 @@ export const machinesInfo = {
     name: "Claygon",
     playbackFlavour: "11agent",
   },
+};
+export const machinesInfoProd = {
+  "A-001-miffal": {
+    id: "A-001-miffal",
+    productId: "A-001",
+    name: "Houses",
+    playbackFlavour: "session",
+  },
+  "A-901-miffal": {
+    id: "A-901-miffal",
+    productId: "A-901",
+    name: "Claygon",
+    playbackFlavour: "11agent",
+  },
+};
+
+export const machinesInfo = {
+  ...machinesInfoDev,
+  ...machinesInfoProd,
 };

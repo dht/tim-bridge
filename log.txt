@@ -1,61 +1,57 @@
-[2026-01-21T15:05:28.207Z] INFO  === TIM BRIDGE v1.0.36 STARTING ===
-[2026-01-21T15:05:28.207Z] INFO  IP Address: 10.0.0.12
-[2026-01-21T15:05:28.207Z] WARN  ⚠️  Listening to ALL machines
-[2026-01-21T15:05:28.294Z] INFO  🎧 Machine ID: A-001-dev (collection: "machines")
-[2026-01-21T15:05:28.294Z] INFO  A-001 onStart { ip: '10.0.0.12' }
-[2026-01-21T15:05:28.390Z] INFO  🎧 Machine ID: A-002-dev (collection: "machines")
-[2026-01-21T15:05:28.390Z] INFO  A-002 onStart { ip: '10.0.0.12' }
-[2026-01-21T15:05:28.478Z] INFO  🎧 Machine ID: A-003-dev (collection: "machines")
-[2026-01-21T15:05:28.478Z] INFO  A-003 onStart { ip: '10.0.0.12' }
-[2026-01-21T15:05:28.559Z] INFO  🎧 Machine ID: A-004-dev (collection: "machines")
-[2026-01-21T15:05:28.560Z] INFO  A-004 onStart { ip: '10.0.0.12' }
-[2026-01-21T15:05:28.644Z] INFO  🎧 Machine ID: A-005-dev (collection: "machines")
-[2026-01-21T15:05:28.645Z] INFO  A-005 onStart { ip: '10.0.0.12' }
-[2026-01-21T15:05:28.828Z] INFO  🎧 Machine ID: A-006-dev (collection: "machines")
-[2026-01-21T15:05:28.828Z] INFO  A-006 onStart { ip: '10.0.0.12' }
-[2026-01-21T15:05:28.933Z] INFO  🎧 Machine ID: A-901-dev (collection: "machines")
-[2026-01-21T15:05:28.933Z] INFO  A-901 onStart { ip: '10.0.0.12' }
-[2026-01-21T15:05:29.127Z] INFO  A-003 onChange called
-[2026-01-21T15:05:29.141Z] INFO  A-003 onChange data: {
-  mp3Url: '',
-  isServerOnline: false,
-  clientTs: 1769007928478,
-  statusTs: 0,
-  bridgeIp: '10.0.0.12',
-  sessionTestPreset: { preset: '_test' },
-  statusNotes: '',
-  playbackFlavour: 'realtime',
-  radioIp: '',
-  mp3UrlTs: 0,
-  piIp: '',
-  name: 'Documentary',
+[2026-01-21T17:04:13.823Z] INFO  === TIM BRIDGE v1.0.36 STARTING ===
+[2026-01-21T17:04:13.823Z] INFO  IP Address: 10.0.0.12
+[2026-01-21T17:04:13.823Z] WARN  ⚠️  Listening to ALL machines
+[2026-01-21T17:04:13.955Z] INFO  🎧 Machine ID: A-001-dev (collection: "machines")
+[2026-01-21T17:04:13.955Z] INFO  A-001 onStart { ip: '10.0.0.12' }
+[2026-01-21T17:04:14.246Z] INFO  🎧 Machine ID: A-002-dev (collection: "machines")
+[2026-01-21T17:04:14.246Z] INFO  A-002 onStart { ip: '10.0.0.12' }
+[2026-01-21T17:04:14.397Z] INFO  🎧 Machine ID: A-003-dev (collection: "machines")
+[2026-01-21T17:04:14.397Z] INFO  A-003 onStart { ip: '10.0.0.12' }
+[2026-01-21T17:04:14.576Z] INFO  🎧 Machine ID: A-004-dev (collection: "machines")
+[2026-01-21T17:04:14.577Z] INFO  A-004 onStart { ip: '10.0.0.12' }
+[2026-01-21T17:04:14.863Z] INFO  🎧 Machine ID: A-005-dev (collection: "machines")
+[2026-01-21T17:04:14.864Z] INFO  A-005 onStart { ip: '10.0.0.12' }
+[2026-01-21T17:04:14.952Z] INFO  A-003 onChange called
+[2026-01-21T17:04:14.954Z] INFO  A-003 onChange data: {
+  runs: 0,
   isDev: true,
-  serverIp: '',
-  voiceIsActive: false,
-  voiceStatus: '',
-  radioStatus: 'OFFLINE',
-  status: '1.IDLE',
-  isBridgeOnline: true,
-  generatedSessions: 0,
+  mp3Url: '',
+  voiceIsSpeaking: false,
   voiceMicMuted: false,
+  productId: 'A-003',
+  radioIp: '',
+  version: '0.1',
+  bridgeStatus: 'IDLE',
+  lightStatus: 'NONE',
+  sessionTestPreset: { preset: '_test' },
+  voiceStatus: '',
+  status: '1.IDLE',
+  phoneStatus: 'NONE',
+  serverIp: '',
+  playbackFlavour: 'realtime',
+  voiceIsActive: false,
+  params: {},
+  name: 'Documentary',
+  isBridgeOnline: true,
+  radioStatus: 'OFFLINE',
+  id: 'A-003-dev',
   totalMinutes: 0,
+  isRadioOnline: false,
+  statusNotes: '',
+  mp3UrlTs: 0,
+  isServerOnline: false,
+  piIp: '',
+  generatedSessions: 0,
   currentSessionId: '',
   lastRanAt: 0,
-  presetSessions: 0,
-  bridgeStatus: 'IDLE',
-  phoneStatus: 'NONE',
-  params: {},
-  lightStatus: 'NONE',
-  version: '0.1',
-  id: 'A-003-dev',
-  voiceIsSpeaking: false,
-  productId: 'A-003',
-  serverStatus: 'OFFLINE',
-  isRadioOnline: false,
   generationDurationEstimated: 40,
-  runs: 0
+  bridgeIp: '10.0.0.12',
+  clientTs: 1769015054397,
+  statusTs: 0,
+  serverStatus: 'OFFLINE',
+  presetSessions: 0
 }
-[2026-01-21T15:05:29.143Z] INFO  {
+[2026-01-21T17:04:14.955Z] INFO  {
   isActive: undefined,
   base: undefined,
   shoulder: undefined,
@@ -64,10 +60,18 @@
   wristRoll: undefined,
   gripperOpen: undefined
 }
-[2026-01-21T15:05:29.143Z] INFO  A-003 onChange values:
-[2026-01-21T15:05:29.143Z] INFO    base: undefined
-[2026-01-21T15:05:29.143Z] INFO    shoulder: undefined
-[2026-01-21T15:05:29.143Z] INFO    elbow: undefined
-[2026-01-21T15:05:29.143Z] INFO    wristPitch: undefined
-[2026-01-21T15:05:29.143Z] INFO    wristRoll: undefined
-[2026-01-21T15:05:29.143Z] INFO    gripperOpen: undefined
+[2026-01-21T17:04:14.956Z] INFO  A-003 onChange values:
+[2026-01-21T17:04:14.956Z] INFO    base: undefined
+[2026-01-21T17:04:14.956Z] INFO    shoulder: undefined
+[2026-01-21T17:04:14.957Z] INFO    elbow: undefined
+[2026-01-21T17:04:14.957Z] INFO    wristPitch: undefined
+[2026-01-21T17:04:14.957Z] INFO    wristRoll: undefined
+[2026-01-21T17:04:14.957Z] INFO    gripperOpen: undefined
+[2026-01-21T17:04:15.019Z] INFO  🎧 Machine ID: A-006-dev (collection: "machines")
+[2026-01-21T17:04:15.020Z] INFO  A-006 onStart { ip: '10.0.0.12' }
+[2026-01-21T17:04:15.136Z] INFO  🎧 Machine ID: A-901-dev (collection: "machines")
+[2026-01-21T17:04:15.137Z] INFO  A-901 onStart { ip: '10.0.0.12' }
+[2026-01-21T17:04:15.247Z] INFO  🎧 Machine ID: A-001-miffal (collection: "machines")
+[2026-01-21T17:04:15.248Z] INFO  A-001 onStart { ip: '10.0.0.12' }
+[2026-01-21T17:04:15.397Z] INFO  🎧 Machine ID: A-901-miffal (collection: "machines")
+[2026-01-21T17:04:15.398Z] INFO  A-901 onStart { ip: '10.0.0.12' }
