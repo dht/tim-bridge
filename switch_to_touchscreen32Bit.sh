@@ -10,17 +10,15 @@ echo "Enabling SPI..."
 sudo raspi-config nonint do_spi 0
 
 # -------------------------------------------------
-# Disable HDMI (only if not already set)
+# DO NOT disable HDMI (fbcp needs it)
 # -------------------------------------------------
-if ! grep -q "hdmi_blanking=2" /boot/config.txt; then
-  echo "Disabling HDMI..."
-  echo "hdmi_blanking=2" | sudo tee -a /boot/config.txt
-else
-  echo "HDMI already disabled, skipping"
+if grep -q "hdmi_blanking=2" /boot/config.txt; then
+  echo "Removing hdmi_blanking=2 (breaks fbcp)..."
+  sudo sed -i '/hdmi_blanking=2/d' /boot/config.txt
 fi
 
 # -------------------------------------------------
-# Dependencies check
+# Dependencies (install only if missing)
 # -------------------------------------------------
 DEPS=(
   git
@@ -31,42 +29,38 @@ DEPS=(
   libraspberrypi-dev
 )
 
-MISSING_DEPS=()
-
+MISSING=()
 for pkg in "${DEPS[@]}"; do
-  if ! dpkg -s "$pkg" >/dev/null 2>&1; then
-    MISSING_DEPS+=("$pkg")
-  fi
+  dpkg -s "$pkg" >/dev/null 2>&1 || MISSING+=("$pkg")
 done
 
-if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
-  echo "Installing missing dependencies: ${MISSING_DEPS[*]}"
+if [ ${#MISSING[@]} -gt 0 ]; then
+  echo "Installing missing dependencies: ${MISSING[*]}"
   sudo apt update
-  sudo apt install -y "${MISSING_DEPS[@]}"
+  sudo apt install -y "${MISSING[@]}"
 else
   echo "All dependencies already installed, skipping"
 fi
 
 # -------------------------------------------------
-# Clone fbcp-ili9341 (if missing)
+# Clone fbcp-ili9341 if missing
 # -------------------------------------------------
 cd ~
 if [ ! -d fbcp-ili9341 ]; then
   echo "Cloning fbcp-ili9341..."
   git clone https://github.com/juj/fbcp-ili9341.git
 else
-  echo "fbcp-ili9341 already cloned, skipping"
+  echo "fbcp-ili9341 already present, skipping clone"
 fi
 
 # -------------------------------------------------
-# Build fbcp-ili9341 (only if binary missing)
+# Build fbcp-ili9341 if binary missing
 # -------------------------------------------------
 if [ ! -x /usr/local/bin/fbcp-ili9341 ]; then
   echo "Building fbcp-ili9341..."
   cd ~/fbcp-ili9341
   rm -rf build
-  mkdir build
-  cd build
+  mkdir build && cd build
 
   cmake .. \
     -DILI9341=ON \
@@ -81,32 +75,32 @@ else
 fi
 
 # -------------------------------------------------
-# Install / enable fbcp systemd service
+# Install / fix systemd service (FORCE root)
 # -------------------------------------------------
-if [ ! -f /etc/systemd/system/fbcp-ili9341.service ]; then
-  echo "Installing fbcp systemd service..."
-  sudo tee /etc/systemd/system/fbcp-ili9341.service > /dev/null <<'EOF'
+echo "Installing fbcp-ili9341 systemd service (root)..."
+
+sudo tee /etc/systemd/system/fbcp-ili9341.service > /dev/null <<'EOF'
 [Unit]
 Description=Framebuffer copy to ILI9341 SPI display
 After=multi-user.target
 
 [Service]
+Type=simple
 ExecStart=/usr/local/bin/fbcp-ili9341
 Restart=always
 RestartSec=1
+User=root
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-  sudo systemctl daemon-reexec
-  sudo systemctl enable fbcp-ili9341
-else
-  echo "fbcp service already installed, skipping"
-fi
+sudo systemctl daemon-reload
+sudo systemctl enable fbcp-ili9341
+sudo systemctl restart fbcp-ili9341
 
 # -------------------------------------------------
-# Enable XPT2046 touch
+# Enable XPT2046 touch (only once)
 # -------------------------------------------------
 if ! grep -q "dtoverlay=xpt2046" /boot/config.txt; then
   echo "Enabling XPT2046 touch..."
@@ -120,5 +114,5 @@ else
   echo "XPT2046 already enabled, skipping"
 fi
 
-echo "========== Touchscreen switch complete =========="
+echo "========== Setup complete =========="
 echo "Reboot REQUIRED: sudo reboot"
