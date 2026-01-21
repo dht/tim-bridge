@@ -5,7 +5,8 @@ import { predicates } from "./predicates/index.js";
 
 export function getMachineConfig(id) {
   const machineInfo = machinesInfo?.[id];
-  const callbacks = lifecycle?.[id];
+  const productId = machineInfo?.productId;
+  const callbacks = lifecycle?.[id] || lifecycle?.[productId];
 
   if (!machineInfo) {
     log.warn(`No machinesInfo found for MACHINE_ID: ${id}`);
@@ -27,7 +28,7 @@ export function getMachineConfig(id) {
     typeof onEnd !== "function"
   ) {
     log.warn(
-      `Lifecycle for ${id} is missing required handlers (onStart/onChange/onEnd).`
+      `Lifecycle for ${id} is missing required handlers (onStart/onChange/onEnd).`,
     );
     return null;
   }

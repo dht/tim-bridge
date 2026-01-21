@@ -12,9 +12,8 @@ let lastStatus = null;
 
 const URL = "https://tim-os.web.app/A-901/edge/running";
 
-const updateMachine = updateMachineCreator("A-901");
-
-export async function onStart(data) {
+export async function onStart(id, data) {
+  const updateMachine = updateMachineCreator(id);
   const { ip } = data;
 
   log.info("A-901 onStart", { ip });
@@ -25,7 +24,7 @@ export async function onStart(data) {
   });
 }
 
-export async function onChange(ev) {
+export async function onChange(_id, ev) {
   const data = ev.data;
   const { status, params } = data;
 
@@ -51,8 +50,11 @@ export async function onChange(ev) {
   lastStatus = status;
 }
 
-export async function onEnd(data) {
+export async function onEnd(id, data) {
   log.info("A-901 onEnd");
+
+  const updateMachine = updateMachineCreator(id);
+
   return updateMachine({
     bridgeIp: "",
     bridgeStatus: "OFFLINE",

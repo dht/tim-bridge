@@ -31,7 +31,7 @@ async function startMachine(id) {
 
   // If onStart throws, fail that machine without taking down all
   try {
-    callbacks.onStart({ ip });
+    callbacks.onStart(id, { ip });
   } catch (err) {
     logCrash(`onStart failed for ${id}`, err);
     return;
@@ -45,7 +45,7 @@ async function startMachine(id) {
     if (predicate && !predicate(change)) return;
 
     try {
-      callbacks.onChange(change);
+      callbacks.onChange(id, change);
     } catch (err) {
       logCrash(`onChange failed for ${id}`, err);
     }
@@ -84,7 +84,7 @@ async function cleanupAndExit(code = 0) {
 
       try {
         const ip = await getIp();
-        await cfg.callbacks.onEnd({ ip });
+        await cfg.callbacks.onEnd(id, { ip });
       } catch (err) {
         logCrash(`onEnd failed for ${id}`, err);
       }

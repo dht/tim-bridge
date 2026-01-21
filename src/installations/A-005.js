@@ -2,9 +2,8 @@ import { updateMachineCreator } from "../firestore.js";
 import { log } from "../log.js";
 import { setStatus } from "../rgb/rgb.js";
 
-const updateMachine = updateMachineCreator("A-005");
-
-export async function onStart(data) {
+export async function onStart(id, data) {
+  const updateMachine = updateMachineCreator(id);
   const { ip } = data;
 
   log.info("A-005 onStart", { ip });
@@ -16,7 +15,7 @@ export async function onStart(data) {
 }
 
 // haiku
-export async function onChange(ev) {
+export async function onChange(_id, ev) {
   const data = ev.data;
   const { status } = data;
 
@@ -28,8 +27,10 @@ export async function onChange(ev) {
   log.info("A-005 ✅ Playback + Lights completed.");
 }
 
-export async function onEnd(data) {
+export async function onEnd(id, data) {
   log.info("A-005 onEnd");
+
+  const updateMachine = updateMachineCreator(id);
 
   return updateMachine({
     bridgeIp: "",

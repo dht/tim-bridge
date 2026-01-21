@@ -6,8 +6,7 @@ export async function onStart(id, data) {
   const updateMachine = updateMachineCreator(id);
   const { ip } = data;
 
-  log.info("A-004 onStart", { ip });
-
+  log.info("A-006 onStart", { ip });
   updateMachine({
     bridgeIp: ip,
     bridgeStatus: "IDLE",
@@ -15,22 +14,21 @@ export async function onStart(id, data) {
   });
 }
 
-// candle
+// haiku
 export async function onChange(_id, ev) {
   const data = ev.data;
   const { status } = data;
 
   if (status) {
-    log.info("A-004 LED status:", status);
+    log.info("A-006 LED status:", status);
     setStatus(status);
   }
 
-  log.info("A-004 ✅ Playback + Lights completed.");
+  log.info("A-006 ✅ Playback + Lights completed.");
 }
 
 export async function onEnd(id, data) {
-  log.info("A-004 onEnd");
-
+  log.info("A-006 onEnd");
   const updateMachine = updateMachineCreator(id);
 
   return updateMachine({

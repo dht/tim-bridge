@@ -223,6 +223,7 @@ export function listenToCollection(collectionName, callback) {
 }
 
 export const updateMachineCreator = (machineId) => (change) => {
+  console.log("machineId ->", machineId);
   return crud("machines").update(machineId, change);
 };
 

@@ -5,9 +5,8 @@ import { log } from "../log.js";
 import { setStatus } from "../rgb/rgb.js";
 import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
 
-const updateMachine = updateMachineCreator("A-002");
-
-export async function onStart(data) {
+export async function onStart(id, data) {
+  const updateMachine = updateMachineCreator(id);
   const { ip } = data;
 
   log.info("A-002 onStart", { ip });
@@ -18,7 +17,7 @@ export async function onStart(data) {
   });
 }
 
-export async function onChange(ev) {
+export async function onChange(_id, ev) {
   const { timelineUrl, status, originWebpageUrl } = ev.data;
 
   const isDev = checkIsDevHost(originWebpageUrl);
@@ -43,8 +42,11 @@ export async function onChange(ev) {
   });
 }
 
-export async function onEnd(data) {
+export async function onEnd(id, data) {
   log.info("A-002 onEnd");
+
+  const updateMachine = updateMachineCreator(id);
+
   return updateMachine({
     bridgeIp: "",
     bridgeStatus: "OFFLINE",

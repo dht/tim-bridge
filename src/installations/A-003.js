@@ -8,9 +8,8 @@ let lastValues = {};
 
 init();
 
-const updateMachine = updateMachineCreator("A-003");
-
-export async function onStart(data) {
+export async function onStart(id, data) {
+  const updateMachine = updateMachineCreator(id);
   const { ip } = data;
 
   log.info("A-003 onStart", { ip });
@@ -21,7 +20,7 @@ export async function onStart(data) {
   });
 }
 
-export function onChange(ev) {
+export function onChange(_id, ev) {
   const data = ev.data;
   log.info("A-003 onChange called");
   log.info("A-003 onChange data:", data);
@@ -101,8 +100,11 @@ export function onChange(ev) {
   log.info("  gripperOpen:", lastValues.gripperOpen);
 }
 
-export async function onEnd(data) {
+export async function onEnd(id, data) {
   log.info("A-003 onEnd");
+
+  const updateMachine = updateMachineCreator(id);
+
   return updateMachine({
     bridgeIp: "",
     bridgeStatus: "OFFLINE",
