@@ -1,6 +1,7 @@
 import asyncio
 import io
 import os
+import sys
 
 from PIL import Image as PilImage
 from PIL import ImageDraw
