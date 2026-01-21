@@ -39,15 +39,16 @@ fi
 # -------------------------------------------------
 # Build fbcp-ili9341
 # -------------------------------------------------
-cd fbcp-ili9341
-mkdir -p build
+cd ~/fbcp-ili9341
+rm -rf build
+mkdir build
 cd build
 
 cmake .. \
   -DILI9341=ON \
-  -DSPI_BUS_CLOCK_DIVISOR=6 \
+  -DSPI_BUS_CLOCK_DIVISOR=16 \
   -DGPIO_TFT_CS=8 \
-  -DGPIO_TFT_DC=25 \
+  -DGPIO_TFT_DATA_CONTROL=25 \
   -DGPIO_TFT_RST=24 \
   -DDISPLAY_ROTATE_180_DEGREES=OFF
 
