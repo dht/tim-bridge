@@ -6,7 +6,7 @@ import { logDevice } from "./device.js";
 import { listenToCollection } from "./firestore.js";
 import { getIp } from "./ip.js";
 import { clearLog, log, logCrash, registerCrashHandlers } from "./log.js";
-import { machinesInfo } from "./machines.js";
+import { machinesInfo, machinesInfoDev } from "./machines.js";
 import { setStatus } from "./rgb/rgb.js";
 
 const LISTEN_TO_ALL = process.env.LISTEN_TO_ALL === "true";
@@ -62,7 +62,7 @@ async function cleanupAndExit(code = 0) {
     log.info("Cleaning up before exit...");
 
     const ids = LISTEN_TO_ALL
-      ? Object.keys(machinesInfo)
+      ? Object.keys(machinesInfoDev)
       : [MACHINE_ID].filter(Boolean);
 
     // Stop firestore listeners first (if supported)
