@@ -8,7 +8,23 @@ from PIL import ImageDraw
 from idotmatrix import Image
 from idotmatrix.connectionManager import ConnectionManager
 
-ADDRESS = os.getenv("IDOTMATRIX_ADDRESS", "548D5EE8-4BEB-6B78-E532-6E44368D78AD")
+
+MAC_ADDRESS = "548D5EE8-4BEB-6B78-E532-6E44368D78AD"  # macOS BLE UUID
+PI_ADDRESS  = "F2:1A:C7:C5:53:24"                   # Linux BLE MAC
+
+def get_address():
+    if sys.platform == "darwin":
+        return MAC_ADDRESS
+    elif sys.platform.startswith("linux"):
+        return PI_ADDRESS
+    else:
+        raise RuntimeError(f"Unsupported platform: {sys.platform}")
+
+address = get_address()
+print(f"Connecting to {address}")
+
+
+ADDRESS = os.getenv("IDOTMATRIX_ADDRESS", address)
 PIXEL_SIZE = int(os.getenv("IDOTMATRIX_SIZE", "32"))
 
 
@@ -29,7 +45,7 @@ def _frame(pixel_size: int, corner_xy: tuple[int, int]) -> PilImage.Image:
     y0 = max(0, y - dot_radius)
     x1 = min(pixel_size - 1, x + dot_radius)
     y1 = min(pixel_size - 1, y + dot_radius)
-    draw.ellipse([x0, y0, x1, y1], fill=(255, 255, 0))
+    draw.ellipse([x0, y0, x1, y1], fill=(191, 99, 181))
 
     return img
 
