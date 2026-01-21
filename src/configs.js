@@ -4,7 +4,6 @@ import { machinesInfo } from "./machines.js";
 import { predicates } from "./predicates/index.js";
 
 export function getMachineConfig(id) {
-  const 
   const machineInfo = machinesInfo?.[id];
   const productId = machineInfo?.productId;
   const callbacks = lifecycle?.[id] || lifecycle?.[productId];
