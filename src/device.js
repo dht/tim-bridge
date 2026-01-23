@@ -17,7 +17,7 @@ function getCpuModel() {
       .find(
         (line) =>
           line.toLowerCase().startsWith("model") ||
-          line.toLowerCase().startsWith("hardware")
+          line.toLowerCase().startsWith("hardware"),
       );
     return modelLine ? modelLine.split(":")[1].trim() : null;
   } catch {
@@ -46,14 +46,14 @@ export function identifyDevice() {
   const output = isPiZero1
     ? "pi-zero-1"
     : isPiZero2
-    ? "pi-zero-2"
-    : isPi5
-    ? "pi-5"
-    : isPi4
-    ? "pi-4"
-    : isMacArm
-    ? "mac"
-    : "other";
+      ? "pi-zero-2"
+      : isPi5
+        ? "pi-5"
+        : isPi4
+          ? "pi-4"
+          : isMacArm
+            ? "mac"
+            : "other";
 
   return { device: output, arch, armVersion, platform, cpuModel };
 }

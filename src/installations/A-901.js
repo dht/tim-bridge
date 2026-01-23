@@ -4,19 +4,18 @@
 
 import { closeBrowser, closeBrowserDelayed, openBrowser } from "../browser.js";
 import { updateMachineCreator } from "../firestore.js";
-import { log } from "../log.js";
+import { getLogger } from "../globals.js";
 
 const MAX_SESSION_DURATION_MS = 3 * 60 * 1000; // 3 minutes
 
 let lastStatus = null;
 
-const URL = "https://tim-os.web.app/A-901/edge/running";
-
 export async function onStart(id, data) {
+  const logger = getLogger();
   const updateMachine = updateMachineCreator(id);
   const { ip } = data;
 
-  log.info("A-901 onStart", { ip });
+  logger.info(`${id} onStart`, { ip });
   updateMachine({
     bridgeIp: ip,
     bridgeStatus: "IDLE",
@@ -24,24 +23,27 @@ export async function onStart(id, data) {
   });
 }
 
-export async function onChange(_id, ev) {
+export async function onChange(id, ev) {
+  const logger = getLogger();
   const data = ev.data;
   const { status, params } = data;
 
-  log.info("A-901 onChange", { status, params });
+  logger.info(`${id} onChange`, { status, params });
   if (!status) return;
 
   switch (status) {
     case "3b.DONE":
     case "4.RESETTING":
     case "1.IDLE":
-      log.info("A-901 closing browser for status:", status);
+      logger.info(`${id} closing browser for status:`, status);
       closeBrowser();
       break;
     case "3a.PLAYBACK":
       // closeBrowser();
       // delay (500)
-      log.info("A-901 opening browser for playback");
+      const URL = `https://tim-os.web.app/${id}}/edge/running`;
+
+      logger.info(`${id} opening browser for playback`);
       openBrowser(URL + "?language=" + (params?.language || "en"));
       closeBrowserDelayed(MAX_SESSION_DURATION_MS);
       break;
@@ -51,7 +53,8 @@ export async function onChange(_id, ev) {
 }
 
 export async function onEnd(id, data) {
-  log.info("A-901 onEnd");
+  const logger = getLogger();
+  logger.info(`${id} onEnd`);
 
   const updateMachine = updateMachineCreator(id);
 

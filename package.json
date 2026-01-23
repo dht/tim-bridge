@@ -29,7 +29,8 @@
     "internal-ip": "^8.0.1",
     "pca9685": "^5.0.0",
     "pigpio": "^3.3.1",
-    "rpio": "^2.4.2"
+    "rpio": "^2.4.2",
+    "tim-logger": "0.0.39"
   },
   "devDependencies": {
     "husky": "^9.1.7"

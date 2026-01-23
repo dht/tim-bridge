@@ -1,12 +1,13 @@
 import { updateMachineCreator } from "../firestore.js";
-import { log } from "../log.js";
+import { getLogger } from "../globals.js";
 import { setStatus } from "../rgb/rgb.js";
 
 export async function onStart(id, data) {
+  const logger = getLogger();
   const updateMachine = updateMachineCreator(id);
   const { ip } = data;
 
-  log.info("A-004 onStart", { ip });
+  logger.info(`${id} onStart`, { ip });
 
   updateMachine({
     bridgeIp: ip,
@@ -16,20 +17,22 @@ export async function onStart(id, data) {
 }
 
 // candle
-export async function onChange(_id, ev) {
+export async function onChange(id, ev) {
+  const logger = getLogger();
   const data = ev.data;
   const { status } = data;
 
   if (status) {
-    log.info("A-004 LED status:", status);
+    logger.info(`${id} LED status: ${status}`);
     setStatus(status);
   }
 
-  log.info("A-004 ✅ Playback + Lights completed.");
+  logger.info(`${id} ✅ Playback + Lights completed.`);
 }
 
 export async function onEnd(id, data) {
-  log.info("A-004 onEnd");
+  const logger = getLogger();
+  logger.info(`${id} onEnd`);
 
   const updateMachine = updateMachineCreator(id);
 

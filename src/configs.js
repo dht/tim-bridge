@@ -1,20 +1,22 @@
+import { getLogger } from "./globals.js";
 import { lifecycle } from "./installations/index.js";
-import { log } from "./log.js";
 import { machinesInfo } from "./machines.js";
 import { predicates } from "./predicates/index.js";
 
 export function getMachineConfig(id) {
+  const logger = getLogger();
+
   const machineInfo = machinesInfo?.[id];
   const productId = machineInfo?.productId;
-  const callbacks = lifecycle?.[id] || lifecycle?.[productId];
+  const callbacks = lifecycle?.[productId];
 
   if (!machineInfo) {
-    log.warn(`No machinesInfo found for MACHINE_ID: ${id}`);
+    logger.warn(`No machinesInfo found for MACHINE_ID: ${id}`);
     return null;
   }
 
   if (!callbacks) {
-    log.warn(`No lifecycle callbacks found for MACHINE_ID: ${id}`);
+    logger.warn(`No lifecycle callbacks found for MACHINE_ID: ${id}`);
     return null;
   }
 
@@ -27,7 +29,7 @@ export function getMachineConfig(id) {
     typeof onChange !== "function" ||
     typeof onEnd !== "function"
   ) {
-    log.warn(
+    logger.warn(
       `Lifecycle for ${id} is missing required handlers (onStart/onChange/onEnd).`,
     );
     return null;
@@ -37,7 +39,7 @@ export function getMachineConfig(id) {
   const predicate = predicates?.[playbackFlavour];
 
   // Preserve existing behavior
-  const collection = id === "A-003" ? "state" : "machines";
+  const collection = productId === "A-003" ? "state" : "machines";
 
   return { id, machineInfo, callbacks, playbackFlavour, predicate, collection };
 }

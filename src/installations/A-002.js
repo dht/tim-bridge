@@ -1,15 +1,16 @@
 // 2084
 import { updateMachineCreator } from "../firestore.js";
+import { getLogger } from "../globals.js";
 import { checkIsDevHost } from "../ip.js";
-import { log } from "../log.js";
 import { setStatus } from "../rgb/rgb.js";
 import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
 
 export async function onStart(id, data) {
+  const logger = getLogger();
   const updateMachine = updateMachineCreator(id);
   const { ip } = data;
 
-  log.info("A-002 onStart", { ip });
+  logger.info("A-002 onStart", { ip });
   updateMachine({
     bridgeIp: ip,
     bridgeStatus: "IDLE",
@@ -17,12 +18,13 @@ export async function onStart(id, data) {
   });
 }
 
-export async function onChange(_id, ev) {
+export async function onChange(id, ev) {
+  const logger = getLogger();
   const { timelineUrl, status, originWebpageUrl } = ev.data;
 
   const isDev = checkIsDevHost(originWebpageUrl);
 
-  log.info("A-002 onChange", {
+  logger.info(`${id} onChange`, {
     status,
     hasTimelineUrl: Boolean(timelineUrl),
   });
@@ -36,14 +38,15 @@ export async function onChange(_id, ev) {
   if (!timelineUrl) return;
 
   // Fire and forget (internally guarded against overlap)
-  startPlaybackFromTimelineUrl("A-002", timelineUrl, {
+  startPlaybackFromTimelineUrl(id, timelineUrl, {
     isDev,
     originWebpageUrl,
   });
 }
 
 export async function onEnd(id, data) {
-  log.info("A-002 onEnd");
+  const logger = getLogger();
+  logger.info(`${id} onEnd`);
 
   const updateMachine = updateMachineCreator(id);
 

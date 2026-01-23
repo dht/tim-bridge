@@ -1,0 +1,22 @@
+[2026-01-23T14:00:30.265Z] tim-bridge-dev: 🧹 Logs cleared | {"logPath":"/Users/dht/projects/tim-bridge/log.txt"}
+[2026-01-23T14:00:32.751Z] tim-bridge-dev: === TIM BRIDGE v1.0.36 STARTING ===
+[2026-01-23T14:00:32.760Z] tim-bridge-dev: IP Address: 10.0.0.12
+[2026-01-23T14:00:32.760Z] tim-bridge-dev: ⚠️  Listening to ALL machines
+[2026-01-23T14:00:32.760Z] tim-bridge-dev: A-001 onStart | {"ip":"10.0.0.12"}
+[2026-01-23T14:00:32.760Z] tim-bridge-dev: 🎧 Machine ID: A-001-dev (collection: "machines")
+[2026-01-23T14:00:32.761Z] tim-bridge-dev: 🎧 Machine ID: A-002-dev (collection: "machines")
+[2026-01-23T14:00:32.764Z] tim-bridge-dev: A-002 onStart | {"ip":"10.0.0.12"}
+[2026-01-23T14:00:32.768Z] tim-bridge-dev: 🎧 Machine ID: A-003-dev (collection: "state")
+[2026-01-23T14:00:32.768Z] tim-bridge-dev: A-003-dev onStart | {"ip":"10.0.0.12"}
+[2026-01-23T14:00:32.769Z] tim-bridge-dev: 🎧 Machine ID: A-004-dev (collection: "machines")
+[2026-01-23T14:00:32.772Z] tim-bridge-dev: A-004-dev onStart | {"ip":"10.0.0.12"}
+[2026-01-23T14:00:32.773Z] tim-bridge-dev: 🎧 Machine ID: A-005-dev (collection: "machines")
+[2026-01-23T14:00:32.776Z] tim-bridge-dev: A-005-dev onStart | {"ip":"10.0.0.12"}
+[2026-01-23T14:00:32.778Z] tim-bridge-dev: 🎧 Machine ID: A-006-dev (collection: "machines")
+[2026-01-23T14:00:32.778Z] tim-bridge-dev: A-006-dev onStart | {"ip":"10.0.0.12"}
+[2026-01-23T14:00:32.780Z] tim-bridge-dev: 🎧 Machine ID: A-901-dev (collection: "machines")
+[2026-01-23T14:00:32.781Z] tim-bridge-dev: A-901-dev onStart | {"ip":"10.0.0.12"}
+[2026-01-23T14:00:33.629Z] tim-bridge-dev: A-006-dev LED status: 1.IDLE
+[2026-01-23T14:00:33.631Z] tim-bridge-dev: A-006-dev ✅ Playback + Lights completed.
+[2026-01-23T14:00:42.898Z] tim-bridge-dev: A-006-dev LED status: 1.IDLE
+[2026-01-23T14:00:42.901Z] tim-bridge-dev: A-006-dev ✅ Playback + Lights completed.

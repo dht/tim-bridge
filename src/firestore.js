@@ -27,12 +27,13 @@ const firebaseConfig = {
   appId: process.env.FIREBASE_APP_ID ?? process.env.VITE_FIREBASE_APP_ID,
 };
 
-// console.log('Firebase config:', firebaseConfig);
+let app = null;
+let db = null;
 
-console.log("1 ->", 1);
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+export function initFirebase() {
+  app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+}
 
 export function listenToCollectionSockets(name, callback) {
   if (!name) {
@@ -223,7 +224,6 @@ export function listenToCollection(collectionName, callback) {
 }
 
 export const updateMachineCreator = (machineId) => (change) => {
-  console.log("machineId ->", machineId);
   return crud("machines").update(machineId, change);
 };
 
@@ -239,5 +239,4 @@ export const clearKeyframesForMachine = async (machineId) => {
   const response = await crud("keyframes").deleteByPredicate(
     (item) => item.machineId === machineId,
   );
-  console.log("response ->", response);
 };

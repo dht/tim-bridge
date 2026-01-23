@@ -6,7 +6,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { delay } from "./delay.js";
 import { updateMachineCreator } from "./firestore.js";
-import { log } from "./log.js";
+import { getLogger } from "./globals.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,10 +15,11 @@ const __dirname = path.dirname(__filename);
 const CACHE_ROOT = path.join(__dirname, "../cache");
 
 export function extractSessionId(timelineUrl) {
+  const logger = getLogger();
   // .../sessions/S483/_timeline.json?rnd=...
   const m = String(timelineUrl).match(/\/sessions\/([^/]+)\/_timeline\.json/i);
   if (!m?.[1]) {
-    log.error("cache: failed to extract sessionId", { timelineUrl });
+    logger.error("cache: failed to extract sessionId", { timelineUrl });
     throw new Error(`Can't extract sessionId from timelineUrl: ${timelineUrl}`);
   }
   return m[1];
@@ -32,7 +33,8 @@ function toSessionsRelativePath(assetUrl) {
 }
 
 async function ensureDir(p) {
-  log.info("cache: ensure dir", { path: p });
+  const logger = getLogger();
+  logger.info("cache: ensure dir", { path: p });
   await fsp.mkdir(p, { recursive: true });
 }
 
@@ -51,11 +53,12 @@ async function exists(p) {
  * Returns { ok: false, reason, status? } if it failed (no throw).
  */
 async function downloadFileGraceful(url, destPathRaw) {
+  const logger = getLogger();
   // remove query params for filesystem path
   const destPath = destPathRaw.split("?")[0];
   await ensureDir(path.dirname(destPath));
   if (await exists(destPath)) {
-    log.info("cache: asset already present", { destPath });
+    logger.info("cache: asset already present", { destPath });
     return { ok: true };
   }
 
@@ -73,7 +76,7 @@ async function downloadFileGraceful(url, destPathRaw) {
     if (res.status < 200 || res.status >= 300) {
       // Drain the stream if present to avoid dangling sockets.
       if (res.data?.destroy) res.data.destroy();
-      log.warn("cache: asset download failed (http)", {
+      logger.warn("cache: asset download failed (http)", {
         url,
         status: res.status,
       });
@@ -88,7 +91,7 @@ async function downloadFileGraceful(url, destPathRaw) {
     });
 
     await fsp.rename(tmpPath, destPath);
-    log.info("cache: asset downloaded", { url, destPath });
+    logger.info("cache: asset downloaded", { url, destPath });
     return { ok: true };
   } catch (err) {
     // Clean up partial file if it exists
@@ -97,7 +100,7 @@ async function downloadFileGraceful(url, destPathRaw) {
     } catch {
       // ignore
     }
-    log.error("cache: asset download error", { url, destPath, err });
+    logger.error("cache: asset download error", { url, destPath, err });
     return { ok: false, reason: "error", error: err };
   }
 }
@@ -128,9 +131,10 @@ function fixIds(timeline, { machineId, sessionId }) {
  *   { sessionId, sessionDir, timeline, resolveLocal(url)->localPath|null, assetFailures }
  */
 export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
+  const logger = getLogger();
   const updateMachine = updateMachineCreator(machineId);
 
-  log.info("cache: start session cache", { machineId, timelineUrl });
+  logger.info("cache: start session cache", { machineId, timelineUrl });
   await updateMachine({
     bridgeStatus: "CACHING",
   });
@@ -146,10 +150,10 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
   let timeline;
 
   if (await exists(timelinePath)) {
-    log.info("cache: timeline cache hit", { timelinePath });
+    logger.info("cache: timeline cache hit", { timelinePath });
     timeline = JSON.parse(await fsp.readFile(timelinePath, "utf-8"));
   } else {
-    log.info("cache: downloading timeline", { timelineUrl, timelinePath });
+    logger.info("cache: downloading timeline", { timelineUrl, timelinePath });
     const res = await axios.get(timelineUrl);
     timeline = res.data;
 
@@ -160,13 +164,13 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
       JSON.stringify(timeline, null, 2),
       "utf-8",
     );
-    log.info("cache: timeline saved", { timelinePath });
+    logger.info("cache: timeline saved", { timelinePath });
   }
 
   // 2) assets (graceful)
   const assetFailures = [];
   const assetUrls = collectAssetUrls(timeline);
-  log.info("cache: caching assets", {
+  logger.info("cache: caching assets", {
     sessionId,
     assetCount: assetUrls.length,
   });
@@ -174,7 +178,7 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
   for (const url of assetUrls) {
     const rel = toSessionsRelativePath(url);
     if (!rel) {
-      log.warn("cache: asset url not under /sessions/, skipping", { url });
+      logger.warn("cache: asset url not under /sessions/, skipping", { url });
       continue;
     }
 
@@ -198,7 +202,7 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
     return path.join(sessionDir, rel);
   }
 
-  log.info("cache: session cache complete", {
+  logger.info("cache: session cache complete", {
     sessionId,
     sessionDir,
     assetsFailed: assetFailures.length,
