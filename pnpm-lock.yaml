@@ -45,8 +45,8 @@ importers:
         specifier: ^2.4.2
         version: 2.4.2
       tim-logger:
-        specifier: 0.0.39
-        version: 0.0.39
+        specifier: 0.0.40
+        version: 0.0.40
     devDependencies:
       husky:
         specifier: ^9.1.7
@@ -1249,8 +1249,8 @@ packages:
   text-hex@1.0.0:
     resolution: {integrity: sha512-uuVGNWzgJ4yhRaNSiubPY7OjISw4sw4E5Uv0wbjp+OzcbmVU/rsT8ujgcXJhn9ypzsgr5vlzpPqP+MBBKcGvbg==}
 
-  tim-logger@0.0.39:
-    resolution: {integrity: sha512-Jrw+9G9bZXfhk8vkyODQvfVN+wR6PNY9MysFFjayb7VA9DTJAPP2AiUvTsR5zkELupNjzwUOsLX61bN9CWTvGA==}
+  tim-logger@0.0.40:
+    resolution: {integrity: sha512-8Kqs6ZOMpAqXdNi9ss+hz8zdlzhiy+K3OHhJHpcLD9tcDuPhmpw583WyM4yL4Ar6SftllNhW/rqS/uMNhm6kkA==}
 
   tim-types@0.0.20:
     resolution: {integrity: sha512-DPhypEd0MtLkYWuS+bZ67BHH+fAtseffzCB0kWGMLKwnDX2nQqJbYLdbNuJy/GMbULjatJoybB+XiAyEA8saow==}
@@ -2855,7 +2855,7 @@ snapshots:
 
   text-hex@1.0.0: {}
 
-  tim-logger@0.0.39:
+  tim-logger@0.0.40:
     dependencies:
       kleur: 4.1.5
       logform: 2.7.0
