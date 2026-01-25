@@ -10,6 +10,7 @@ import { getIp } from "./ip.js";
 import { initLogger } from "./logger.js";
 import { machinesInfoDev } from "./machines.js";
 import { setStatus } from "./rgb/rgb.js";
+import { startHttpServer } from "./express.js";
 
 const LISTEN_TO_ALL = process.env.LISTEN_TO_ALL === "true";
 const MACHINE_ID = process.env.MACHINE_ID;
@@ -29,6 +30,7 @@ if (LISTEN_TO_ALL) {
 const unsubscribers = new Map();
 
 registerCrashHandlers();
+startHttpServer();
 
 async function startMachine(id) {
   const logger = getLogger();
