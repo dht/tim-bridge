@@ -24,7 +24,12 @@ export function startHttpServer() {
     limit: "25mb",
   });
 
-  registerRoutes(app, { rawParser });
+  const textParser = express.text({
+    type: ["text/plain"],
+    limit: "1mb",
+  });
+
+  registerRoutes(app, { rawParser, textParser });
 
   app.listen(BRIDGE_HTTP_PORT, () => {
     logger.info(`HTTP upload server listening on ${BRIDGE_HTTP_PORT}`);
