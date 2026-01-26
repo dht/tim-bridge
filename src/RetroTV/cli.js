@@ -13,6 +13,8 @@ Usage:
 Options:
   --kiosk            default: true
   --app              default: true (uses --app=<url>)
+  --user-data-dir    override Chromium profile dir
+  --disk-cache-dir   override Chromium cache dir
   --dry-run          print command only (no launch)
   --print            print command (and launch)
   --debug            attach Chromium output (not detached)
@@ -31,6 +33,8 @@ const { positionals, values } = parseArgs({
     background: { type: "string" },
     kiosk: { type: "boolean", default: true },
     app: { type: "boolean", default: true },
+    "user-data-dir": { type: "string" },
+    "disk-cache-dir": { type: "string" },
     "dry-run": { type: "boolean", default: false },
     print: { type: "boolean", default: false },
     debug: { type: "boolean", default: false },
@@ -54,6 +58,8 @@ if (command === "open") {
   const debug = values.debug;
   const stdio = debug ? "inherit" : "ignore";
   const detached = debug ? false : true;
+  const userDataDir = values["user-data-dir"];
+  const diskCacheDir = values["disk-cache-dir"];
 
   if (values.photo) {
     const result = openRetroTvPhoto(values.photo, {
@@ -61,6 +67,8 @@ if (command === "open") {
       background: values.background,
       kiosk,
       app,
+      userDataDir,
+      diskCacheDir,
       dryRun,
       stdio,
       detached,
@@ -70,7 +78,15 @@ if (command === "open") {
   }
 
   if (values.url) {
-    const result = openRetroTvUrl(values.url, { kiosk, app, dryRun, stdio, detached });
+    const result = openRetroTvUrl(values.url, {
+      kiosk,
+      app,
+      userDataDir,
+      diskCacheDir,
+      dryRun,
+      stdio,
+      detached,
+    });
     if (shouldPrint) console.log(`${result.cmd} ${result.args.join(" ")}`);
     process.exit(0);
   }

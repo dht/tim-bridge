@@ -1,5 +1,7 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 function defaultGuiEnv(env) {
   if (process.platform !== "linux") return env;
@@ -101,7 +103,26 @@ function launchWithFallback(bins, args, { env, dryRun, detached, stdio } = {}) {
   return { cmd, args, fallbackCmds: fallbacks };
 }
 
-function buildChromiumArgs(url, { kiosk = true, app = true, extraArgs = [] } = {}) {
+function defaultUserDataDir() {
+  // Avoid "profile in use" locks when Chromium is already running (or lock file is stale).
+  // Using /tmp also avoids permissions issues with system-managed homes / read-only configs.
+  return path.join(os.tmpdir(), "retrotv-chromium-profile");
+}
+
+function defaultDiskCacheDir() {
+  return path.join(os.tmpdir(), "retrotv-chromium-cache");
+}
+
+function buildChromiumArgs(
+  url,
+  {
+    kiosk = true,
+    app = true,
+    extraArgs = [],
+    userDataDir = defaultUserDataDir(),
+    diskCacheDir = defaultDiskCacheDir(),
+  } = {},
+) {
   const args = [
     "--noerrdialogs",
     "--disable-infobars",
@@ -109,6 +130,8 @@ function buildChromiumArgs(url, { kiosk = true, app = true, extraArgs = [] } = {
     "--no-first-run",
     "--password-store=basic",
     "--disable-features=TranslateUI",
+    `--user-data-dir=${userDataDir}`,
+    `--disk-cache-dir=${diskCacheDir}`,
   ];
 
   if (kiosk) args.push("--kiosk");
@@ -127,6 +150,8 @@ export function openRetroTvUrl(
     kiosk = true,
     app = true,
     extraArgs = [],
+    userDataDir,
+    diskCacheDir,
     env,
     dryRun = false,
     detached = true,
@@ -134,7 +159,7 @@ export function openRetroTvUrl(
   } = {},
 ) {
   const bins = browserBinaries();
-  const args = buildChromiumArgs(url, { kiosk, app, extraArgs });
+  const args = buildChromiumArgs(url, { kiosk, app, extraArgs, userDataDir, diskCacheDir });
   return launchWithFallback(bins, args, { env, dryRun, detached, stdio });
 }
 
@@ -146,6 +171,8 @@ export function openRetroTvPhoto(
     kiosk = true,
     app = true,
     extraArgs = [],
+    userDataDir,
+    diskCacheDir,
     env,
     dryRun = false,
     detached = true,
@@ -153,7 +180,17 @@ export function openRetroTvPhoto(
   } = {},
 ) {
   const viewerUrl = createPhotoViewerDataUrl(photoUrl, { fit, background });
-  return openRetroTvUrl(viewerUrl, { kiosk, app, extraArgs, env, dryRun, detached, stdio });
+  return openRetroTvUrl(viewerUrl, {
+    kiosk,
+    app,
+    extraArgs,
+    userDataDir,
+    diskCacheDir,
+    env,
+    dryRun,
+    detached,
+    stdio,
+  });
 }
 
 export function closeRetroTv({ dryRun = false } = {}) {

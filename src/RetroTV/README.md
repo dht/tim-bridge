@@ -39,6 +39,11 @@ node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg" --debug
 ## Notes for Raspberry Pi
 
 - This runs a GUI browser; it expects an X/Wayland session. If you start it over SSH, ensure `DISPLAY` is set (the code defaults to `:0` on Linux).
+- If you see: `The profile appears to be in use...`, RetroTV uses an isolated profile under `/tmp` by default. You can override it:
+
+```bash
+node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg" --user-data-dir /tmp/retrotv-profile
+```
 - If your Chromium binary name differs, set `RETROTV_BROWSER_BIN`:
 
 ```bash
