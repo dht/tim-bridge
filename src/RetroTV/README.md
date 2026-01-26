@@ -8,7 +8,7 @@ From the repo root:
 
 ```bash
 # Open a photo URL full-screen (centered, scaled)
-node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg"
+node src/RetroTV/cli.js open --photo "https://www.freepik.com/free-photos-vectors/retro-radio"
 
 # Or open any URL (page/image/video/etc.)
 node src/RetroTV/cli.js open --url "https://example.com"
