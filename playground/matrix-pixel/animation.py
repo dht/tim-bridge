@@ -8,7 +8,7 @@ from idotmatrix import Gif
 from idotmatrix.connectionManager import ConnectionManager
 
 
-DEFAULT_ADDRESS = "548D5EE8-4BEB-6B78-E532-6E44368D78AD"  # macOS BLE UUID
+from idotmatrix_env import load_local_env, resolve_address
 
 
 def _draw_character(draw: ImageDraw.ImageDraw, mouth: str, y_offset: int = 0) -> None:
@@ -90,8 +90,9 @@ def _build_lets_go_gif(path: str) -> None:
 
 
 async def main() -> None:
+    load_local_env()
     parser = argparse.ArgumentParser(description='Animate a character saying "lets go!"')
-    parser.add_argument("--address", default=DEFAULT_ADDRESS, help="BLE address/UUID")
+    parser.add_argument("--address", help="BLE address/UUID (or set IDOTMATRIX_ADDRESS...).")
     args = parser.parse_args()
 
     with tempfile.NamedTemporaryFile(suffix=".gif", delete=False) as tmp:
@@ -100,7 +101,11 @@ async def main() -> None:
     _build_lets_go_gif(gif_path)
 
     conn = ConnectionManager()
-    await conn.connectByAddress(args.address)
+    address = resolve_address(args.address)
+    if address:
+        await conn.connectByAddress(address)
+    else:
+        await conn.connectBySearch()
 
     gif = Gif()
     gif.conn = conn
@@ -109,4 +114,3 @@ async def main() -> None:
 
 if __name__ == "__main__":
     asyncio.run(main())
-

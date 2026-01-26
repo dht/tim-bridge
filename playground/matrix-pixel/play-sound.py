@@ -7,8 +7,11 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+from idotmatrix_env import load_local_env, resolve_address
+
 
 def _parse_args() -> argparse.Namespace:
+    load_local_env()
     parser = argparse.ArgumentParser(
         description="Play mp3 files locally, and optionally flash an iDotMatrix pixel board over Bluetooth."
     )
@@ -24,8 +27,8 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--address",
-        default=os.environ.get("IDOTMATRIX_ADDRESS"),
-        help="BLE address/UUID of the device (or set IDOTMATRIX_ADDRESS).",
+        default=None,
+        help="BLE address/UUID of the device (or set IDOTMATRIX_ADDRESS...).",
     )
     parser.add_argument(
         "--times",
@@ -86,6 +89,7 @@ async def _connect(conn, address: Optional[str]) -> None:
 
 async def main_async() -> int:
     args = _parse_args()
+    resolved_address = resolve_address(args.address)
 
     script_dir = Path(__file__).resolve().parent
     if args.files:
@@ -116,7 +120,7 @@ async def main_async() -> int:
             return 4
 
         conn = ConnectionManager()
-        await _connect(conn, args.address)
+        await _connect(conn, resolved_address)
         if not conn.client or not conn.client.is_connected:
             print("Failed to connect to the pixel board.", file=sys.stderr)
             return 1

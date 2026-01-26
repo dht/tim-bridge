@@ -1,7 +1,6 @@
 import asyncio
 import io
 import os
-import sys
 
 from PIL import Image as PilImage
 from PIL import ImageDraw
@@ -10,24 +9,7 @@ from idotmatrix import Image
 from idotmatrix.connectionManager import ConnectionManager
 
 
-MAC_ADDRESS = "548D5EE8-4BEB-6B78-E532-6E44368D78AD"  # macOS BLE UUID
-PI_ADDRESS  = "F2:1A:C7:C5:53:24"                   # Linux BLE MAC
-
-def get_address():
-    if sys.platform == "darwin":
-        return MAC_ADDRESS
-    elif sys.platform.startswith("linux"):
-        return PI_ADDRESS
-    else:
-        raise RuntimeError(f"Unsupported platform: {sys.platform}")
-
-address = get_address()
-print(f"Connecting to {address}")
-
-
-ADDRESS = os.getenv("IDOTMATRIX_ADDRESS", address)
-PIXEL_SIZE = int(os.getenv("IDOTMATRIX_SIZE", "32"))
-
+from idotmatrix_env import load_local_env, resolve_address
 
 def _png_payloads(image_module: Image, img: PilImage.Image) -> bytearray:
     png_buffer = io.BytesIO()
@@ -52,13 +34,19 @@ def _frame(pixel_size: int, corner_xy: tuple[int, int]) -> PilImage.Image:
 
 
 async def main() -> None:
-    if PIXEL_SIZE not in (16, 32):
+    load_local_env()
+    address = resolve_address()
+    pixel_size = int(os.getenv("IDOTMATRIX_SIZE", "32"))
+
+    if pixel_size not in (16, 32):
         raise ValueError("IDOTMATRIX_SIZE must be 16 or 32")
 
     conn = ConnectionManager()
-    if ADDRESS:
-        await conn.connectByAddress(ADDRESS)
+    if address:
+        print(f"Connecting to {address}")
+        await conn.connectByAddress(address)
     else:
+        print("Connecting (search)...")
         await conn.connectBySearch()
 
     image_module = Image()
@@ -67,11 +55,11 @@ async def main() -> None:
 
     corners = [
         (0, 0),
-        (PIXEL_SIZE - 1, 0),
-        (PIXEL_SIZE - 1, PIXEL_SIZE - 1),
-        (0, PIXEL_SIZE - 1),
+        (pixel_size - 1, 0),
+        (pixel_size - 1, pixel_size - 1),
+        (0, pixel_size - 1),
     ]
-    payloads = [_png_payloads(image_module, _frame(PIXEL_SIZE, xy)) for xy in corners]
+    payloads = [_png_payloads(image_module, _frame(pixel_size, xy)) for xy in corners]
 
     try:
         while True:
@@ -87,4 +75,3 @@ if __name__ == "__main__":
         asyncio.run(main())
     except KeyboardInterrupt:
         pass
-
