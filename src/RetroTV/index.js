@@ -117,7 +117,7 @@ function buildChromiumArgs(
   url,
   {
     kiosk = true,
-    app = true,
+    app = false,
     extraArgs = [],
     userDataDir = defaultUserDataDir(),
     diskCacheDir = defaultDiskCacheDir(),
@@ -148,7 +148,7 @@ export function openRetroTvUrl(
   url,
   {
     kiosk = true,
-    app = true,
+    app = false,
     extraArgs = [],
     userDataDir,
     diskCacheDir,
@@ -169,7 +169,7 @@ export function openRetroTvPhoto(
     fit = "contain",
     background = "#000",
     kiosk = true,
-    app = true,
+    app = false,
     extraArgs = [],
     userDataDir,
     diskCacheDir,

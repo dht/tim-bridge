@@ -12,7 +12,7 @@ Usage:
 
 Options:
   --kiosk            default: true
-  --app              default: true (uses --app=<url>)
+  --app              default: false (uses --app=<url>)
   --user-data-dir    override Chromium profile dir
   --disk-cache-dir   override Chromium cache dir
   --dry-run          print command only (no launch)
@@ -32,7 +32,7 @@ const { positionals, values } = parseArgs({
     fit: { type: "string" },
     background: { type: "string" },
     kiosk: { type: "boolean", default: true },
-    app: { type: "boolean", default: true },
+    app: { type: "boolean", default: false },
     "user-data-dir": { type: "string" },
     "disk-cache-dir": { type: "string" },
     "dry-run": { type: "boolean", default: false },
