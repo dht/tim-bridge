@@ -24,6 +24,7 @@
     "@firebase/firestore": "^4.9.2",
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",
+    "express": "^4.19.2",
     "firebase-admin": "^13.6.0",
     "fs-extra": "^11.3.2",
     "i2c-bus": "^5.2.3",
@@ -31,10 +32,10 @@
     "pca9685": "^5.0.0",
     "pigpio": "^3.3.1",
     "rpio": "^2.4.2",
-    "tim-logger": "0.0.40",
-    "express": "^4.19.2"
+    "tim-logger": "0.0.40"
   },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "safer-buffer": "^2.1.2"
   }
 }
