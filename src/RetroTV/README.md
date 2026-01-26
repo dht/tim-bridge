@@ -28,6 +28,12 @@ node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg" --backgroun
 
 # Print the command without running it
 node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg" --dry-run
+
+# Print the command and run it
+node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg" --print
+
+# Debug launch (shows Chromium errors over SSH; not detached)
+node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg" --debug
 ```
 
 ## Notes for Raspberry Pi
@@ -39,3 +45,16 @@ node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg" --dry-run
 RETROTV_BROWSER_BIN=chromium-browser node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg"
 ```
 
+### If you run over SSH and nothing opens
+
+Most commonly: you’re SSH’d in but there is no desktop session, or Chromium can’t authenticate to the GUI session.
+
+Try:
+
+```bash
+# See errors
+node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg" --debug
+
+# If you have a local desktop session on :0, try providing Xauthority
+DISPLAY=:0 XAUTHORITY=$HOME/.Xauthority node src/RetroTV/cli.js open --photo "https://example.com/photo.jpg" --debug
+```

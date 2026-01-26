@@ -13,7 +13,9 @@ Usage:
 Options:
   --kiosk            default: true
   --app              default: true (uses --app=<url>)
-  --dry-run          print command only
+  --dry-run          print command only (no launch)
+  --print            print command (and launch)
+  --debug            attach Chromium output (not detached)
   --browser-bin      override Chromium binary (or set RETROTV_BROWSER_BIN)
 `;
   console.log(text.trim());
@@ -30,6 +32,8 @@ const { positionals, values } = parseArgs({
     kiosk: { type: "boolean", default: true },
     app: { type: "boolean", default: true },
     "dry-run": { type: "boolean", default: false },
+    print: { type: "boolean", default: false },
+    debug: { type: "boolean", default: false },
     "browser-bin": { type: "string" },
     help: { type: "boolean", default: false },
   },
@@ -46,6 +50,10 @@ if (command === "open") {
   const dryRun = values["dry-run"];
   const kiosk = values.kiosk;
   const app = values.app;
+  const shouldPrint = dryRun || values.print;
+  const debug = values.debug;
+  const stdio = debug ? "inherit" : "ignore";
+  const detached = debug ? false : true;
 
   if (values.photo) {
     const result = openRetroTvPhoto(values.photo, {
@@ -54,14 +62,16 @@ if (command === "open") {
       kiosk,
       app,
       dryRun,
+      stdio,
+      detached,
     });
-    console.log(`${result.cmd} ${result.args.join(" ")}`);
+    if (shouldPrint) console.log(`${result.cmd} ${result.args.join(" ")}`);
     process.exit(0);
   }
 
   if (values.url) {
-    const result = openRetroTvUrl(values.url, { kiosk, app, dryRun });
-    console.log(`${result.cmd} ${result.args.join(" ")}`);
+    const result = openRetroTvUrl(values.url, { kiosk, app, dryRun, stdio, detached });
+    if (shouldPrint) console.log(`${result.cmd} ${result.args.join(" ")}`);
     process.exit(0);
   }
 
@@ -71,10 +81,9 @@ if (command === "open") {
 
 if (command === "close") {
   const result = closeRetroTv({ dryRun: values["dry-run"] });
-  console.log(`${result.cmd} ${result.args.join(" ")}`);
+  if (values["dry-run"] || values.print) console.log(`${result.cmd} ${result.args.join(" ")}`);
   process.exit(0);
 }
 
 console.error(`Unknown command: ${command}`);
 usage(1);
-

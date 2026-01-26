@@ -1,18 +1,40 @@
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 
-function defaultDisplayEnv(env) {
+function defaultGuiEnv(env) {
   if (process.platform !== "linux") return env;
-  if (env.DISPLAY) return env;
-  return { ...env, DISPLAY: ":0" };
+
+  const nextEnv = { ...env };
+
+  const hasWayland = Boolean(nextEnv.WAYLAND_DISPLAY);
+  const hasX11 = Boolean(nextEnv.DISPLAY);
+
+  if (!hasWayland && !hasX11) nextEnv.DISPLAY = ":0";
+
+  const home = nextEnv.HOME;
+  if (nextEnv.DISPLAY && !nextEnv.XAUTHORITY && home) {
+    const xauthority = `${home}/.Xauthority`;
+    if (fs.existsSync(xauthority)) nextEnv.XAUTHORITY = xauthority;
+  }
+
+  if (!nextEnv.DBUS_SESSION_BUS_ADDRESS && typeof process.getuid === "function") {
+    const uid = process.getuid();
+    const busPath = `/run/user/${uid}/bus`;
+    if (fs.existsSync(busPath)) {
+      nextEnv.DBUS_SESSION_BUS_ADDRESS = `unix:path=${busPath}`;
+    }
+  }
+
+  return nextEnv;
 }
 
-function spawnDetached(cmd, args, { env } = {}) {
+function spawnProcess(cmd, args, { env, detached = true, stdio = "ignore" } = {}) {
   const child = spawn(cmd, args, {
-    stdio: "ignore",
-    detached: true,
-    env: defaultDisplayEnv(env || process.env),
+    stdio,
+    detached,
+    env: defaultGuiEnv(env || process.env),
   });
-  child.unref();
+  if (detached) child.unref();
   return child;
 }
 
@@ -48,32 +70,35 @@ function browserBinaries() {
   ].filter(Boolean);
 }
 
-function launchWithFallback(bins, args, { env, dryRun } = {}) {
+function launchWithFallback(bins, args, { env, dryRun, detached, stdio } = {}) {
   if (!bins.length) {
     throw new Error("No Chromium binary candidates found.");
   }
 
-  const [primary, ...fallbacks] = bins;
   if (dryRun) {
+    const [primary, ...fallbacks] = bins;
     return { cmd: primary, args, fallbackCmds: fallbacks };
   }
 
-  const child = spawnDetached(primary, args, { env });
-  child.on("error", (err) => {
-    if (err?.code !== "ENOENT" || fallbacks.length === 0) {
+  const [primary, ...fallbacks] = bins;
+
+  const tryLaunchAtIndex = (index) => {
+    const cmd = bins[index];
+    const child = spawnProcess(cmd, args, { env, detached, stdio });
+    child.on("error", (err) => {
+      if (err?.code === "ENOENT" && index < bins.length - 1) {
+        const next = bins[index + 1];
+        console.warn(`Chromium binary not found: ${cmd}. Trying: ${next}`);
+        tryLaunchAtIndex(index + 1);
+        return;
+      }
       console.error("Failed to launch Chromium:", err);
-      return;
-    }
-
-    const fallback = fallbacks[0];
-    console.warn(`Chromium binary not found: ${primary}. Trying: ${fallback}`);
-    const fallbackChild = spawnDetached(fallback, args, { env });
-    fallbackChild.on("error", (fallbackErr) => {
-      console.error("Failed to launch Chromium (fallback):", fallbackErr);
     });
-  });
+    return cmd;
+  };
 
-  return { cmd: primary, args, fallbackCmds: fallbacks };
+  const cmd = tryLaunchAtIndex(0);
+  return { cmd, args, fallbackCmds: fallbacks };
 }
 
 function buildChromiumArgs(url, { kiosk = true, app = true, extraArgs = [] } = {}) {
@@ -98,19 +123,37 @@ function buildChromiumArgs(url, { kiosk = true, app = true, extraArgs = [] } = {
 
 export function openRetroTvUrl(
   url,
-  { kiosk = true, app = true, extraArgs = [], env, dryRun = false } = {},
+  {
+    kiosk = true,
+    app = true,
+    extraArgs = [],
+    env,
+    dryRun = false,
+    detached = true,
+    stdio = "ignore",
+  } = {},
 ) {
   const bins = browserBinaries();
   const args = buildChromiumArgs(url, { kiosk, app, extraArgs });
-  return launchWithFallback(bins, args, { env, dryRun });
+  return launchWithFallback(bins, args, { env, dryRun, detached, stdio });
 }
 
 export function openRetroTvPhoto(
   photoUrl,
-  { fit = "contain", background = "#000", kiosk = true, app = true, extraArgs = [], env, dryRun = false } = {},
+  {
+    fit = "contain",
+    background = "#000",
+    kiosk = true,
+    app = true,
+    extraArgs = [],
+    env,
+    dryRun = false,
+    detached = true,
+    stdio = "ignore",
+  } = {},
 ) {
   const viewerUrl = createPhotoViewerDataUrl(photoUrl, { fit, background });
-  return openRetroTvUrl(viewerUrl, { kiosk, app, extraArgs, env, dryRun });
+  return openRetroTvUrl(viewerUrl, { kiosk, app, extraArgs, env, dryRun, detached, stdio });
 }
 
 export function closeRetroTv({ dryRun = false } = {}) {
@@ -119,11 +162,10 @@ export function closeRetroTv({ dryRun = false } = {}) {
 
   if (dryRun) return { cmd: killCmd, args: killArgs };
 
-  const child = spawnDetached(killCmd, killArgs);
+  const child = spawnProcess(killCmd, killArgs, { detached: true, stdio: "ignore" });
   child.on("error", (err) => {
     console.error("Failed to close Chromium:", err);
   });
 
   return { cmd: killCmd, args: killArgs };
 }
-
