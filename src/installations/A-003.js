@@ -2,7 +2,8 @@
 
 import { updateMachineCreator } from "../firestore.js";
 import { getLogger } from "../globals.js";
-import { init, moveToAngle, shutdown as shutdownServos } from "../servos.js";
+import { applyPose } from "../arm/pose.js";
+import { init, shutdown as shutdownServos } from "../servos.js";
 
 let lastValues = {};
 
@@ -64,32 +65,10 @@ export function onChange(id, ev) {
     gripperOpen,
   });
 
-  if (lastValues.base !== base) {
-    moveToAngle(1, base);
-    lastValues.base = base;
-  }
-  if (lastValues.shoulder !== shoulder) {
-    moveToAngle(2, shoulder);
-    lastValues.shoulder = shoulder;
-  }
-  if (lastValues.elbow !== elbow) {
-    moveToAngle(3, elbow);
-    lastValues.elbow = elbow;
-  }
-  if (lastValues.wristPitch !== wristPitch) {
-    moveToAngle(4, wristPitch);
-    lastValues.wristPitch = wristPitch;
-  }
-  if (lastValues.wristRoll !== wristRoll) {
-    moveToAngle(5, wristRoll);
-    lastValues.wristRoll = wristRoll;
-  }
-  if (lastValues.gripperOpen !== gripperOpen) {
-    moveToAngle(6, gripperOpen);
-    lastValues.gripperOpen = gripperOpen;
-  }
-
-  lastValues = { ...data };
+  lastValues = applyPose(
+    { base, shoulder, elbow, wristPitch, wristRoll, gripperOpen },
+    { lastPose: lastValues },
+  );
 }
 
 export async function onEnd(id, data) {

@@ -37,6 +37,7 @@ let isReady = false;
 let nextMoveAt = 0;
 let i2c = null;
 let i2cLoadError = null;
+let lastInitError = null;
 const require = createRequire(import.meta.url);
 
 /**
@@ -48,6 +49,9 @@ export function clamp(value, min, max) {
 
 function assertInitialized() {
   if (!pwm || !isReady) {
+    if (lastInitError) {
+      throw new Error(`PCA9685 not initialized: ${lastInitError.message}`);
+    }
     if (i2cLoadError) {
       throw new Error(`PCA9685 not initialized: ${i2cLoadError.message}`);
     }
@@ -240,6 +244,7 @@ export function openPca9685(
 export function init() {
   if (isReady) return { pwm, i2cBus };
 
+  lastInitError = null;
   const opened = openPca9685(
     {
       i2cBusNumber: I2C_BUS,
@@ -248,6 +253,7 @@ export function init() {
     },
     err => {
       if (err) {
+        lastInitError = err;
         console.warn('PCA9685 init skipped:', err.message);
         return;
       }
@@ -258,6 +264,25 @@ export function init() {
   pwm = opened.pwm;
   i2cBus = opened.i2cBus;
 
+  return { pwm, i2cBus };
+}
+
+export async function waitUntilReady(
+  { timeoutMs = 3000, intervalMs = 25 } = {}
+) {
+  const start = Date.now();
+  while (!isReady) {
+    if (lastInitError) {
+      throw new Error(`PCA9685 not initialized: ${lastInitError.message}`);
+    }
+    if (i2cLoadError) {
+      throw new Error(`PCA9685 not initialized: ${i2cLoadError.message}`);
+    }
+    if (Date.now() - start > timeoutMs) {
+      throw new Error("Timed out waiting for PCA9685 initialization.");
+    }
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
   return { pwm, i2cBus };
 }
 
@@ -288,5 +313,6 @@ export function shutdown() {
     i2cBus = null;
     isReady = false;
     nextMoveAt = 0;
+    lastInitError = null;
   }
 }

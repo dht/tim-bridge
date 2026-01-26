@@ -26,6 +26,17 @@ will directly trigger the left light to turn on.
 
 ---
 
+# **Robotic Arm (A-003) Positions**
+
+JSON poses live in `positions/A-003/` (e.g. `positions/A-003/pos1.json`).
+
+From the repo root:
+
+```bash
+npm run arm -- list --machine A-003
+npm run arm -- go pos1 --machine A-003
+```
+
 # **Setup Guide**
 
 ## 🧰 **Raspberry Pi Setup (Concise Single-Block Guide)**
