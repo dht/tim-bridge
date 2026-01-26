@@ -82,8 +82,6 @@ function launchWithFallback(bins, args, { env, dryRun, detached, stdio } = {}) {
     return { cmd: primary, args, fallbackCmds: fallbacks };
   }
 
-  const [primary, ...fallbacks] = bins;
-
   const tryLaunchAtIndex = (index) => {
     const cmd = bins[index];
     const child = spawnProcess(cmd, args, { env, detached, stdio });
@@ -100,12 +98,10 @@ function launchWithFallback(bins, args, { env, dryRun, detached, stdio } = {}) {
   };
 
   const cmd = tryLaunchAtIndex(0);
-  return { cmd, args, fallbackCmds: fallbacks };
+  return { cmd, args, fallbackCmds: bins.slice(1) };
 }
 
 function defaultUserDataDir() {
-  // Avoid "profile in use" locks when Chromium is already running (or lock file is stale).
-  // Using /tmp also avoids permissions issues with system-managed homes / read-only configs.
   return path.join(os.tmpdir(), "retrotv-chromium-profile");
 }
 

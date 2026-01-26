@@ -1,18 +1,18 @@
 // timelinePlayback.js
-import { playMp3, stopAudio } from "./audio.js";
-import { cacheSessionFromTimelineUrl } from "./cache.js";
+import { playMp3, stopAudio } from './audio.js';
+import { cacheSessionFromTimelineUrl } from './cache.js';
 import {
   clearKeyframesForMachine,
   updateKeyframe,
   updateMachineCreator,
   updateRunCreator,
-} from "./firestore.js";
-import { getLogger } from "./globals.js";
-import { guid4 } from "./guid.js";
-import { turnLights } from "./lights.js";
+} from './firestore.js';
+import { getLogger } from './globals.js';
+import { guid4 } from './guid.js';
+import { turnLights } from './lights.js';
 
 function sleep(ms) {
-  return new Promise((r) => setTimeout(r, ms));
+  return new Promise(r => setTimeout(r, ms));
 }
 
 let isRunning = false;
@@ -23,7 +23,7 @@ export function stopPlayback() {
   runToken += 1; // cancels any active loop
   stopAudio(); // immediate effect where it matters
   isRunning = false; // best-effort state
-  logger.info("🛑 stopPlayback()");
+  logger.info('🛑 stopPlayback()');
 }
 
 function calcTimelineDuration(timeline = []) {
@@ -49,18 +49,14 @@ async function syncKeyframes(timeline = [], { machineId, sessionId }) {
   }
 }
 
-export async function startPlaybackFromTimelineUrl(
-  machineId,
-  timelineUrl,
-  runExtra = {},
-) {
+export async function startPlaybackFromTimelineUrl(machineId, timelineUrl, runExtra = {}) {
   const logger = getLogger();
   // prevent overlapping runs
   let isSuccess = true,
     error = null;
 
   if (isRunning) {
-    logger.warn("⏳ Playback already running, ignoring new timelineUrl", {
+    logger.warn('⏳ Playback already running, ignoring new timelineUrl', {
       machineId,
     });
     return;
@@ -68,15 +64,17 @@ export async function startPlaybackFromTimelineUrl(
 
   isRunning = true;
   const myToken = ++runToken;
-  logger.info("timeline: playback start", { machineId, timelineUrl, myToken });
+  logger.info('timeline: playback start', { machineId, timelineUrl, myToken });
   const updateMachine = updateMachineCreator(machineId);
 
   const runId = guid4();
   const updateRun = updateRunCreator(runId);
 
   try {
-    const { isPreset, sessionId, timeline, resolveLocal } =
-      await cacheSessionFromTimelineUrl(machineId, timelineUrl);
+    const { isPreset, sessionId, timeline, resolveLocal } = await cacheSessionFromTimelineUrl(
+      machineId,
+      timelineUrl
+    );
 
     syncKeyframes(timeline, { machineId, sessionId });
 
@@ -94,7 +92,7 @@ export async function startPlaybackFromTimelineUrl(
     });
 
     await updateMachine({
-      bridgeStatus: "PLAYBACK",
+      bridgeStatus: 'PLAYBACK',
       lastRunTs: Date.now(),
       timelineDuration: duration,
       timelineStartTime: Date.now(),
@@ -105,7 +103,7 @@ export async function startPlaybackFromTimelineUrl(
 
       const state = item?.state ?? {};
       const durationSec = Number(item?.duration ?? 0);
-      logger.info("timeline: item", {
+      logger.info('timeline: item', {
         hasAudio: Boolean(state.mp3Url),
         hasLight: Boolean(state.lightStatus),
         durationSec,
@@ -113,7 +111,7 @@ export async function startPlaybackFromTimelineUrl(
 
       // Apply state (lights etc.)
       if (state.lightStatus) {
-        logger.info("timeline: lights", { lightStatus: state.lightStatus });
+        logger.info('timeline: lights', { lightStatus: state.lightStatus });
         turnLights(state.lightStatus);
       }
 
@@ -121,14 +119,15 @@ export async function startPlaybackFromTimelineUrl(
       // if (state.status) setStatus(state.status);
 
       // Play audio if exists
+
       if (state.mp3Url) {
-        const mp3Url = String(state.mp3Url).split("?")[0];
+        const mp3Url = String(state.mp3Url).split('?')[0];
         const localMp3 = resolveLocal(mp3Url);
 
         if (!localMp3) {
-          logger.warn("mp3Url not under /sessions/, skipping", { mp3Url });
+          logger.warn('mp3Url not under /sessions/, skipping', { mp3Url });
         } else {
-          logger.info("timeline: play mp3", { localMp3 });
+          logger.info('timeline: play mp3', { localMp3 });
           playMp3(localMp3);
           if (durationSec > 0) await sleep(durationSec * 1000);
         }
@@ -141,9 +140,9 @@ export async function startPlaybackFromTimelineUrl(
       await sleep(1500);
     }
 
-    logger.info("🏁 Timeline done");
+    logger.info('🏁 Timeline done');
   } catch (err) {
-    logger.error("❌ Timeline playback error:", err);
+    logger.error('❌ Timeline playback error:', err);
     isSuccess = false;
     error = err;
   } finally {
@@ -154,12 +153,12 @@ export async function startPlaybackFromTimelineUrl(
     await updateRun({
       endTs: Date.now(),
       isSuccess,
-      error: error ? String(error) : "",
+      error: error ? String(error) : '',
     });
 
     await updateMachine({
-      bridgeStatus: "IDLE",
+      bridgeStatus: 'IDLE',
     });
-    logger.info("timeline: playback ended", { machineId, myToken });
+    logger.info('timeline: playback ended', { machineId, myToken });
   }
 }
