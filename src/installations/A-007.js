@@ -1,5 +1,4 @@
-// Ochchot - Gossiping Queens
-
+// Coffee Shop
 
 import { updateMachineCreator } from "../firestore.js";
 import { getLogger } from "../globals.js";

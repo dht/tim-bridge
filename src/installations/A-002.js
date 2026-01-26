@@ -1,4 +1,5 @@
-// 2084
+// 2084 - Retro TV Futuristic news Audio and Picture (A-002)
+
 import { updateMachineCreator } from "../firestore.js";
 import { getLogger } from "../globals.js";
 import { checkIsDevHost } from "../ip.js";

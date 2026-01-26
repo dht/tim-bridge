@@ -1,3 +1,5 @@
+// Daily Haiku Station
+
 import { updateMachineCreator } from "../firestore.js";
 import { getLogger } from "../globals.js";
 import { setStatus } from "../rgb/rgb.js";
