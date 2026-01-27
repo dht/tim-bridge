@@ -3,7 +3,11 @@ import { updateMachineCreator } from "../firestore.js";
 import { getLogger } from "../globals.js";
 import { checkIsDevHost } from "../ip.js";
 import { setStatus } from "../rgb/rgb.js";
-import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
+import {
+  getRestTimeline,
+  startPlaybackFromTimelineUrl,
+  stopPlayback,
+} from "../timeline.js";
 
 export async function onStartBridge(id, data) {
   const logger = getLogger();
@@ -19,7 +23,7 @@ export async function onStartBridge(id, data) {
     isBridgeOnline: true,
   });
 
-  onIdle();
+  onIdle(id, data);
 }
 
 export async function onChange(id, ev) {
@@ -62,13 +66,12 @@ export async function onGenerating(id, data) {
     {
       loop: true,
       allowExternal: true,
-      bridgeStatus: "IDLE-CYCLE",
     },
   );
 }
 
 export async function onIdle(id, data) {
-  const idleTimeline = get(id);
+  const idleTimeline = getRestTimeline(id);
 
   const isDev = id.includes("-dev");
 
@@ -79,7 +82,6 @@ export async function onIdle(id, data) {
     {
       loop: true,
       allowExternal: true,
-      bridgeStatus: "IDLE-CYCLE",
     },
   );
 }

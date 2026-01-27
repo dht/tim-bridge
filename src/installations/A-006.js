@@ -1,22 +1,40 @@
 // Ochchot - Gossiping Queens
 
-
 import { updateMachineCreator } from "../firestore.js";
 import { getLogger } from "../globals.js";
 import { setStatus } from "../rgb/rgb.js";
+import { getRestTimeline, startPlaybackFromTimelineUrl } from "../timeline.js";
 
-export async function onStart(id, data) {
+export async function onStartBridge(id, data) {
   const logger = getLogger();
   const updateMachine = updateMachineCreator(id);
   const { ip } = data;
 
-  logger.info(`${id} onStart`, { ip });
+  logger.info(`${id} onStartBridge`, { ip });
   updateMachine({
     bridgeIp: ip,
     bridgeStatus: "IDLE",
     isBridgeOnline: true,
   });
 }
+
+export async function onIdle(id, data) {
+  const idleTimeline = getRestTimeline(id);
+
+  const isDev = id.includes("-dev");
+
+  startPlaybackFromTimelineUrl(
+    id,
+    idleTimeline,
+    { isDev },
+    {
+      loop: true,
+      allowExternal: true,
+    },
+  );
+}
+
+export async function onGenerating(id, data) {}
 
 // haiku
 export async function onChange(id, ev) {
@@ -32,9 +50,9 @@ export async function onChange(id, ev) {
   logger.info(`${id} ✅ Playback + Lights completed.`);
 }
 
-export async function onEnd(id, data) {
+export async function onCloseBridge(id, data) {
   const logger = getLogger();
-  logger.info(`${id} onEnd`);
+  logger.info(`${id} onCloseBridge`);
   const updateMachine = updateMachineCreator(id);
 
   return updateMachine({
@@ -45,7 +63,9 @@ export async function onEnd(id, data) {
 }
 
 export const lifecycle = {
-  onStart,
+  onStartBridge,
+  onIdle,
   onChange,
-  onEnd,
+  onGenerating,
+  onCloseBridge,
 };

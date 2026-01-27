@@ -20,14 +20,12 @@ export function getMachineConfig(id) {
     return null;
   }
 
-  const onStart = callbacks?.onStart;
-  const onChange = callbacks?.onChange;
-  const onEnd = callbacks?.onEnd;
-
   if (
-    typeof onStart !== "function" ||
-    typeof onChange !== "function" ||
-    typeof onEnd !== "function"
+    typeof callbacks?.onStartBridge !== "function" ||
+    typeof callbacks?.onIdle !== "function" ||
+    typeof callbacks?.onChange !== "function" ||
+    typeof callbacks?.onGenerating !== "function" ||
+    typeof callbacks?.onCloseBridge !== "function"
   ) {
     logger.warn(
       `Lifecycle for ${id} is missing required handlers (onStart/onChange/onEnd).`,

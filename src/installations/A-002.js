@@ -4,12 +4,12 @@ import { updateMachineCreator } from "../firestore.js";
 import { getLogger } from "../globals.js";
 import { checkIsDevHost } from "../ip.js";
 import { setStatus } from "../rgb/rgb.js";
-import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
-
-const getRestTimeline = (id) =>
-  `https://storage.googleapis.com/tim-os.firebasestorage.app/${id}/_timeline.rest.json`;
-const getGeneratingTimeline = (id) =>
-  `https://storage.googleapis.com/tim-os.firebasestorage.app/${id}/_timeline.generating.json`;
+import {
+  getGeneratingTimeline,
+  getRestTimeline,
+  startPlaybackFromTimelineUrl,
+  stopPlayback,
+} from "../timeline.js";
 
 let activeMode = null;
 
@@ -17,12 +17,12 @@ function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function onStart(id, data) {
+export async function onStartBridge(id, data) {
   const logger = getLogger();
   const updateMachine = updateMachineCreator(id);
   const { ip } = data;
 
-  logger.info("A-002 onStart", { ip });
+  logger.info("A-002 onStartBridge", { ip });
   updateMachine({
     bridgeIp: ip,
     bridgeStatus: "IDLE",
@@ -35,6 +35,46 @@ export async function onStart(id, data) {
   // closeRetroTv();
   await sleep(750);
   // openRetroTvUrl(url, { kiosk: true, app: false });
+}
+
+export async function onIdle(id, data) {
+  const idleTimeline = getRestTimeline(id);
+  const isDev = id.includes("-dev");
+
+  if (activeMode !== "rest") {
+    stopPlayback();
+    activeMode = "rest";
+  }
+
+  startPlaybackFromTimelineUrl(
+    id,
+    idleTimeline,
+    { isDev },
+    {
+      loop: true,
+      allowExternal: true,
+    },
+  );
+}
+
+export async function onGenerating(id, data) {
+  const generatingTimeline = getGeneratingTimeline(id);
+  const isDev = id.includes("-dev");
+
+  if (activeMode !== "generating") {
+    stopPlayback();
+    activeMode = "generating";
+  }
+
+  startPlaybackFromTimelineUrl(
+    id,
+    generatingTimeline,
+    { isDev },
+    {
+      loop: true,
+      allowExternal: true,
+    },
+  );
 }
 
 export async function onChange(id, ev) {
@@ -57,7 +97,11 @@ export async function onChange(id, ev) {
   if (status === "2a.GENERATING") desiredMode = "generating";
   if (status === "3a.PLAYBACK") desiredMode = "playback";
 
-  if (status === "4.RESETTING" || status === "3b.DONE" || status === "0.ERROR") {
+  if (
+    status === "4.RESETTING" ||
+    status === "3b.DONE" ||
+    status === "0.ERROR"
+  ) {
     desiredMode = null;
   }
 
@@ -69,31 +113,44 @@ export async function onChange(id, ev) {
   if (!activeMode) return;
 
   if (activeMode === "rest") {
-    startPlaybackFromTimelineUrl(id, restTimeline, { isDev, originWebpageUrl }, {
-      loop: true,
-      allowExternal: true,
-      bridgeStatus: "IDLE-CYCLE",
-    });
+    startPlaybackFromTimelineUrl(
+      id,
+      restTimeline,
+      { isDev, originWebpageUrl },
+      {
+        loop: true,
+        allowExternal: true,
+      },
+    );
     return;
   }
 
   if (activeMode === "generating") {
-    startPlaybackFromTimelineUrl(id, generatingTimeline, { isDev, originWebpageUrl }, {
-      loop: true,
-      allowExternal: true,
-      bridgeStatus: "GENERATING",
-    });
+    startPlaybackFromTimelineUrl(
+      id,
+      generatingTimeline,
+      { isDev, originWebpageUrl },
+      {
+        loop: true,
+        allowExternal: true,
+      },
+    );
     return;
   }
 
   if (!timelineUrl) return;
 
-  startPlaybackFromTimelineUrl(id, timelineUrl, { isDev, originWebpageUrl }, { allowExternal: true });
+  startPlaybackFromTimelineUrl(
+    id,
+    timelineUrl,
+    { isDev, originWebpageUrl },
+    { allowExternal: true },
+  );
 }
 
-export async function onEnd(id, data) {
+export async function onCloseBridge(id, data) {
   const logger = getLogger();
-  logger.info(`${id} onEnd`);
+  logger.info(`${id} onCloseBridge`);
 
   const updateMachine = updateMachineCreator(id);
 
@@ -105,7 +162,9 @@ export async function onEnd(id, data) {
 }
 
 export const lifecycle = {
-  onStart,
+  onStartBridge,
+  onIdle,
   onChange,
-  onEnd,
+  onGenerating,
+  onCloseBridge,
 };

@@ -60,7 +60,7 @@ export async function startPlaybackFromTimelineUrl(
   let isSuccess = true,
     error = null;
 
-  const { allowExternal = false, loop = false, bridgeStatus } = options;
+  const { allowExternal = false, loop = false } = options;
 
   if (isRunning) {
     logger.warn("⏳ Playback already running, ignoring new timelineUrl", {
@@ -78,6 +78,8 @@ export async function startPlaybackFromTimelineUrl(
   const updateRun = updateRunCreator(runId);
 
   try {
+    console.log("timelineUrl ->", timelineUrl);
+
     const { isPreset, sessionId, timeline, resolveLocal } =
       await cacheSessionFromTimelineUrl(machineId, timelineUrl, {
         allowExternal,
@@ -99,7 +101,6 @@ export async function startPlaybackFromTimelineUrl(
     });
 
     await updateMachine({
-      bridgeStatus: bridgeStatus ?? "PLAYBACK",
       lastRunTs: Date.now(),
       timelineDuration: duration,
       timelineStartTime: Date.now(),
@@ -188,7 +189,7 @@ export async function startPlaybackFromTimelineUrl(
 }
 
 export const getRestTimeline = (id) =>
-  `https://storage.googleapis.com/tim-os.firebasestorage.app/${id}/_timeline.rest.json`;
+  `https://storage.googleapis.com/tim-os.firebasestorage.app/${id}/_timeline.idle.json`;
 
 export const getGeneratingTimeline = (id) =>
   `https://storage.googleapis.com/tim-os.firebasestorage.app/${id}/_timeline.generating.json`;
