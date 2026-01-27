@@ -4,17 +4,18 @@ import path from "path";
 import { clearLogs, logCrash, registerCrashHandlers } from "tim-logger/server";
 import { getMachineConfig } from "./configs.js";
 import { logDevice } from "./device.js";
+import { startHttpServer } from "./express.js";
 import { initFirebase, listenToCollection } from "./firestore.js";
 import { getLogger } from "./globals.js";
 import { getIp } from "./ip.js";
 import { initLogger } from "./logger.js";
 import { machinesInfoDev } from "./machines.js";
 import { setStatus } from "./rgb/rgb.js";
-import { startHttpServer } from "./express.js";
 
 const LISTEN_TO_ALL = process.env.LISTEN_TO_ALL === "true";
 const MACHINE_ID = process.env.MACHINE_ID;
 const CLIENT_ID = process.env.CLIENT_ID;
+let lastServerStatus, lastBridgeStatus;
 
 initFirebase();
 
@@ -45,13 +46,15 @@ async function startMachine(id) {
 
   // If onStart throws, fail that machine without taking down all
   try {
-    callbacks.onStart(id, { ip });
+    callbacks.onStartBridge(id, { ip });
   } catch (err) {
     logCrash(`onStart failed for ${id}`, err);
     return;
   }
 
   const unsubscribe = listenToCollection(collection, (change) => {
+    const { serverStatus, bridgeStatus } = change;
+
     // Only react to this machine
     if (change?.id !== id) return;
 
@@ -59,7 +62,18 @@ async function startMachine(id) {
     if (predicate && !predicate(change)) return;
 
     try {
+      if (serverStatus === "GENERATING" && serverStatus !== lastServerStatus) {
+        callbacks.onGenerating(id, change);
+      }
+
+      if (bridgeStatus === "IDLE" && bridgeStatus !== lastBridgeStatus) {
+        callbacks.onIdle(id, change);
+      }
+
       callbacks.onChange(id, change);
+
+      lastBridgeStatus = bridgeStatus;
+      lastServerStatus = serverStatus;
     } catch (err) {
       logger.error(`onChange failed for ${id}`, err);
     }
@@ -99,7 +113,7 @@ async function cleanupAndExit(code = 0) {
 
       try {
         const ip = await getIp();
-        await cfg.callbacks.onEnd(id, { ip });
+        await cfg.callbacks.onCloseBridge(id, { ip });
       } catch (err) {
         logger.error(`onEnd failed for ${id}`, err);
       }

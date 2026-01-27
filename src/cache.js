@@ -1,5 +1,6 @@
 // timelineCache.js
 import axios from "axios";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
@@ -14,13 +15,30 @@ const __dirname = path.dirname(__filename);
 // cache folder next to these modules
 const CACHE_ROOT = path.join(__dirname, "../cache");
 
-export function extractSessionId(timelineUrl) {
+function buildExternalSessionId(timelineUrl) {
+  const hash = crypto
+    .createHash("sha1")
+    .update(String(timelineUrl))
+    .digest("hex")
+    .slice(0, 12);
+
+  return `_external_${hash}`;
+}
+
+export function extractSessionId(timelineUrl, options = {}) {
   const logger = getLogger();
+  const { allowExternal = false } = options;
   // .../sessions/S483/_timeline.json?rnd=...
   const m = String(timelineUrl).match(/\/sessions\/([^/]+)\/_timeline\.json/i);
   if (!m?.[1]) {
-    logger.error("cache: failed to extract sessionId", { timelineUrl });
-    throw new Error(`Can't extract sessionId from timelineUrl: ${timelineUrl}`);
+    if (!allowExternal) {
+      logger.error("cache: failed to extract sessionId", { timelineUrl });
+      throw new Error(`Can't extract sessionId from timelineUrl: ${timelineUrl}`);
+    }
+
+    const sessionId = buildExternalSessionId(timelineUrl);
+    logger.info("cache: using external sessionId", { sessionId, timelineUrl });
+    return sessionId;
   }
   return m[1];
 }
@@ -30,6 +48,21 @@ function toSessionsRelativePath(assetUrl) {
   const cleanUrl = String(assetUrl).split("?")[0];
   const m = cleanUrl.match(/\/sessions\/[^/]+\/(.+)$/i);
   return m?.[1] ?? null;
+}
+
+function toAssetCachePath(assetUrl, sessionDir) {
+  const rel = toSessionsRelativePath(assetUrl);
+  if (rel) return path.join(sessionDir, rel);
+
+  const cleanUrl = String(assetUrl).split("?")[0];
+  let ext = "";
+  try {
+    ext = path.extname(new URL(cleanUrl).pathname);
+  } catch {
+    ext = path.extname(cleanUrl);
+  }
+  const hash = crypto.createHash("sha1").update(cleanUrl).digest("hex").slice(0, 16);
+  return path.join(sessionDir, `asset-${hash}${ext}`);
 }
 
 async function ensureDir(p) {
@@ -130,7 +163,7 @@ function fixIds(timeline, { machineId, sessionId }) {
  * Returns:
  *   { sessionId, sessionDir, timeline, resolveLocal(url)->localPath|null, assetFailures }
  */
-export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
+export async function cacheSessionFromTimelineUrl(machineId, timelineUrl, options = {}) {
   const logger = getLogger();
   const updateMachine = updateMachineCreator(machineId);
 
@@ -141,7 +174,9 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
 
   await delay(150);
 
-  const sessionId = extractSessionId(timelineUrl);
+  const { allowExternal = false } = options;
+
+  const sessionId = extractSessionId(timelineUrl, { allowExternal });
   const sessionDir = path.join(CACHE_ROOT, sessionId);
   await ensureDir(sessionDir);
 
@@ -175,14 +210,12 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
     assetCount: assetUrls.length,
   });
 
-  for (const url of assetUrls) {
-    const rel = toSessionsRelativePath(url);
-    if (!rel) {
-      logger.warn("cache: asset url not under /sessions/, skipping", { url });
-      continue;
-    }
+  const urlToLocal = new Map();
 
-    const dest = path.join(sessionDir, rel);
+  for (const url of assetUrls) {
+    const dest = toAssetCachePath(url, sessionDir);
+    urlToLocal.set(url, dest);
+
     const result = await downloadFileGraceful(url, dest);
 
     if (!result.ok) {
@@ -198,8 +231,8 @@ export async function cacheSessionFromTimelineUrl(machineId, timelineUrl) {
 
   function resolveLocal(url) {
     const rel = toSessionsRelativePath(url);
-    if (!rel) return null;
-    return path.join(sessionDir, rel);
+    if (rel) return path.join(sessionDir, rel);
+    return urlToLocal.get(url) ?? null;
   }
 
   logger.info("cache: session cache complete", {

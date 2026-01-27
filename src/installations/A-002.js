@@ -6,6 +6,13 @@ import { checkIsDevHost } from "../ip.js";
 import { setStatus } from "../rgb/rgb.js";
 import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
 
+const getRestTimeline = (id) =>
+  `https://storage.googleapis.com/tim-os.firebasestorage.app/${id}/_timeline.rest.json`;
+const getGeneratingTimeline = (id) =>
+  `https://storage.googleapis.com/tim-os.firebasestorage.app/${id}/_timeline.generating.json`;
+
+let activeMode = null;
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -42,18 +49,46 @@ export async function onChange(id, ev) {
   });
   if (status) setStatus(status);
 
-  if (status === "1.IDLE") {
-    stopPlayback(); // stops audio + cancels timeline loop
+  const restTimeline = getRestTimeline(id);
+  const generatingTimeline = getGeneratingTimeline(id);
+
+  let desiredMode = null;
+  if (status === "1.IDLE") desiredMode = "rest";
+  if (status === "2a.GENERATING") desiredMode = "generating";
+  if (status === "3a.PLAYBACK") desiredMode = "playback";
+
+  if (status === "4.RESETTING" || status === "3b.DONE" || status === "0.ERROR") {
+    desiredMode = null;
+  }
+
+  if (desiredMode !== activeMode) {
+    stopPlayback();
+    activeMode = desiredMode;
+  }
+
+  if (!activeMode) return;
+
+  if (activeMode === "rest") {
+    startPlaybackFromTimelineUrl(id, restTimeline, { isDev, originWebpageUrl }, {
+      loop: true,
+      allowExternal: true,
+      bridgeStatus: "IDLE-CYCLE",
+    });
+    return;
+  }
+
+  if (activeMode === "generating") {
+    startPlaybackFromTimelineUrl(id, generatingTimeline, { isDev, originWebpageUrl }, {
+      loop: true,
+      allowExternal: true,
+      bridgeStatus: "GENERATING",
+    });
     return;
   }
 
   if (!timelineUrl) return;
 
-  // Fire and forget (internally guarded against overlap)
-  startPlaybackFromTimelineUrl(id, timelineUrl, {
-    isDev,
-    originWebpageUrl,
-  });
+  startPlaybackFromTimelineUrl(id, timelineUrl, { isDev, originWebpageUrl }, { allowExternal: true });
 }
 
 export async function onEnd(id, data) {

@@ -5,21 +5,21 @@ import { checkIsDevHost } from "../ip.js";
 import { setStatus } from "../rgb/rgb.js";
 import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
 
-const REST_TIMELINE =
-  "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/_timeline.json";
-
-export async function onStart(id, data) {
+export async function onStartBridge(id, data) {
   const logger = getLogger();
 
   const { ip } = data;
   const updateMachine = updateMachineCreator(id);
 
   logger.info("A-001 onStart", { ip });
+
   updateMachine({
     bridgeIp: ip,
     bridgeStatus: "IDLE",
     isBridgeOnline: true,
   });
+
+  onIdle();
 }
 
 export async function onChange(id, ev) {
@@ -50,7 +50,41 @@ export async function onChange(id, ev) {
   });
 }
 
-export async function onEnd(id, data) {
+export async function onGenerating(id, data) {
+  const restTimeline = getRestTimeline(id);
+
+  const isDev = id.includes("-dev");
+
+  startPlaybackFromTimelineUrl(
+    id,
+    restTimeline,
+    { isDev },
+    {
+      loop: true,
+      allowExternal: true,
+      bridgeStatus: "IDLE-CYCLE",
+    },
+  );
+}
+
+export async function onIdle(id, data) {
+  const idleTimeline = get(id);
+
+  const isDev = id.includes("-dev");
+
+  startPlaybackFromTimelineUrl(
+    id,
+    idleTimeline,
+    { isDev },
+    {
+      loop: true,
+      allowExternal: true,
+      bridgeStatus: "IDLE-CYCLE",
+    },
+  );
+}
+
+export async function onCloseBridge(id, data) {
   const logger = getLogger();
 
   logger.info(`${id} onEnd`);
@@ -65,7 +99,9 @@ export async function onEnd(id, data) {
 }
 
 export const lifecycle = {
-  onStart,
+  onStartBridge,
+  onIdle,
   onChange,
-  onEnd,
+  onGenerating,
+  onCloseBridge,
 };

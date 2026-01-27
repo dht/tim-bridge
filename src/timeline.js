@@ -1,18 +1,18 @@
 // timelinePlayback.js
-import { playMp3, stopAudio } from './audio.js';
-import { cacheSessionFromTimelineUrl } from './cache.js';
+import { playMp3, stopAudio } from "./audio.js";
+import { cacheSessionFromTimelineUrl } from "./cache.js";
 import {
   clearKeyframesForMachine,
   updateKeyframe,
   updateMachineCreator,
   updateRunCreator,
-} from './firestore.js';
-import { getLogger } from './globals.js';
-import { guid4 } from './guid.js';
-import { turnLights } from './lights.js';
+} from "./firestore.js";
+import { getLogger } from "./globals.js";
+import { guid4 } from "./guid.js";
+import { turnLights } from "./lights.js";
 
 function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
+  return new Promise((r) => setTimeout(r, ms));
 }
 
 let isRunning = false;
@@ -23,7 +23,7 @@ export function stopPlayback() {
   runToken += 1; // cancels any active loop
   stopAudio(); // immediate effect where it matters
   isRunning = false; // best-effort state
-  logger.info('🛑 stopPlayback()');
+  logger.info("🛑 stopPlayback()");
 }
 
 function calcTimelineDuration(timeline = []) {
@@ -49,14 +49,21 @@ async function syncKeyframes(timeline = [], { machineId, sessionId }) {
   }
 }
 
-export async function startPlaybackFromTimelineUrl(machineId, timelineUrl, runExtra = {}) {
+export async function startPlaybackFromTimelineUrl(
+  machineId,
+  timelineUrl,
+  runExtra = {},
+  options = {},
+) {
   const logger = getLogger();
   // prevent overlapping runs
   let isSuccess = true,
     error = null;
 
+  const { allowExternal = false, loop = false, bridgeStatus } = options;
+
   if (isRunning) {
-    logger.warn('⏳ Playback already running, ignoring new timelineUrl', {
+    logger.warn("⏳ Playback already running, ignoring new timelineUrl", {
       machineId,
     });
     return;
@@ -64,17 +71,17 @@ export async function startPlaybackFromTimelineUrl(machineId, timelineUrl, runEx
 
   isRunning = true;
   const myToken = ++runToken;
-  logger.info('timeline: playback start', { machineId, timelineUrl, myToken });
+  logger.info("timeline: playback start", { machineId, timelineUrl, myToken });
   const updateMachine = updateMachineCreator(machineId);
 
   const runId = guid4();
   const updateRun = updateRunCreator(runId);
 
   try {
-    const { isPreset, sessionId, timeline, resolveLocal } = await cacheSessionFromTimelineUrl(
-      machineId,
-      timelineUrl
-    );
+    const { isPreset, sessionId, timeline, resolveLocal } =
+      await cacheSessionFromTimelineUrl(machineId, timelineUrl, {
+        allowExternal,
+      });
 
     syncKeyframes(timeline, { machineId, sessionId });
 
@@ -92,57 +99,74 @@ export async function startPlaybackFromTimelineUrl(machineId, timelineUrl, runEx
     });
 
     await updateMachine({
-      bridgeStatus: 'PLAYBACK',
+      bridgeStatus: bridgeStatus ?? "PLAYBACK",
       lastRunTs: Date.now(),
       timelineDuration: duration,
       timelineStartTime: Date.now(),
     });
 
-    for (const item of timeline ?? []) {
-      if (runToken !== myToken) return; // canceled
+    const runTimelineOnce = async () => {
+      for (const item of timeline ?? []) {
+        if (runToken !== myToken) return false; // canceled
 
-      const state = item?.state ?? {};
-      const durationSec = Number(item?.duration ?? 0);
-      logger.info('timeline: item', {
-        hasAudio: Boolean(state.mp3Url),
-        hasLight: Boolean(state.lightStatus),
-        durationSec,
-      });
+        const state = item?.state ?? {};
+        const durationSec = Number(item?.duration ?? 0);
+        logger.info("timeline: item", {
+          hasAudio: Boolean(state.mp3Url),
+          hasLight: Boolean(state.lightStatus),
+          durationSec,
+        });
 
-      // Apply state (lights etc.)
-      if (state.lightStatus) {
-        logger.info('timeline: lights', { lightStatus: state.lightStatus });
-        turnLights(state.lightStatus);
-      }
+        // Apply state (lights etc.)
+        if (state.lightStatus) {
+          logger.info("timeline: lights", { lightStatus: state.lightStatus });
+          turnLights(state.lightStatus);
+        }
 
-      // Optional if you ever include this inside timeline state:
-      // if (state.status) setStatus(state.status);
+        // Optional if you ever include this inside timeline state:
+        // if (state.status) setStatus(state.status);
 
-      // Play audio if exists
+        // Play audio if exists
 
-      if (state.mp3Url) {
-        const mp3Url = String(state.mp3Url).split('?')[0];
-        const localMp3 = resolveLocal(mp3Url);
+        if (state.mp3Url) {
+          const mp3Url = String(state.mp3Url).split("?")[0];
+          const localMp3 = resolveLocal(mp3Url);
 
-        if (!localMp3) {
-          logger.warn('mp3Url not under /sessions/, skipping', { mp3Url });
+          if (!localMp3) {
+            logger.warn("mp3Url not under /sessions/, skipping", { mp3Url });
+          } else {
+            logger.info("timeline: play mp3", { localMp3 });
+            playMp3(localMp3);
+            if (durationSec > 0) await sleep(durationSec * 1000);
+          }
         } else {
-          logger.info('timeline: play mp3', { localMp3 });
-          playMp3(localMp3);
+          // No audio: just wait duration if present
           if (durationSec > 0) await sleep(durationSec * 1000);
         }
-      } else {
-        // No audio: just wait duration if present
-        if (durationSec > 0) await sleep(durationSec * 1000);
+
+        if (runToken !== myToken) return false; // canceled
+        await sleep(1500);
       }
 
-      if (runToken !== myToken) return; // canceled
-      await sleep(1500);
-    }
+      logger.info("🏁 Timeline done");
+      return true;
+    };
 
-    logger.info('🏁 Timeline done');
+    if (loop) {
+      while (runToken === myToken) {
+        await updateMachine({
+          timelineStartTime: Date.now(),
+          timelineDuration: duration,
+        });
+
+        const finished = await runTimelineOnce();
+        if (!finished) return;
+      }
+    } else {
+      await runTimelineOnce();
+    }
   } catch (err) {
-    logger.error('❌ Timeline playback error:', err);
+    logger.error("❌ Timeline playback error:", err);
     isSuccess = false;
     error = err;
   } finally {
@@ -153,12 +177,18 @@ export async function startPlaybackFromTimelineUrl(machineId, timelineUrl, runEx
     await updateRun({
       endTs: Date.now(),
       isSuccess,
-      error: error ? String(error) : '',
+      error: error ? String(error) : "",
     });
 
     await updateMachine({
-      bridgeStatus: 'IDLE',
+      bridgeStatus: "IDLE",
     });
-    logger.info('timeline: playback ended', { machineId, myToken });
+    logger.info("timeline: playback ended", { machineId, myToken });
   }
 }
+
+export const getRestTimeline = (id) =>
+  `https://storage.googleapis.com/tim-os.firebasestorage.app/${id}/_timeline.rest.json`;
+
+export const getGeneratingTimeline = (id) =>
+  `https://storage.googleapis.com/tim-os.firebasestorage.app/${id}/_timeline.generating.json`;
