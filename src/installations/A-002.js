@@ -1,6 +1,5 @@
 // 2084 - Retro TV Futuristic news Audio and Picture (A-002)
 
-import { closeRetroTv, openRetroTvUrl } from "../retrotv.js";
 import { updateMachineCreator } from "../firestore.js";
 import { getLogger } from "../globals.js";
 import { checkIsDevHost } from "../ip.js";
@@ -26,9 +25,9 @@ export async function onStart(id, data) {
   const url = `https://tim-os.web.app/${id}/edge/tv`;
 
   logger.info("A-002 restart RetroTV Chromium", { url });
-  closeRetroTv();
+  // closeRetroTv();
   await sleep(750);
-  openRetroTvUrl(url, { kiosk: true, app: false });
+  // openRetroTvUrl(url, { kiosk: true, app: false });
 }
 
 export async function onChange(id, ev) {
