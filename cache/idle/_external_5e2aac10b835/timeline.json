@@ -1,0 +1,25 @@
+[
+  {
+    "id": "A-004-dev|_external_5e2aac10b835|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "lightStatus": "ONE"
+    }
+  },
+  {
+    "id": "A-004-dev|_external_5e2aac10b835|1",
+    "index": 1,
+    "ts": 20,
+    "duration": 20,
+    "state": {
+      "lightStatus": "TWO"
+    }
+  },
+  {
+    "id": "A-004-dev|_external_5e2aac10b835|2",
+    "index": 2,
+    "ts": 40,
+    "isDone": true
+  }
+]

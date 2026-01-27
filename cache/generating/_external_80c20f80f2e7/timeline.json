@@ -1,0 +1,25 @@
+[
+  {
+    "id": "A-002-dev|_external_80c20f80f2e7|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "lightStatus": "ONE"
+    }
+  },
+  {
+    "id": "A-002-dev|_external_80c20f80f2e7|1",
+    "index": 1,
+    "ts": 20,
+    "duration": 20,
+    "state": {
+      "lightStatus": "TWO"
+    }
+  },
+  {
+    "id": "A-002-dev|_external_80c20f80f2e7|2",
+    "index": 2,
+    "ts": 40,
+    "isDone": true
+  }
+]
