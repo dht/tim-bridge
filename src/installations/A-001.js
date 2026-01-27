@@ -5,6 +5,9 @@ import { checkIsDevHost } from "../ip.js";
 import { setStatus } from "../rgb/rgb.js";
 import { startPlaybackFromTimelineUrl, stopPlayback } from "../timeline.js";
 
+const REST_TIMELINE =
+  "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/_timeline.json";
+
 export async function onStart(id, data) {
   const logger = getLogger();
 
