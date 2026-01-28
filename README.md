@@ -1,294 +1,348 @@
-# **TIM-BRIDGE Documentation**
+# TIM Bridge
 
-## **Overview**
+**TIM Bridge** is an edge orchestration service that runs on Raspberry Pi devices and connects physical installations to the TIM ecosystem.
+It is responsible for executing _timelines_ that control hardware, synchronizing state through Firestore, and reacting autonomously to system status changes.
 
-**TIM-BRIDGE** is the software running on the edge devices—specifically various Raspberry Pi models (Zero, 4B, and 5).
-The bridge listens for state changes in Firestore and updates hardware components on the Pi accordingly.
-
-A state update such as:
-
-```json
-{
-  "leftLightOn": true
-}
-```
-
-will directly trigger the left light to turn on.
-
-### **Core Execution Cycle**
-
-1. **Listen** for Firestore document changes.
-2. **On change**, control Raspberry Pi–connected hardware:
-
-   - **Audio**: playback via speakers
-   - **BOX components**: lights (Hillel/Shammai), rotors (2084)
-   - **PANEL components**: status LED
+Each TIM Bridge instance represents a **single machine installation** (physical or virtual) and acts as the runtime that translates high-level timelines into real-world sensory output.
 
 ---
 
-# **Robotic Arm (A-003) Positions**
+## Table of Contents
 
-JSON poses live in `positions/A-003/` (e.g. `positions/A-003/pos1.json`).
-
-From the repo root:
-
-```bash
-npm run arm -- list --machine A-003
-npm run arm -- go pos1 --machine A-003
-```
-
-# **Setup Guide**
-
-## 🧰 **Raspberry Pi Setup (Concise Single-Block Guide)**
-
-### **1. Flash the Correct OS (Raspberry Pi Imager)**
-
-| Device          | OS Version                            |
-| --------------- | ------------------------------------- |
-| **Pi Zero**     | Raspberry Pi OS Legacy 32-bit (armhf) |
-| **Pi 4 / Pi 5** | Raspberry Pi OS 64-bit (aarch64)      |
+- [High-Level Overview](#high-level-overview)
+- [Machine Instances](#machine-instances)
+- [Architecture](#architecture)
+- [Orders & Playback](#orders--playback)
+- [Timelines & Keyframes](#timelines--keyframes)
+- [Hardware & Sensors](#hardware--sensors)
+- [Statuses & State Model](#statuses--state-model)
+- [Playback Timeline Modes](#playback-timeline-modes)
+- [Firestore as Source of Truth](#firestore-as-source-of-truth)
+- [Phone Interaction (QR Flow)](#phone-interaction-qr-flow)
+- [Stopping a Session](#stopping-a-session)
+- [Networking & Connectivity](#networking--connectivity)
+- [Autonomy & Design Principles](#autonomy--design-principles)
+- [Security Notes](#security-notes)
+- [Development & Simulation](#development--simulation)
 
 ---
 
-### **2. Update the System**
+## High-Level Overview
 
-```bash
-sudo apt update && sudo apt upgrade -y
-```
+TIM Bridge is an **npm-based Node.js service** running on Raspberry Pi devices.
 
----
+Its responsibilities include:
 
-### **3. Install NVM**
-
-```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
-source ~/.bashrc
-```
+- Listening for **orders** via Firestore
+- Fetching and executing **timeline JSONs**
+- Driving **hardware peripherals** (audio, lighting, printers, pixel boards, servos, etc.)
+- Synchronizing machine state to Firestore
+- Autonomously managing idle, generating, and playback behavior
+- Acting as the execution engine for both **preset** and **generated** sessions
 
 ---
 
-### **4. Install Node.js 20**
+## Machine Instances
 
-```bash
-nvm install 20
-nvm use 20
-nvm alias default 20
+Each installation is identified by a unique **instance code**, for example:
+
 ```
+A-001-DEV
+```
+
+A machine instance represents:
+
+- One physical installation **or**
+- One virtual/simulated installation (digital twin)
+
+Each instance has **exactly one active guest at a time**.
 
 ---
 
-### **5. (Optional but Useful) Install fzf**
+## Architecture
 
-```bash
-git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-~/.fzf/install
+The TIM ecosystem consists of four main actors:
+
+1. **TIM Bridge (Edge / Raspberry Pi)**
+2. **TIM-OS Server**
+3. **Guest Phone (QR-based web experience)**
+4. **Developer Dashboard / Simulator (Digital Twin UI)**
+
+All actors communicate indirectly through **Firestore**, which acts as the **single source of truth**.
+
 ```
-
----
-
-### **6. Verify Node Installation**
-
-```bash
-node -v
-npm -v
+┌──────────┐
+│  Phone   │
+└────┬─────┘
+     │
+┌────▼──────────┐
+│  Firestore    │  ← Source of Truth
+└────┬──────────┘
+     │
+┌────▼─────┐      ┌────────────┐
+│ TIM      │      │ TIM-OS     │
+│ Bridge   │      │ Server     │
+└──────────┘      └────────────┘
 ```
 
 ---
 
-### **7. Create Projects Directory**
+## Orders & Playback
 
-```bash
-mkdir -p ~/projects
-cd ~/projects
-```
+TIM Bridge listens for **orders** stored in Firestore.
 
----
+Currently supported orders:
 
-### **8. Clone and Run tim-bridge**
+1. **Play Preset**
+   - Plays a predefined timeline with pre-existing assets
 
-```bash
-git clone https://github.com/dht/tim-bridge.git
-cd tim-bridge
-npm install
-node src/index.js    # or: npm run dev
-```
+2. **Play New Session**
+   - References a newly generated session
+   - Identified by a **GUID (4 characters)**
 
----
+3. **Stop**
+   - Stops the active playback and returns the machine to idle
 
-### ** 9. Give permissions to GPIO**
-
-In case you current user is admin
-
-```
-echo $USER
-```
-
-Give it permissions:
-
-```
-sudo usermod -aG gpio admin
-sudo reboot
-```
+Orders are processed sequentially and deterministically.
 
 ---
 
-### **10. (Optional) Install VS Code**
+## Timelines & Keyframes
 
-```bash
-sudo apt install code -y
-code ~/projects/tim-bridge
-```
+Playback is driven by a **`timeline.json`** file.
 
----
+A timeline consists of an **array of keyframes**, each defining actions to perform at a specific time.
 
-### **Common Tips**
+### Keyframes can control:
 
-- **Reset repo**
+- Audio playback (voices, MP3s)
+- Lighting states
+- Printer output
+- Pixel board visuals (e.g. mouth shapes, facial expressions)
+- Servo positions
+- Phone transcript updates
 
-  ```bash
-  git reset --hard HEAD
-  ```
-
-- **If Node reports “couldn’t find bcm…”**
-
-  ```bash
-  which node
-  sudo /path/to/node yourfile.js
-  ```
-
-- **Run the bridge manually**
-
-  ```bash
-  node src/index.js
-  ```
-
-- **Install omxplayer (for audio playback)**
-
-  ```bash
-  sudo apt install omxplayer
-  ```
+Each keyframe is interpreted by the bridge and translated into hardware-specific commands.
 
 ---
 
-# **Lights Documentation**
+## Hardware & Sensors
 
-## **Status Light (RGB)**
+Each machine supports a different subset of peripherals.
 
-| Mode / State            | Color | Pattern      | Meaning                          |
-| ----------------------- | ----- | ------------ | -------------------------------- |
-| `idle`                  | Green | Steady       | System ready and idle            |
-| `generating`            | Green | Slow blink   | L2 model generation / processing |
-| `listening`             | Green | Double blink | Awaiting user input              |
-| `speaking` / `playback` | Blue  | Steady       | Speaking / playing audio         |
-| `error`                 | Red   | Steady       | General error                    |
-| `error-no-internet`     | Red   | Single blink | No network connection            |
-| `error-reset-fail`      | Red   | Double blink | Reset command failed             |
-| `error-generation-fail` | Red   | Triple blink | TTS / Generation failure         |
+Possible components include:
 
----
+- 🔊 Speaker (voices, MP3s)
+- 💡 Lighting installations (e.g. dual house lights)
+- 🖨️ Label printers
+- 🟥 RGB pixel boards (e.g. 64×64)
+- 🤖 Servo motors (robotic arms, kinetic elements)
+- 🚦 RGB status light (present on all machines)
 
-# ## Install SSH Keys
-
-### **Set up secure trust between your Mac and Raspberry Pi (password-free login)**
-
-This guide explains how to securely generate SSH keys on your **Mac**, copy only the **public** key to the **Raspberry Pi**, and enable password-free login.
-
-SSH keys let your Mac prove its identity to your Pi **without sending a password**, which is much safer and faster.
+The bridge abstracts these differences and executes timelines accordingly.
 
 ---
 
-# ### 📁 Where SSH keys live on macOS
+## Statuses & State Model
 
-On your **Mac**, SSH keys are stored inside your home folder:
+### Bridge Status
 
-```
-~/.ssh
-```
+Represents the internal state of the edge device:
 
-This folder may contain:
-
-- `id_ed25519` → private key (keep secret!)
-- `id_ed25519.pub` → public key (safe to share)
-- Other keys like `id_rsa`, or custom ones you create
+- `offline`
+- `idle`
+- `caching`
+- `playback`
+- `resetting`
 
 ---
 
-# ## 1. Generate an SSH key on the Mac
+### Server Status
 
-Run this in Terminal on the **Mac**:
+Represents the TIM-OS server state:
 
-```sh
-ssh-keygen -t ed25519 -f ~/.ssh/id_edpi
-```
-
-What this does:
-
-- Creates a **private key**: `~/.ssh/id_edpi`
-- Creates a **public key**: `~/.ssh/id_edpi.pub`
-
-Press **Enter** for default options unless you want to add a passphrase.
+- `offline`
+- `idle`
+- `generating`
 
 ---
 
-# ## 2. Copy the public key to the Raspberry Pi
+### Phone (Guest UI) Status
 
-The public key is what the Pi uses to trust the Mac.
+Represents the current screen of the active guest:
 
-If `ssh-copy-id` works:
+- `none`
+- `intro`
+- `backstory`
+- `params`
+- `generating`
+- `playback`
+- `feedback`
 
-```sh
-ssh-copy-id -i ~/.ssh/id_edpi.pub admin@10.0.0.7
-```
-
-You will need to enter the Pi password **one last time**.
-
-After this, the Pi knows and trusts the Mac’s key.
+Only one guest can be active per machine at any given time.
 
 ---
 
-# ## 3. (Recommended) Add SSH config entry on the Mac
+## Playback Timeline Modes
 
-Create or edit this file:
+Each machine has a **playback timeline status**, independent of bridge status.
 
-```
-code ~/.ssh/config
-```
+This determines _which_ timeline is currently running.
 
-Add:
+### Timeline Modes
 
-```conf
-Host pi-server
-    HostName 10.0.0.7
-    User admin
-    IdentityFile ~/.ssh/id_edpi
-    IdentitiesOnly yes
-```
+1. **`none`**
+   - No timeline is active
 
-This tells SSH to always use your custom key when connecting to the Pi.
+2. **`idle`**
+   - Attract mode between sessions
+   - Lights, ambient sounds, movement, etc.
 
-Now connect using:
+3. **`generating`**
+   - Tangible progress indicator during session generation
+   - Example: a 45–60 second animated sequence
 
-```sh
-ssh pi-server
-```
+4. **`main`**
+   - The actual session timeline
+   - Preset or newly generated
 
-You should **not** be asked for a password 🎉
+---
 
-# ## How It Works (Simple Explanation)
+### Autonomous Switching
 
-- Your **Mac** keeps a **private key** (never share it).
-- Your **Pi** stores the **public key** inside `~/.ssh/authorized_keys`.
-- When you connect, the Mac proves it has the private key.
-- The Pi checks if the matching public key is trusted.
-- If yes → login is automatic, no password needed.
+Timeline switching is **handled internally by the bridge**.
 
-This is secure because:
+Example:
 
-- The private key never leaves your Mac.
-- The public key can’t be used to steal access.
+- If the server status changes to `generating`
+- The bridge automatically:
+  - Stops the idle timeline
+  - Starts the generating timeline
 
-Now you can do this:
+No explicit order is required.
 
-```
-git add . && git commit -am "wip" && git push && ssh pi-server "cd ~/projects/tim-bridge && git pull"
-```
+---
+
+## Firestore as Source of Truth
+
+Firestore holds a **machine document per instance**.
+
+This document is the **authoritative state** of the machine.
+
+### Who can read/write?
+
+Currently:
+
+- TIM Bridge
+- TIM-OS Server
+- Guest Phone
+- Developer Dashboard
+
+All can update machine fields freely.
+
+> Authentication and permissions may be added in the future.
+
+---
+
+## Phone Interaction (QR Flow)
+
+1. Guest scans QR code
+2. Phone UI loads machine context
+3. Guest chooses:
+   - A preset session **or**
+   - A new topic for debate
+
+4. For new sessions:
+   - TIM-OS generates assets and a timeline
+   - Timeline is hosted (e.g. Firebase Hosting)
+   - Bridge receives a `play new session` order
+
+5. Playback begins
+
+Phone transcript updates are driven by timeline keyframes.
+
+---
+
+## Stopping a Session
+
+A playback can be stopped from:
+
+1. **Guest Phone**
+   - Stop button visible during playback
+
+2. **Developer Dashboard**
+   - Machine card includes a stop action
+
+Both mechanisms send a **stop order** via Firestore.
+
+Result:
+
+- Active timeline stops
+- Machine returns to `idle`
+
+---
+
+## Networking & Connectivity
+
+- TIM Bridge runs on Raspberry Pi
+- On boot:
+  - Connects to Wi-Fi
+  - Transitions to `idle`
+  - Publishes its **local IP address** to Firestore
+
+The server IP and online status are also tracked.
+
+---
+
+## Autonomy & Design Principles
+
+Key principles of TIM Bridge:
+
+- **Edge autonomy**
+  - Minimal external orchestration
+
+- **Declarative control**
+  - Behavior defined via timelines, not imperative commands
+
+- **Single source of truth**
+  - Firestore reflects reality
+
+- **Hardware abstraction**
+  - Same timeline model across diverse machines
+
+- **Digital twin compatibility**
+  - Physical and virtual machines behave identically
+
+---
+
+## Security Notes
+
+- No authentication or authorization is currently enforced
+- This is intentional for early-stage development
+- Future iterations may include:
+  - Device authentication
+  - Role-based access control
+  - Write restrictions per actor
+
+---
+
+## Development & Simulation
+
+The ecosystem includes a **simulator / digital twin UI**:
+
+- Mirrors real machine state from Firestore
+- Visualizes lights, playback, and statuses
+- Enables:
+  - Development without physical hardware
+  - Interaction design
+  - Debugging production machines remotely
+
+---
+
+## Summary
+
+TIM Bridge is the **execution backbone** of The Incredible Machine:
+
+- It turns timelines into tangible experiences
+- It bridges cloud intelligence with physical reality
+- It enables both production installations and virtual experimentation

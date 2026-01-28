@@ -1,0 +1,67 @@
+[
+  {
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "params": {
+        "topic": "איך אוכלים מילקי?\n\nקודם קצפת או קודם שוקולד?",
+        "preset": "_milki"
+      }
+    }
+  },
+  {
+    "index": 1,
+    "ts": 0,
+    "duration": 50.44,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-1A.mp3",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-1A.jpg",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0
+    }
+  },
+  {
+    "index": 2,
+    "ts": 51.94,
+    "duration": 38.27,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-2B.mp3",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-2B.jpg",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1
+    }
+  },
+  {
+    "index": 3,
+    "ts": 91.71000000000001,
+    "duration": 35.08,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-3A.mp3",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-3A.jpg",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2
+    }
+  },
+  {
+    "index": 4,
+    "ts": 128.29000000000002,
+    "duration": 37.64,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-4B.mp3",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/_milki/line-4B.jpg",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3
+    }
+  },
+  {
+    "index": 5,
+    "ts": 167.43,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]

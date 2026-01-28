@@ -1,40 +1,28 @@
 {
-  "name": "client-node-bridge",
-  "version": "1.0.36",
-  "description": "",
+  "name": "tim-bridge-nextgen",
+  "version": "1.0.0",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\"",
     "start": "node src/index.js",
-    "watch": "nodemon --watch src --ext js,json --exec \"node src/index.js\"",
-    "arm": "node src/arm/cli.js",
-    "pm2:start": "pm2 start ecosystem.config.cjs",
-    "pm2:restart": "pm2 restart ecosystem.config.cjs || pm2 start ecosystem.config.cjs",
-    "pm2:stop": "pm2 stop tim-bridge",
-    "pm2:logs": "pm2 logs tim-bridge",
-    "bump:patch": "node scripts/bump-version.js"
+    "dev": "nodemon --watch src --ext js,json --exec node src/index.js",
+    "build": "find src -type f -name \"*.js\" -print0 | xargs -0 -n1 node --check",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@firebase/app": "^0.14.7",
+    "@firebase/firestore": "^4.10.0",
+    "axios": "^1.13.4",
+    "dotenv": "^16.6.1",
+    "firebase-admin": "^12.7.0",
+    "fs-extra": "^11.3.3",
+    "p-limit": "^7.2.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "@abandonware/noble": "1.9.2-26",
-    "@firebase/app": "^0.14.4",
-    "@firebase/firestore": "^4.9.2",
-    "axios": "^1.13.2",
-    "dotenv": "^17.2.3",
-    "firebase-admin": "^13.6.0",
-    "fs-extra": "^11.3.2",
-    "i2c-bus": "^5.2.3",
-    "internal-ip": "^8.0.1",
-    "pca9685": "^5.0.0",
-    "pigpio": "^3.3.1",
-    "rpio": "^2.4.2",
-    "tim-logger": "0.0.40",
-    "express": "^4.19.2"
-  },
-  "devDependencies": {
-    "husky": "^9.1.7"
-  }
+  "description": ""
 }
