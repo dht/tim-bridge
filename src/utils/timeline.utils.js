@@ -1,4 +1,5 @@
 import fs from 'fs-extra';
+import { stopAllHardware } from '../hardware/index.js';
 import { getShouldStop } from './globals.js';
 
 export function getTimeline(localFolder) {
@@ -98,3 +99,31 @@ export const stopIfNeeded = (machineId, timelineType) => {
 
   return shouldStop;
 };
+
+export const getRestTimeline = (machineId) => {
+  const id = normalizeId(machineId);
+  const path = `./elevator-timelines/${id}/_timeline.rest.json`;
+  console.log('path ->', path);
+
+  if (!fs.existsSync(path)) {
+    return null;
+  }
+
+  return fs.readJsonSync(path);
+};
+
+export const getGeneratingTimeline = (machineId) => {
+  const id = normalizeId(machineId);
+  const path = `./elevator-timelines/${id}/_timeline.generating.json`;
+
+  if (!fs.existsSync(path)) {
+    return null;
+  }
+
+  return fs.readJsonSync(path);
+};
+
+export function normalizeId(id) {
+  const parts = id.split('-');
+  return `${parts[0]}-${parts[1]}`;
+}

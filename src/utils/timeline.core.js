@@ -10,7 +10,11 @@ import {
 
 const BEAT = 100; // ms
 
-export async function playTimeline(machineId, timelineJson) {
+export async function playTimeline(machineId, timelineJson, playbackType) {
+  if (!playbackType) {
+    return;
+  }
+
   console.log('Playing timeline with', timelineJson.length, 'items');
 
   const duration = getTimelineDuration(timelineJson);
@@ -19,13 +23,13 @@ export async function playTimeline(machineId, timelineJson) {
     ts = 0,
     playedIndex = {};
 
-  setTimelineState(machineId, 'PLAYBACK');
+  setTimelineState(machineId, playbackType);
   stopAllHardware(machineId);
 
   await delay(50);
 
   while (ts < duration) {
-    const didStop = stopIfNeeded(machineId, 'PLAYBACK');
+    const didStop = stopIfNeeded(machineId, playbackType);
 
     if (didStop) {
       break;
@@ -39,5 +43,29 @@ export async function playTimeline(machineId, timelineJson) {
     await applyKeyframes(machineId, relevantKeyframes, playedIndex);
 
     await delay(BEAT);
+  }
+}
+
+export async function loopTimeline(machineId, timelineJson, playbackType) {
+  if (!playbackType) {
+    return;
+  }
+
+  if (!timelineJson || timelineJson.length === 0) {
+    console.log('No timeline to loop for machine:', machineId);
+    return;
+  }
+
+  console.log('Looping timeline with', timelineJson.length, 'items');
+
+  while (true) {
+    const didStop = stopIfNeeded(machineId, playbackType);
+
+    if (didStop) {
+      break;
+    }
+
+    await playTimeline(machineId, timelineJson);
+    await delay(1000);
   }
 }

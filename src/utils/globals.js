@@ -20,12 +20,14 @@ export const getTimelineState = (machineId) => {
 export const setTimelineState = (machineId, value) => {
   timelineState[machineId] = value;
 
+  console.log('value ->', value);
+
   ['IDLE', 'GENERATING', 'PLAYBACK'].forEach((type) => {
     if (type === value) return;
-    shouldStop[machineId][type] = true;
+    setShouldStop(machineId, type, true);
   });
 
-  shouldStop[machineId][value] = false;
+  setShouldStop(machineId, value, false);
 };
 
 export const getShouldStop = (machineId, timelineType) => {
@@ -34,6 +36,8 @@ export const getShouldStop = (machineId, timelineType) => {
 
 export const setShouldStop = (machineId, timelineType, value) => {
   shouldStop[machineId][timelineType] = value;
+
+  console.log('shouldStop ->', shouldStop);
 };
 
 export const setLogger = (value) => {
