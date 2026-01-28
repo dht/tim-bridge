@@ -1,4 +1,4 @@
-import fs from 'fs-extra';
+import fs from "fs-extra";
 
 export function getTimeline(localFolder) {
   const filePathTimeline = `${localFolder}/_timeline.json`;
@@ -10,7 +10,7 @@ export function getTimeline(localFolder) {
 const fixUrl = (machineId, url) => {
   if (!url) return url;
 
-  const parts = url.split('/');
+  const parts = url.split("/");
   const fileName = parts.pop();
   const sessionId = parts.pop();
 
@@ -18,13 +18,14 @@ const fixUrl = (machineId, url) => {
 };
 
 export const changeRemoteUrlsToLocalPath = (machineId, timelineJson) => {
-  return timelineJson.map(item => {
+  return timelineJson.map((item) => {
     const { state } = item;
     let { mp3Url, imageUrl } = state || {};
 
     if (mp3Url) {
       state.mp3LocalPath = fixUrl(machineId, mp3Url);
     }
+
     if (imageUrl) {
       state.imageLocalPath = fixUrl(machineId, imageUrl);
     }
@@ -36,10 +37,10 @@ export const changeRemoteUrlsToLocalPath = (machineId, timelineJson) => {
   });
 };
 
-export const extractTimelineAssets = timelineJson => {
+export const extractTimelineAssets = (timelineJson) => {
   const assets = [];
 
-  timelineJson.forEach(item => {
+  timelineJson.forEach((item) => {
     const { state } = item;
     const { mp3Url, imageUrl } = state || {};
 
