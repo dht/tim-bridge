@@ -1,4 +1,5 @@
-import fs from "fs-extra";
+import fs from 'fs-extra';
+import { getShouldStop } from './globals.js';
 
 export function getTimeline(localFolder) {
   const filePathTimeline = `${localFolder}/_timeline.json`;
@@ -10,7 +11,7 @@ export function getTimeline(localFolder) {
 const fixUrl = (machineId, url) => {
   if (!url) return url;
 
-  const parts = url.split("/");
+  const parts = url.split('/');
   const fileName = parts.pop();
   const sessionId = parts.pop();
 
@@ -55,21 +56,21 @@ export const extractTimelineAssets = (timelineJson) => {
   return assets;
 };
 
-export const getTimelineDuration = timelineJson => {
+export const getTimelineDuration = (timelineJson) => {
   if (timelineJson.length === 0) return 0;
 
   const lastItem = timelineJson[timelineJson.length - 1];
   return lastItem.ts;
 };
 
-export const delay = ms => {
-  return new Promise(resolve => setTimeout(resolve, ms));
+export const delay = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
 const MAX_DELTA_MS = 200;
 
 export const getRelevantKeyframes = (timelineJson, currentTs, playedIndex) => {
-  return timelineJson.filter((item, index) => {
+  return timelineJson.filter((item) => {
     const { index, ts } = item;
 
     if (playedIndex[index]) {
@@ -84,4 +85,15 @@ export const getRelevantKeyframes = (timelineJson, currentTs, playedIndex) => {
 
     return true;
   });
+};
+
+export const stopIfNeeded = (machineId, timelineType) => {
+  const shouldStop = getShouldStop(machineId, timelineType);
+
+  if (shouldStop) {
+    stopAllHardware(machineId);
+    console.log('Stopping timeline playback for machine:', machineId);
+  }
+
+  return shouldStop;
 };

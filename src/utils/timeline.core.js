@@ -1,9 +1,12 @@
-// type TimelineStatus = 'NONE' | 'IDLE' | 'GENERATING' | 'PLAYBACK';
-
-import { stopAllHardware } from '../hardware';
-import { getShouldStop, setShouldStop } from './globals';
-import { applyKeyframe } from './keyframes';
-import { delay, getRelevantKeyframes, getTimelineDuration } from './timeline.utils';
+import { stopAllHardware } from '../hardware/index.js';
+import { setTimelineState } from './globals.js';
+import { applyKeyframes } from './keyframes.js';
+import {
+  delay,
+  getRelevantKeyframes,
+  getTimelineDuration,
+  stopIfNeeded,
+} from './timeline.utils.js';
 
 /*
   Concerns:
@@ -14,6 +17,7 @@ import { delay, getRelevantKeyframes, getTimelineDuration } from './timeline.uti
   - be able to play a timeline (array of keyframes)
   - be able to stop a running playback
 */
+const BEAT = 100; // ms
 
 let shouldStop = true;
 
@@ -26,14 +30,15 @@ export async function playTimeline(machineId, timelineJson) {
     ts = 0,
     playedIndex = {};
 
-  setShouldStop(false);
+  setTimelineState(machineId, 'PLAYBACK');
+  stopAllHardware(machineId);
+
+  await delay(50);
 
   while (ts < duration) {
-    const shouldStop = getShouldStop();
+    const didStop = stopIfNeeded(machineId, 'PLAYBACK');
 
-    if (shouldStop) {
-      stopAllHardware(machineId)
-      console.log('Stopping timeline playback for machine:', machineId);
+    if (didStop) {
       break;
     }
 
@@ -42,11 +47,8 @@ export async function playTimeline(machineId, timelineJson) {
 
     const relevantKeyframes = getRelevantKeyframes(timelineJson, ts, playedIndex);
 
-    for (const item of relevantKeyframes) {
-      applyKeyframe(machineId, item);
-      playedIndex[index] = true;
-    }
+    await applyKeyframes(machineId, relevantKeyframes, playedIndex);
 
-    await delay(100);
+    await delay(BEAT);
   }
 }
