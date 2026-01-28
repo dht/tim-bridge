@@ -10,7 +10,7 @@ export const playOrder = async order => {
 
   const timelineJson = getTimeline(localFolder);
 
-  playTimeline(timelineJson);
+  playTimeline(machineId, timelineJson);
 };
 
 export const stopOrder = async order => {};

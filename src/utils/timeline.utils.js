@@ -53,3 +53,34 @@ export const extractTimelineAssets = timelineJson => {
 
   return assets;
 };
+
+export const getTimelineDuration = timelineJson => {
+  if (timelineJson.length === 0) return 0;
+
+  const lastItem = timelineJson[timelineJson.length - 1];
+  return lastItem.ts;
+};
+
+export const delay = ms => {
+  return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+const MAX_DELTA_MS = 200;
+
+export const getRelevantKeyframes = (timelineJson, currentTs, playedIndex) => {
+  return timelineJson.filter((item, index) => {
+    const { index, ts } = item;
+
+    if (playedIndex[index]) {
+      return false;
+    }
+
+    const delta = Math.abs(currentTs - ts);
+
+    if (delta > MAX_DELTA_MS) {
+      return false;
+    }
+
+    return true;
+  });
+};
