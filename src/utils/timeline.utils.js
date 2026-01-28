@@ -67,7 +67,8 @@ export const delay = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-const MAX_DELTA_MS = 200;
+// currentTs and keyframe ts are in seconds, so keep the window in seconds too
+const MAX_DELTA_S = 0.2;
 
 export const getRelevantKeyframes = (timelineJson, currentTs, playedIndex) => {
   return timelineJson.filter((item) => {
@@ -79,7 +80,7 @@ export const getRelevantKeyframes = (timelineJson, currentTs, playedIndex) => {
 
     const delta = Math.abs(currentTs - ts);
 
-    if (delta > MAX_DELTA_MS) {
+    if (delta > MAX_DELTA_S) {
       return false;
     }
 

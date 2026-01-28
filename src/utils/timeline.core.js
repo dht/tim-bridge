@@ -8,18 +8,7 @@ import {
   stopIfNeeded,
 } from './timeline.utils.js';
 
-/*
-  Concerns:
-  - managing firestore state
-  - controlling hardware
-
-  Requirements:
-  - be able to play a timeline (array of keyframes)
-  - be able to stop a running playback
-*/
 const BEAT = 100; // ms
-
-let shouldStop = true;
 
 export async function playTimeline(machineId, timelineJson) {
   console.log('Playing timeline with', timelineJson.length, 'items');
