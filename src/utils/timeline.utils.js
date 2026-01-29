@@ -94,7 +94,7 @@ export const stopIfNeeded = (machineId, timelineType) => {
 
   if (shouldStop) {
     stopAllHardware(machineId);
-    console.log('Stopping timeline playback for machine:', machineId);
+    console.log('Stopping:', machineId, timelineType);
   }
 
   return shouldStop;

@@ -2,9 +2,10 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "git-commit-wip",
+      "label": "bridge: debug (preLaunch)",
       "type": "shell",
-      "command": "git add . && git commit -m \"wip\" && git push",
+      "command": "pnpm",
+      "args": ["-s", "run", "build"],
       "problemMatcher": []
     }
   ]

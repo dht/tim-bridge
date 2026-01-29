@@ -6,6 +6,7 @@
       "request": "launch",
       "name": "Debug src/index.js",
       "program": "${workspaceFolder}/src/index.js",
+      "preLaunchTask": "bridge: debug (preLaunch)",
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
       "envFile": "${workspaceFolder}/.env",

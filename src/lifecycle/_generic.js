@@ -32,3 +32,17 @@ export async function onBridgeClose(id, data) {
     isBridgeOnline: false,
   });
 }
+
+export async function onPlaybackEnded(id, data) {
+  const logger = getLogger();
+
+  logger.info(`${id} onEnd`);
+
+  const updateMachine = updateMachineCreator(id);
+
+  updateMachine({
+    bridgeState: 'IDLE',
+  });
+
+  await playTimelineIdle(id);
+}

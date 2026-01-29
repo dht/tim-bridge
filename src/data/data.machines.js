@@ -48,3 +48,5 @@ export const MACHINES = {
   ...MACHINES_DEV,
   ...MACHINES_PROD,
 };
+
+export const MACHINE_IDS = Object.keys(MACHINES);

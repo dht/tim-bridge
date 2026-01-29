@@ -1,3 +1,4 @@
+import { onPlaybackEnded } from '../lifecycle/_generic.js';
 import { getTimelineState } from './globals.js';
 import { playTimeline } from './timeline.base.js';
 
@@ -9,5 +10,9 @@ export async function playTimelineCore(machineId, timelineJson) {
     return;
   }
 
+  console.time('playback-core');
   await playTimeline(machineId, timelineJson, 'PLAYBACK');
+  console.timeEnd('playback-core');
+
+  onPlaybackEnded(machineId);
 }

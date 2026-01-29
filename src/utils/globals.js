@@ -1,3 +1,5 @@
+import { MACHINE_IDS } from '../data/data.machines.js';
+
 // type TimelineStatus = 'NONE' | 'IDLE' | 'GENERATING' | 'PLAYBACK';
 let logger = null;
 
@@ -13,18 +15,7 @@ const shouldStop = {
   },
 };
 
-[
-  'A-001-dev',
-  'A-001-miffal',
-  'A-002-dev',
-  'A-003-dev',
-  'A-004-dev',
-  'A-005-dev',
-  'A-006-dev',
-  'A-007-dev',
-  'A-901-miffal',
-  'A-901-dev',
-].forEach((machineId) => {
+MACHINE_IDS.forEach((machineId) => {
   timelineState[machineId] = 'NONE';
   shouldStop[machineId] = {
     IDLE: false,
@@ -40,7 +31,6 @@ export const getTimelineState = (machineId) => {
 export const setTimelineState = (machineId, value) => {
   timelineState[machineId] = value;
 
-
   ['IDLE', 'GENERATING', 'PLAYBACK'].forEach((type) => {
     if (type === value) return;
     setShouldStop(machineId, type, true);
@@ -55,7 +45,6 @@ export const getShouldStop = (machineId, timelineType) => {
 
 export const setShouldStop = (machineId, timelineType, value) => {
   shouldStop[machineId][timelineType] = value;
-
 };
 
 export const setLogger = (value) => {

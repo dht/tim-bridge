@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { MACHINES_DEV } from '../data/data.machines.js';
 import { onBridgeClose } from '../lifecycle/index.js';
+import { getLogger } from './globals.js';
 
 const MACHINE_ID = process.env.MACHINE_ID;
 const IS_DEV = process.env.IS_DEV;

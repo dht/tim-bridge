@@ -10,12 +10,12 @@ import {
 
 const BEAT = 100; // ms
 
-export async function playTimeline(machineId, timelineJson, playbackType) {
-  if (!playbackType) {
+export async function playTimeline(machineId, timelineJson, timelineType) {
+  if (!timelineType) {
     return;
   }
 
-  console.log('Playing timeline with', timelineJson.length, 'items');
+  console.log(`Playing ${timelineType} with`, timelineJson.length, 'items');
 
   // duration in seconds
   const duration = getTimelineDuration(timelineJson);
@@ -24,13 +24,13 @@ export async function playTimeline(machineId, timelineJson, playbackType) {
     ts = 0,
     playedIndex = {};
 
-  setTimelineState(machineId, playbackType);
+  setTimelineState(machineId, timelineType);
   stopAllHardware(machineId);
 
   await delay(50);
 
   while (ts < duration) {
-    const didStop = stopIfNeeded(machineId, playbackType);
+    const didStop = stopIfNeeded(machineId, timelineType);
 
     if (didStop) {
       stopAllHardware(machineId);
@@ -42,14 +42,20 @@ export async function playTimeline(machineId, timelineJson, playbackType) {
 
     const relevantKeyframes = getRelevantKeyframes(timelineJson, ts, playedIndex);
 
-    await applyKeyframes(machineId, relevantKeyframes, playedIndex);
+    if (timelineType === 'PLAYBACK' && relevantKeyframes.length > 0) {
+      console.log('Relevant keyframes for playback:', relevantKeyframes);
+    }
+
+    await applyKeyframes(machineId, relevantKeyframes, playedIndex, {
+      timelineType,
+    });
 
     await delay(BEAT);
   }
 }
 
-export async function loopTimeline(machineId, timelineJson, playbackType) {
-  if (!playbackType) {
+export async function loopTimeline(machineId, timelineJson, timelineType) {
+  if (!timelineType) {
     return;
   }
 
@@ -61,15 +67,15 @@ export async function loopTimeline(machineId, timelineJson, playbackType) {
   console.log('Looping timeline with', timelineJson.length, 'items');
 
   while (true) {
-    const didStop = stopIfNeeded(machineId, playbackType);
+    const didStop = stopIfNeeded(machineId, timelineType);
 
-    console.log('didStop:', didStop);
     if (didStop) {
+      stopAllHardware(machineId);
       break;
     }
 
     console.time('playTimeline');
-    await playTimeline(machineId, timelineJson, playbackType);
+    await playTimeline(machineId, timelineJson, timelineType);
     console.timeEnd('playTimeline');
 
     await delay(1000);
