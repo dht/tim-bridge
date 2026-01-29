@@ -6,7 +6,7 @@ import { changeRemoteUrlsToLocalPath, extractTimelineAssets } from './timeline.u
 const STORAGE_BASE_URL = process.env.STORAGE_BASE_URL;
 const ERASE_FOR_DEV = true;
 
-export const cacheOrder = async order => {
+export const cacheOrder = async (order) => {
   const { machineId, sessionId } = order;
 
   // if cache exists return true
@@ -27,7 +27,7 @@ export const cacheOrder = async order => {
   fs.ensureDirSync(localFolder);
 
   // downloaded the main _timeline.json file
-  const url = `${STORAGE_BASE_URL}/sessions/${sessionId}/_timeline.json`;
+  const url = `${STORAGE_BASE_URL}/${machineId}/sessions/${sessionId}/_timeline.json`;
   let timelineJson = await getJson(url);
   const assets = extractTimelineAssets(timelineJson);
 
