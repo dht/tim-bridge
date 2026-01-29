@@ -11,3 +11,4 @@ playground/matrix-pixel/__pycache__/
 **/state.json
 log.txt
 cache/
+.env.pi

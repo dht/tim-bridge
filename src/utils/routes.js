@@ -98,8 +98,6 @@ export function registerRoutes(app, { rawParser, textParser }) {
 
       return res.json({ ok: true, fileName });
     } catch (err) {
-      console.log('err ->', err);
-
       logger.error('observation saved failed', err);
       return res.status(500).json({ ok: false, error: 'write-failed' });
     }

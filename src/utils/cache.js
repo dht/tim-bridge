@@ -19,7 +19,6 @@ export const cacheOrder = async (order) => {
     if (ERASE_FOR_DEV) {
       fs.removeSync(localFolder);
     } else {
-      console.log('Cache exists for', machineId, sessionId);
       return true;
     }
   }
@@ -29,8 +28,6 @@ export const cacheOrder = async (order) => {
   // downloaded the main _timeline.json file
   const url = `${STORAGE_BASE_URL}/${machineId}/sessions/${sessionId}/_timeline.json?t=1`;
 
-  console.log('Downloading timeline from URL:', url);
-
   let timelineJson = await getJson(url);
   const assets = extractTimelineAssets(timelineJson);
 
@@ -38,8 +35,6 @@ export const cacheOrder = async (order) => {
 
   const filePathTimeline = `${localFolder}/_timeline.json`;
   fs.writeJsonSync(filePathTimeline, timelineJson, { spaces: 2 });
-
-  console.log(assets);
 
   await downloadAssetsFromUrls(assets, localFolder);
   // download all assets

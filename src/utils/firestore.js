@@ -137,7 +137,6 @@ export async function clearCollection(name) {
   const collectionRef = collection(db, name);
   // Note: Firestore does not support direct collection deletion.
   // You would need to delete documents individually or use a batch operation.
-  console.log(`Clearing collection: ${name}`);
   const snapshot = await getDocs(collectionRef);
   await Promise.all(snapshot.docs.map((doc) => deleteDoc(doc.ref)));
 }

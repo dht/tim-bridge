@@ -1,6 +1,5 @@
 export const applyHardware = (fieldId, value, meta) => {
   const { machineId } = meta;
-  console.log(`Applying to machine ${machineId}, field ${fieldId}:`, value);
 
   switch (fieldId) {
     case 'lightStatus':
@@ -17,26 +16,21 @@ async function loadRpio() {
   const isPi = process.platform === 'linux' && (process.arch === 'arm' || process.arch === 'arm64');
 
   if (!isPi) {
-    console.log('⚠️ Running on non-Pi system: GPIO disabled.');
     return null;
   }
 
   try {
     const module = await import('rpio');
     module.default.init({ gpiomem: true });
-    console.log('GPIO ready.');
     return module.default;
   } catch (err) {
-    console.log('⚠️ Failed to load rpio:', err.message);
     return null;
   }
 }
 
 const rpioPromise = loadRpio();
 
-function simulate(pin, val) {
-  // console.log(`(simulate GPIO) pin ${pin} <- ${val ? 'ON' : 'OFF'}`);
-}
+function simulate(pin, val) {}
 
 const LED1 = 11;
 const LED2 = 13;

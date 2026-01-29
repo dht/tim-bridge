@@ -4,8 +4,6 @@ import { getIp } from './utils/ip.js';
 import { playOrder, stopOrder } from './utils/orders.js';
 
 export async function startMachine(id) {
-  console.log('Starting', id);
-
   const ip = await getIp();
 
   onBridgeOpen(id, { ip });

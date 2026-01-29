@@ -8,14 +8,14 @@
   },
   {
     "index": 1,
-    "ts": 1,
+    "ts": 20,
     "state": {
       "lightStatus": "TWO"
     }
   },
   {
     "index": 2,
-    "ts": 20,
+    "ts": 40,
     "state": {},
     "isDone": true
   }

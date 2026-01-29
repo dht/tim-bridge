@@ -1,5 +1,5 @@
 import { onPlaybackEnded } from '../lifecycle/_generic.js';
-import { getTimelineState } from './globals.js';
+import { getTimelineState, setTimelineState } from './globals.js';
 import { playTimeline } from './timeline.base.js';
 
 export async function playTimelineCore(machineId, timelineJson) {
@@ -9,6 +9,8 @@ export async function playTimelineCore(machineId, timelineJson) {
     console.log('Timeline already in PLAYBACK state');
     return;
   }
+
+  setTimelineState(machineId, 'PLAYBACK');
 
   console.time('playback-core');
   await playTimeline(machineId, timelineJson, 'PLAYBACK');

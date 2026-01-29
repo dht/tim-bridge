@@ -4,7 +4,6 @@ import path from 'node:path';
 
 export const applyHardware = (fieldId, value, meta) => {
   const { machineId } = meta;
-  console.log(`Applying to machine ${machineId}, field ${fieldId}:`, value);
 
   switch (fieldId) {
     case 'mp3LocalPath':
@@ -37,12 +36,10 @@ export async function playMp3(filePath) {
   const absPath = path.resolve(filePath);
 
   if (!fs.existsSync(absPath)) {
-    console.warn(`[audio] file not found, skipping: ${absPath}`);
     return;
   }
 
   const { cmd, args } = getPlayerCmd();
-  console.log(`[audio] playing local file: ${absPath} using ${cmd}`);
 
   const spawnOptions = {
     stdio: 'inherit',
@@ -64,12 +61,10 @@ export async function playMp3(filePath) {
   player = spawn(cmd, [...args, absPath], spawnOptions);
 
   player.on('exit', (code, signal) => {
-    console.log(`[audio] ended (code=${code}, signal=${signal})`);
     player = null;
   });
 
   player.on('error', (err) => {
-    console.error(`[audio] failed to start ${cmd}:`, err);
     player = null;
   });
 }
