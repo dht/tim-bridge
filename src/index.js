@@ -8,22 +8,31 @@ import { initLogger } from './utils/logger.js';
 
 const MACHINE_ID = process.env.MACHINE_ID;
 const CLIENT_ID = process.env.CLIENT_ID;
-const IS_DEV = process.env.IS_DEV;
+const IS_DEV = process.env.IS_DEV === 'true';
+const DEV_MACHINE_ID = process.env.DEV_MACHINE_ID;
+const START_HTTP_FOR_WEBCAM_SAVING = process.env.constSTART_HTTP_FOR_WEBCAM_SAVING === 'true';
 
 async function main() {
   initFirestore();
   const logger = initLogger(CLIENT_ID);
 
-  if (IS_DEV) {
+  if (START_HTTP_FOR_WEBCAM_SAVING) {
     startHttpServer();
+  }
 
+  if (IS_DEV) {
     await logger.clearLogs();
+  }
 
+  // product or single machine dev
+  if (!IS_DEV || DEV_MACHINE_ID) {
+    // start one
+    startMachine(MACHINE_ID);
+  } else {
+    // start all
     Object.values(MACHINES_DEV).forEach((machine) => {
       startMachine(machine.id);
     });
-  } else {
-    startMachine(MACHINE_ID);
   }
 }
 

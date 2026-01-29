@@ -2,6 +2,7 @@ import express from "express";
 import { getLogger } from "./globals.js";
 import { registerRoutes } from "./routes.js";
 
+// this is temporary, for homosapiens installation
 const BRIDGE_HTTP_PORT = Number(process.env.BRIDGE_HTTP_PORT || process.env.PORT || 3030);
 
 export function startHttpServer() {

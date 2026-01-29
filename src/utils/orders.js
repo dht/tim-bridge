@@ -1,5 +1,5 @@
 import { cacheOrder } from './cache.js';
-import { playTimeline } from './timeline.core.js';
+import { playTimelineCore } from './timeline.core.js';
 import { getTimeline } from './timeline.utils.js';
 
 export const playOrder = async (order) => {
@@ -10,9 +10,7 @@ export const playOrder = async (order) => {
 
   const timelineJson = getTimeline(localFolder);
 
-  console.log('123 ->', 123);
-
-  playTimeline(machineId, timelineJson, 'PLAYBACK');
+  playTimelineCore(machineId, timelineJson);
 };
 
 export const stopOrder = async (order) => {};

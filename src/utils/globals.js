@@ -7,11 +7,31 @@ const timelineState = {
 
 const shouldStop = {
   'A-001-dev': {
-    IDLE: true,
-    GENERATING: true,
-    PLAYBACK: true,
+    IDLE: false,
+    GENERATING: false,
+    PLAYBACK: false,
   },
 };
+
+[
+  'A-001-dev',
+  'A-001-miffal',
+  'A-002-dev',
+  'A-003-dev',
+  'A-004-dev',
+  'A-005-dev',
+  'A-006-dev',
+  'A-007-dev',
+  'A-901-miffal',
+  'A-901-dev',
+].forEach((machineId) => {
+  timelineState[machineId] = 'NONE';
+  shouldStop[machineId] = {
+    IDLE: false,
+    GENERATING: false,
+    PLAYBACK: false,
+  };
+});
 
 export const getTimelineState = (machineId) => {
   return timelineState[machineId];
@@ -20,7 +40,6 @@ export const getTimelineState = (machineId) => {
 export const setTimelineState = (machineId, value) => {
   timelineState[machineId] = value;
 
-  console.log('value ->', value);
 
   ['IDLE', 'GENERATING', 'PLAYBACK'].forEach((type) => {
     if (type === value) return;
@@ -37,7 +56,6 @@ export const getShouldStop = (machineId, timelineType) => {
 export const setShouldStop = (machineId, timelineType, value) => {
   shouldStop[machineId][timelineType] = value;
 
-  console.log('shouldStop ->', shouldStop);
 };
 
 export const setLogger = (value) => {

@@ -12,6 +12,8 @@ import {
 import 'dotenv/config';
 import { identifyDevice } from './device.js';
 
+const IS_DEV = process.env.IS_DEV === 'true';
+
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
   authDomain: process.env.FIREBASE_AUTH_DOMAIN,
@@ -40,14 +42,14 @@ export function listenToCollectionSockets(name, callback) {
   const collectionRef = collection(db, name);
   let isInitialLoad = true;
 
-  const unsubscribe = onSnapshot(collectionRef, snapshot => {
+  const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
     if (isInitialLoad) {
       // skip initial batch of 'added' events
       isInitialLoad = false;
       return;
     }
 
-    snapshot.docChanges().forEach(change => {
+    snapshot.docChanges().forEach((change) => {
       const id = change.doc.id;
       const data = change.doc.data();
 
@@ -66,7 +68,7 @@ export function listenToCollectionSockets(name, callback) {
 
 export function crud(collectionName) {
   return {
-    add: async values => {
+    add: async (values) => {
       if (!values) {
         throw new Error('crud.add requires a values object');
       }
@@ -97,30 +99,30 @@ export function crud(collectionName) {
 
       await setDoc(ref, newChange, { merge: true });
     },
-    delete: async id => {
+    delete: async (id) => {
       if (!id) {
         throw new Error('crud.delete requires a document id');
       }
       const ref = doc(db, collectionName, id);
       await deleteDoc(ref);
     },
-    listen: callback => {
+    listen: (callback) => {
       return listenToCollection(collectionName, callback);
     },
     getAll: async () => {
       const collectionRef = collection(db, collectionName);
       const snapshot = await getDocs(collectionRef);
       const results = [];
-      snapshot.forEach(doc => {
+      snapshot.forEach((doc) => {
         results.push({ id: doc.id, ...doc.data() });
       });
       return results;
     },
-    deleteByPredicate: async predicate => {
+    deleteByPredicate: async (predicate) => {
       const collectionRef = collection(db, collectionName);
       const snapshot = await getDocs(collectionRef);
       const deletePromises = [];
-      snapshot.forEach(doc => {
+      snapshot.forEach((doc) => {
         const data = doc.data();
         if (predicate(data)) {
           deletePromises.push(deleteDoc(doc.ref));
@@ -137,7 +139,7 @@ export async function clearCollection(name) {
   // You would need to delete documents individually or use a batch operation.
   console.log(`Clearing collection: ${name}`);
   const snapshot = await getDocs(collectionRef);
-  await Promise.all(snapshot.docs.map(doc => deleteDoc(doc.ref)));
+  await Promise.all(snapshot.docs.map((doc) => deleteDoc(doc.ref)));
 }
 
 export function listenToCollectionShortPull(collectionName, onChange, options = {}) {
@@ -157,7 +159,7 @@ export function listenToCollectionShortPull(collectionName, onChange, options = 
       const ref = collection(db, collectionName);
       const snapshot = await getDocs(ref);
 
-      snapshot.forEach(doc => {
+      snapshot.forEach((doc) => {
         const id = doc.id;
         const data = doc.data();
 
@@ -200,22 +202,24 @@ export function listenToCollection(collectionName, callback) {
 
   const useShortPoll = isPiZero1;
 
-  console.log(
-    `Listening to Firestore collection "${collectionName}" using device type: ${device} → ${
-      useShortPoll ? 'short-poll' : 'realtime onSnapshot'
-    }`
-  );
+  if (!IS_DEV) {
+    console.log(
+      `Listening to Firestore collection "${collectionName}" using device type: ${device} → ${
+        useShortPoll ? 'short-poll' : 'realtime onSnapshot'
+      }`
+    );
+  }
 
   const method = useShortPoll ? listenToCollectionShortPull : listenToCollectionSockets;
 
   return method(collectionName, callback);
 }
 
-export const updateMachineCreator = machineId => change => {
+export const updateMachineCreator = (machineId) => (change) => {
   return crud('machines').update(machineId, change);
 };
 
-export const updateRunCreator = runId => change => {
+export const updateRunCreator = (runId) => (change) => {
   return crud('runs').update(runId, change);
 };
 
@@ -223,6 +227,8 @@ export const updateKeyframe = (keyframeId, change) => {
   return crud('keyframes').update(keyframeId, change);
 };
 
-export const clearKeyframesForMachine = async machineId => {
-  const response = await crud('keyframes').deleteByPredicate(item => item.machineId === machineId);
+export const clearKeyframesForMachine = async (machineId) => {
+  const response = await crud('keyframes').deleteByPredicate(
+    (item) => item.machineId === machineId
+  );
 };

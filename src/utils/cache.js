@@ -27,7 +27,10 @@ export const cacheOrder = async (order) => {
   fs.ensureDirSync(localFolder);
 
   // downloaded the main _timeline.json file
-  const url = `${STORAGE_BASE_URL}/${machineId}/sessions/${sessionId}/_timeline.json`;
+  const url = `${STORAGE_BASE_URL}/${machineId}/sessions/${sessionId}/_timeline.json?t=1`;
+
+  console.log('Downloading timeline from URL:', url);
+
   let timelineJson = await getJson(url);
   const assets = extractTimelineAssets(timelineJson);
 

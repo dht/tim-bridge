@@ -16,7 +16,6 @@ export async function startMachine(id) {
     const { machineId } = order ?? {};
 
     if (machineId !== id) {
-      console.log('Ignoring order for machine:', machineId);
       return;
     }
 
@@ -36,7 +35,6 @@ export async function startMachine(id) {
     const { serverState } = machineState ?? {};
 
     if (ev.id !== id) {
-      console.log('Ignoring machine change for machine:', ev.id);
       return;
     }
 

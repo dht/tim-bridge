@@ -103,7 +103,6 @@ export const stopIfNeeded = (machineId, timelineType) => {
 export const getRestTimeline = (machineId) => {
   const id = normalizeId(machineId);
   const path = `./elevator-timelines/${id}/_timeline.rest.json`;
-  console.log('path ->', path);
 
   if (!fs.existsSync(path)) {
     return null;

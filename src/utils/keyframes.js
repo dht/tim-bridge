@@ -9,6 +9,8 @@ export async function applyKeyframes(machineId, keyframes, playedIndex) {
     return;
   }
 
+  console.log('Applying', keyframes.length, 'keyframes for machine:', machineId);
+
   for (const item of keyframes) {
     const { index } = item;
     await delay(10);

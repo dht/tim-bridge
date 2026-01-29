@@ -1,0 +1,22 @@
+[
+  {
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "lightStatus": "ONE"
+    }
+  },
+  {
+    "index": 1,
+    "ts": 5,
+    "state": {
+      "lightStatus": "TWO"
+    }
+  },
+  {
+    "index": 2,
+    "ts": 10,
+    "state": {},
+    "isDone": true
+  }
+]
