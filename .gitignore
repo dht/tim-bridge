@@ -10,3 +10,4 @@ playground/matrix-pixel/__pycache__/
 **/log.txt
 **/state.json
 log.txt
+cache/
