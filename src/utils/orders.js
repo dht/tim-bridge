@@ -41,7 +41,7 @@ export const stopOrder = async (order) => {
 
     stopAllHardware(machineId);
 
-    await delay(1000);
+    await delay(100);
 
     await onPlaybackEnded(machineId);
   } catch (err) {

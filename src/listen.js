@@ -1,5 +1,5 @@
 import { onBridgeOpen } from './lifecycle/index.js';
-import { listenToCollection } from './utils/firestore.js';
+import { listenToCollection, listenToDoc } from './utils/firestore.js';
 import { getIp } from './utils/ip.js';
 import { playOrder, stopOrder } from './utils/orders.js';
 
@@ -28,13 +28,9 @@ export async function startMachine(id) {
   });
 
   // elevator generating timeline handling
-  listenToCollection('machines', (ev) => {
+  listenToDoc('machines', id, (ev) => {
     const { data: machineState } = ev;
     const { serverState } = machineState ?? {};
-
-    if (ev.id !== id) {
-      return;
-    }
 
     switch (serverState) {
       case 'GENERATING':

@@ -66,6 +66,110 @@ export function listenToCollectionSockets(name, callback) {
   return unsubscribe;
 }
 
+export function listenToDocSockets(collectionName, id, callback, options = {}) {
+  const { ignoreInitialLoad = true } = options;
+
+  const docRef = doc(db, collectionName, id);
+  let isInitialLoad = true;
+  let hadDoc = false;
+
+  const unsubscribe = onSnapshot(docRef, (snap) => {
+    if (isInitialLoad && ignoreInitialLoad) {
+      isInitialLoad = false;
+      hadDoc = snap.exists();
+      return;
+    }
+
+    if (!snap.exists()) {
+      // If it previously existed and now doesn't, treat as delete.
+      if (hadDoc) callback({ type: 'delete', id });
+      hadDoc = false;
+      return;
+    }
+
+    const data = snap.data();
+
+    // Firestore doc snapshot doesn't tell "added vs modified" directly,
+    // so we infer: first time we see it => create, later => update.
+    callback({ type: hadDoc ? 'update' : 'create', id, data });
+    hadDoc = true;
+  });
+
+  return unsubscribe;
+}
+
+export function listenToDocShortPull(collectionName, id, callback, options = {}) {
+  const db = getFirestore();
+
+  const interval = options.interval ?? 3000;
+  const ignoreInitialLoad = options.ignoreInitialLoad ?? true;
+
+  let isRunning = true;
+  let isFirst = true;
+
+  let lastSerialized = null; // string | null
+  let hadDoc = false;
+
+  async function poll() {
+    if (!isRunning) return;
+
+    try {
+      const ref = doc(db, collectionName, id);
+      const snap = await getDoc(ref);
+
+      // ignore initial load if requested
+      if (isFirst && ignoreInitialLoad) {
+        isFirst = false;
+        hadDoc = snap.exists();
+        lastSerialized = snap.exists() ? JSON.stringify(snap.data()) : null;
+        setTimeout(poll, interval);
+        return;
+      }
+      isFirst = false;
+
+      if (!snap.exists()) {
+        // document doesn't exist now
+        if (hadDoc) {
+          callback({ type: 'delete', id, source: 'short-poll' });
+        }
+        hadDoc = false;
+        lastSerialized = null;
+
+        setTimeout(poll, interval);
+        return;
+      }
+
+      const data = snap.data();
+      const serialized = JSON.stringify(data);
+
+      // Only fire if changed
+      if (lastSerialized !== serialized) {
+        callback({
+          type: hadDoc ? 'update' : 'create',
+          id,
+          data,
+          source: 'short-poll',
+        });
+        lastSerialized = serialized;
+      }
+
+      hadDoc = true;
+    } catch (err) {
+      console.error('❌ Short-poll Firestore doc error:', err);
+    }
+
+    setTimeout(poll, interval);
+  }
+
+  poll();
+
+  return {
+    stop() {
+      isRunning = false;
+    },
+  };
+}
+
 export function crud(collectionName) {
   return {
     add: async (values) => {
@@ -212,6 +316,26 @@ export function listenToCollection(collectionName, callback) {
   const method = useShortPoll ? listenToCollectionShortPull : listenToCollectionSockets;
 
   return method(collectionName, callback);
+}
+
+export function listenToDoc(collectionName, id, callback, options = {}) {
+  const info = identifyDevice();
+  const device = info.device;
+  const isPiZero1 = device === 'pi-zero-1';
+
+  const useShortPoll = isPiZero1;
+
+  if (!IS_DEV) {
+    console.log(
+      `Listening to Firestore doc "${collectionName}/${id}" using device type: ${device} → ${
+        useShortPoll ? 'short-poll' : 'realtime onSnapshot'
+      }`
+    );
+  }
+
+  return useShortPoll
+    ? listenToDocShortPull(collectionName, id, callback, options)
+    : listenToDocSockets(collectionName, id, callback, options);
 }
 
 export const updateMachineCreator = (machineId) => (change) => {

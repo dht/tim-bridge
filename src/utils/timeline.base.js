@@ -1,6 +1,5 @@
 import { stopAllHardware } from '../hardware/index.js';
 import { applyKeyframes } from './keyframes.js';
-import { setTimelineStatus } from './status.js';
 import {
   delay,
   getRelevantKeyframes,
@@ -21,16 +20,13 @@ export async function playTimeline(machineId, timelineJson, timelineType, option
 
   // duration in seconds
   const duration = getTimelineDuration(timelineJson);
+  stopAllHardware(machineId);
+
+  await delay(250);
 
   let startTs = Date.now(),
     ts = 0,
     playedIndex = {};
-
-  stopAllHardware(machineId);
-
-  await delay(50);
-
-  setTimelineStatus(machineId, timelineType);
 
   while (ts < duration) {
     const didStop = stopIfNeeded(machineId, timelineType);
@@ -80,7 +76,5 @@ export async function loopTimeline(machineId, timelineJson, timelineType, option
     console.time('playTimeline');
     await playTimeline(machineId, timelineJson, timelineType);
     console.timeEnd('playTimeline');
-
-    await delay(1000);
   }
 }
