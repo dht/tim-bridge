@@ -8,9 +8,9 @@ const STORAGE_BASE_URL = process.env.STORAGE_BASE_URL;
 const ERASE_FOR_DEV = true;
 
 export const cacheOrder = async (order) => {
-  try {
-    const { machineId, sessionId } = order;
+  const { machineId, sessionId } = order;
 
+  try {
     // if cache exists return true
 
     // otherwise download both timeline and assets to a dedicated folder for the specific machineId+sessionId
@@ -45,6 +45,7 @@ export const cacheOrder = async (order) => {
     await downloadAssetsFromUrls(assets, localFolder);
     // download all assets
   } catch (err) {
+    console.log('err =>', err);
     setBridgeStatus(machineId, 'IDLE');
   }
 };
