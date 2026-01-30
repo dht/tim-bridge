@@ -43,7 +43,7 @@ export const getShouldStop = (machineId, timelineType) => {
   return shouldStop[machineId][timelineType];
 };
 
-export const setShouldStop = (machineId, timelineType, value) => {
+const setShouldStop = (machineId, timelineType, value) => {
   shouldStop[machineId][timelineType] = value;
 };
 

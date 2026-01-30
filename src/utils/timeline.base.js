@@ -1,5 +1,6 @@
 import { stopAllHardware } from '../hardware/index.js';
 import { applyKeyframes } from './keyframes.js';
+import { setTimelineStatus } from './status.js';
 import {
   delay,
   getRelevantKeyframes,
@@ -28,6 +29,8 @@ export async function playTimeline(machineId, timelineJson, timelineType, option
   stopAllHardware(machineId);
 
   await delay(50);
+
+  setTimelineStatus(machineId, timelineType);
 
   while (ts < duration) {
     const didStop = stopIfNeeded(machineId, timelineType);

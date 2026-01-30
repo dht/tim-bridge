@@ -1,5 +1,6 @@
 import { updateMachineCreator } from '../utils/firestore.js';
 import { getLogger } from '../utils/globals.js';
+import { setBridgeStatus } from '../utils/status.js';
 import { playTimelineIdle } from '../utils/timeline.elevator.js';
 
 export function onBridgeOpen(id, data) {
@@ -38,11 +39,7 @@ export async function onPlaybackEnded(id, data) {
 
   logger.info(`${id} onEnd`);
 
-  const updateMachine = updateMachineCreator(id);
+  setBridgeStatus(id, 'IDLE');
 
-  updateMachine({
-    bridgeState: 'IDLE',
-  });
-
-  await playTimelineIdle(id);
+  playTimelineIdle(id);
 }

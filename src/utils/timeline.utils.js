@@ -19,7 +19,9 @@ const fixUrl = (machineId, url) => {
   return `./cache/${machineId}/${sessionId}/${fileName}`;
 };
 
-export const changeRemoteUrlsToLocalPath = (machineId, timelineJson) => {
+export const changeRemoteUrlsToLocalPath = (timelineJson, meta) => {
+  const { machineId } = meta;
+
   return timelineJson.map((item) => {
     const { state } = item;
     let { mp3Url, imageUrl } = state || {};
@@ -125,4 +127,26 @@ export const getGeneratingTimeline = (machineId) => {
 export function normalizeId(id) {
   const parts = id.split('-');
   return `${parts[0]}-${parts[1]}`;
+}
+
+export function calcTimelineDuration(timeline = []) {
+  try {
+    const lastKeyframe = timeline[timeline.length - 1];
+    if (!lastKeyframe) return 0;
+    const endTs = Number(lastKeyframe.ts);
+    return endTs;
+  } catch {
+    return 0;
+  }
+}
+
+export function fixIds(timeline, { machineId, sessionId }) {
+  return timeline.map((item, index) => {
+    const id = [machineId, sessionId, index].join('|');
+
+    return {
+      id,
+      ...item,
+    };
+  });
 }

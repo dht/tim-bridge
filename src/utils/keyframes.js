@@ -1,5 +1,5 @@
 import { applyHardware } from '../hardware/index.js';
-import { updateMachineCreator } from './firestore.js';
+import { clearKeyframesForMachine, updateKeyframe, updateMachineCreator } from './firestore.js';
 import { delay } from './timeline.utils.js';
 
 export async function applyKeyframe(machineId, keyframeJson, meta) {
@@ -15,9 +15,7 @@ export async function applyKeyframe(machineId, keyframeJson, meta) {
     applyHardware(fieldId, value, { machineId });
   }
 
-  if (timelineType === 'IDLE') {
-    return;
-  }
+  if (timelineType === 'IDLE') return;
 
   updateMachine({
     ...state,
@@ -34,5 +32,17 @@ export async function applyKeyframes(machineId, keyframes, playedIndex, meta) {
     await delay(10);
     applyKeyframe(machineId, item, meta);
     playedIndex[index] = true;
+  }
+}
+
+export async function syncKeyframes(timeline = [], { machineId, sessionId }) {
+  await clearKeyframesForMachine(machineId);
+
+  for (let keyframe of timeline) {
+    updateKeyframe(keyframe.id, {
+      ...keyframe,
+      machineId,
+      sessionId,
+    });
   }
 }

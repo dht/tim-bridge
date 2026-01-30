@@ -1,4 +1,5 @@
-import { getTimelineState, setTimelineState } from './globals.js';
+import { getTimelineState } from './globals.js';
+import { setTimelineStatus } from './status.js';
 import { loopTimeline, playTimeline } from './timeline.base.js';
 import { getGeneratingTimeline, getRestTimeline } from './timeline.utils.js';
 
@@ -15,7 +16,7 @@ export const playTimelineGenerating = async (machineId) => {
     console.log('No GENERATING timeline found');
   }
 
-  setTimelineState(machineId, 'GENERATING');
+  setTimelineStatus(machineId, 'GENERATING');
 
   await playTimeline(machineId, timelineJson, 'GENERATING', { silent: false });
 };
@@ -33,7 +34,7 @@ export const playTimelineIdle = async (machineId) => {
     console.log('No REST timeline found');
   }
 
-  setTimelineState(machineId, 'IDLE');
+  setTimelineStatus(machineId, 'IDLE');
 
   await loopTimeline(machineId, timelineJson, 'IDLE', { silent: false });
 };
