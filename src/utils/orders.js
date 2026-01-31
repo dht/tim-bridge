@@ -9,7 +9,7 @@ import { delay, getTimeline } from './timeline.utils.js';
 
 export const playOrder = async (order) => {
   try {
-    const { machineId, sessionId, originWebpageUrl } = order;
+    const { machineId, sessionId, originWebpageUrl = '' } = order;
     const localFolder = `./cache/${machineId}/${sessionId}`;
 
     await cacheOrder(order);

@@ -13,7 +13,7 @@ const fixUrl = (machineId, url) => {
   if (!url) return url;
 
   const parts = url.split('/');
-  const fileName = parts.pop();
+  const fileName = parts.pop().replace(/\?.*$/, ''); // remove query params
   const sessionId = parts.pop();
 
   return `./cache/${machineId}/${sessionId}/${fileName}`;
