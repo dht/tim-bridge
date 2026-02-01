@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon --watch src --ext js,json --exec node src/index.js",
+    "pi:sync": "nodemon --watch src --ext js,json --exec ./pi-rsync.sh",
     "build": "find src -type f -name \"*.js\" -print0 | xargs -0 -n1 node --check",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,6 +20,7 @@
     "fs-extra": "^11.3.3",
     "internal-ip": "^8.0.1",
     "p-limit": "^7.2.0",
+    "rpio": "^2.4.2",
     "tim-logger": "^0.0.40"
   },
   "devDependencies": {

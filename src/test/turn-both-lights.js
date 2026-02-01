@@ -1,15 +1,3 @@
-export const applyHardware = (fieldId, value, meta) => {
-  const { machineId } = meta;
-
-  console.log(fieldId, value);
-
-  switch (fieldId) {
-    case 'lightStatus':
-      turnLights(value);
-      break;
-  }
-};
-
 // lights.js — safe on Mac & Raspberry Pi
 
 let rpio = null;
@@ -17,34 +5,32 @@ let rpio = null;
 async function loadRpio() {
   const isPi = process.platform === 'linux' && (process.arch === 'arm' || process.arch === 'arm64');
 
+  console.log(isPi, process.platform);
+
   if (!isPi) {
     return null;
   }
 
   try {
+    console.log(1);
     const module = await import('rpio');
+    console.log(2);
     module.default.init({ gpiomem: true });
+    console.log('rpio module is ready');
     return module.default;
   } catch (err) {
+    console.log(err);
     return null;
   }
-}
-
-const rpioPromise = loadRpio();
-
-function simulate(pin, val) {
-  console.log(pin, val);
 }
 
 const LED1 = 11;
 const LED2 = 13;
 
 export async function turnLed(pin, isOn) {
-  const rpio = await rpioPromise;
+  const rpio = await loadRpio();
 
   console.log(typeof rpio);
-
-  if (!rpio) return simulate(pin, isOn);
 
   const value = isOn ? rpio.HIGH : rpio.LOW;
   console.log('isOn ->', isOn);
@@ -75,3 +61,9 @@ export async function turnLights(lightStatus) {
       await turnLed(LED2, false);
   }
 }
+
+async function main() {
+  await turnLights('BOTH');
+}
+
+main();
