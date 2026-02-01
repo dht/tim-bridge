@@ -1,8 +1,6 @@
 export const applyHardware = (fieldId, value, meta) => {
   const { machineId } = meta;
 
-  console.log(fieldId, value);
-
   switch (fieldId) {
     case 'lightStatus':
       turnLights(value);
@@ -26,6 +24,7 @@ async function loadRpio() {
     module.default.init({ gpiomem: true });
     return module.default;
   } catch (err) {
+    console.log('err =>', err);
     return null;
   }
 }
@@ -33,7 +32,7 @@ async function loadRpio() {
 const rpioPromise = loadRpio();
 
 function simulate(pin, val) {
-  console.log(pin, val);
+  // console.log(pin, val);
 }
 
 const LED1 = 11;
@@ -42,18 +41,14 @@ const LED2 = 13;
 export async function turnLed(pin, isOn) {
   const rpio = await rpioPromise;
 
-  console.log(typeof rpio);
-
   if (!rpio) return simulate(pin, isOn);
 
   const value = isOn ? rpio.HIGH : rpio.LOW;
-  console.log('isOn ->', isOn);
   rpio.open(pin, rpio.OUTPUT, rpio.LOW);
   rpio.write(pin, value);
 }
 
 export async function turnLights(lightStatus) {
-  console.log('lightStatus! ->', lightStatus);
   switch (lightStatus) {
     case 'ONE':
       await turnLed(LED1, true);
