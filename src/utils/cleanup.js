@@ -4,7 +4,7 @@ import { onBridgeClose } from '../lifecycle/index.js';
 import { getLogger } from './globals.js';
 
 const MACHINE_ID = process.env.MACHINE_ID;
-const IS_DEV = process.env.IS_DEV;
+const IS_DEV = process.env.IS_DEV === 'true';
 
 async function cleanupAndExit(code = 0) {
   const logger = getLogger();
