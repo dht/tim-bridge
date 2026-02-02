@@ -27,6 +27,6 @@ async def main():
     fs.conn = conn
 
     # solid blue
-    await fs.setMode(r=0, g=255, b=255)
+    await fs.setMode(r=0, g=255, b=60)
 
 asyncio.run(main())
