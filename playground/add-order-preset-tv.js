@@ -16,7 +16,7 @@ function run() {
     id: guid4(),
     ts: Date.now(),
     machineId: 'A-002-dev',
-    sessionId: '_test',
+    sessionId: '_hipsters',
     orderType: 'PLAY',
   });
 }
