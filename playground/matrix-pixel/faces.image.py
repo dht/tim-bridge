@@ -77,15 +77,9 @@ async def main():
         Path("faces/face-001.index.json"),
     )
 
-    right_conn, right_payload = await connect_and_prepare(
-        MAC_ADDRESS_RIGHT,
-        Path("faces/face-002.index.json"),
-    )
-
     # --- send concurrently ---
     await asyncio.gather(
         sender_loop(left_conn, left_payload),
-        sender_loop(right_conn, right_payload),
     )
 
 
