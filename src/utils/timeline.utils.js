@@ -104,7 +104,7 @@ export const stopIfNeeded = (machineId, timelineType) => {
 
 export const getRestTimeline = (machineId) => {
   const id = normalizeId(machineId);
-  const path = `./elevator-timelines/${id}/_timeline.rest.json`;
+  const path = `./src/elevator-timelines/${id}/_timeline.rest.json`;
 
   if (!fs.existsSync(path)) {
     return null;
@@ -115,7 +115,7 @@ export const getRestTimeline = (machineId) => {
 
 export const getGeneratingTimeline = (machineId) => {
   const id = normalizeId(machineId);
-  const path = `./elevator-timelines/${id}/_timeline.generating.json`;
+  const path = `./src/elevator-timelines/${id}/_timeline.generating.json`;
 
   if (!fs.existsSync(path)) {
     return null;
