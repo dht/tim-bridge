@@ -32,6 +32,8 @@ export const cacheOrder = async (order) => {
     // downloaded the main _timeline.json file
     const url = getTimelineUrl(machineId, sessionId);
 
+    console.log('timeline URL', url);
+
     let timelineJson = await getJson(url);
 
     const assets = extractTimelineAssets(timelineJson);

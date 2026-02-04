@@ -196,7 +196,7 @@ async def mouth_animation_loop(conn: ConnectionManager, payloads: List[bytearray
     while True:
         await conn.send(payloads[idx])
         idx = (idx + 1) % count
-        await asyncio.sleep(0.6)
+        await asyncio.sleep(0.1)
 
 
 # -------------------------------
