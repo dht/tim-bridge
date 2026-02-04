@@ -51,5 +51,5 @@ export const cacheOrder = async (order) => {
 };
 
 export const getTimelineUrl = (machineId, sessionId) => {
-  return `${STORAGE_BASE_URL}/${machineId}/sessions/${sessionId}/_timeline.json?t=7`;
+  return `${STORAGE_BASE_URL}/${machineId}/sessions/${sessionId}/_timeline.json?t=10`;
 };
