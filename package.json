@@ -16,7 +16,6 @@
     "@firebase/firestore": "^4.10.0",
     "axios": "^1.13.4",
     "dotenv": "^16.6.1",
-    "node-idotmatrix-library": "^0.5.0",
     "express": "^5.2.1",
     "firebase-admin": "^12.7.0",
     "fs-extra": "^11.3.3",
@@ -26,6 +25,7 @@
     "tim-logger": "^0.0.40"
   },
   "devDependencies": {
+    "@abandonware/noble": "1.9.2-26",
     "nodemon": "^3.1.10"
   },
   "keywords": [],
