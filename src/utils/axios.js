@@ -6,8 +6,6 @@ export function getJson(url) {
 }
 
 export async function downloadBinary(url, filePath) {
-  console.log('url ->', url);
-
   const response = await axios({
     method: 'GET',
     url,
