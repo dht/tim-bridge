@@ -1,4 +1,5 @@
-ssh admin@10.0.0.53
+ssh admin@10.0.0.53 "bash -lc '
+set -e
 DISPLAY=:0 XAUTHORITY=$(ps aux | grep '[X]org' | sed -n 's/.*-auth \([^ ]*\).*/\1/p') \
 chromium \
   --kiosk \
@@ -7,3 +8,4 @@ chromium \
   --disable-infobars \
   --disable-session-crashed-bubble \
   https://tim-os.web.app/A-002-dev/edge
+'"

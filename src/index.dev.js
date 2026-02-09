@@ -11,7 +11,7 @@ export async function mainDev() {
   initFirestore();
   const logger = initLogger(CLIENT_ID);
 
-  await logger.clearLogs();
+  logger.clearLogs();
 
   let machineIds = Object.values(MACHINES_DEV).map((m) => m.id);
 
