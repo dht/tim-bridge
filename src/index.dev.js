@@ -5,7 +5,7 @@ import { initFirestore } from './utils/firestore.js';
 import { initLogger } from './utils/logger.js';
 
 const CLIENT_ID = process.env.CLIENT_ID;
-const DEV_MACHINE_ID = process.env.DEV_MACHINE_ID;
+const DEV_MACHINE_ID = process.argv[2] ?? process.env.DEV_MACHINE_ID;
 
 export async function mainDev() {
   initFirestore();

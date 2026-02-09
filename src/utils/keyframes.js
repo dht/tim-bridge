@@ -17,6 +17,8 @@ export async function applyKeyframe(machineId, keyframeJson, meta) {
 
   if (timelineType === 'IDLE') return;
 
+  console.log('state ->', state);
+
   updateMachine({
     ...state,
   });
