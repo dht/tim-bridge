@@ -5,7 +5,14 @@ import { applyHardware as applyLights, turnLights } from './lights.js';
 const hardwareFields = {
   mp3LocalPath: applyAudio,
   lightStatus: applyLights,
-  browserUrl: applyBrowser,
+  browserUrl: applyBrowser, /*
+    1. it's empty ('') => change the only tab to about:blank
+    2. it's a URL=> change the only tab to the url
+
+    applyUrlToOnlyTab
+    
+
+  */
 };
 
 // meta has { machineId }

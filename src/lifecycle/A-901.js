@@ -1,8 +1,7 @@
 export function onBridgeOpen(id, data) {
-/* reach to point that:
-1. you have one browser instance
-2. with one tab
-3. which is on url about:blank
+/* TODO:
+1. once bridge is up, open browser instance, using openBrowser with url: about:blank
+2. to browser.js add a function: make sure only one tab is open.
 */
 }
 
@@ -11,8 +10,8 @@ export function onChange(id, data) {
 }
 
 export function onBridgeClose(id, data) {
-  // close all instances of browser
-
+  // TODO
+  // 1. close all browser instances
 }
 
 export const lifecycle = {
