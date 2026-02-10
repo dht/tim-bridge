@@ -1,5 +1,6 @@
 import { applyHardware as applyAudio, stopAudio } from './audio.js';
 import { applyHardware as applyLights, turnLights } from './lights.js';
+import { closeBrowser, closeBrowserDelayed, openBrowser } from './browser.js';
 
 const hardwareFields = {
   mp3LocalPath: applyAudio,
@@ -24,4 +25,7 @@ export const applyHardware = (fieldId, value, meta) => {
 export const stopAllHardware = (machineId) => {
   stopAudio();
   turnLights('NONE');
+  closeBrowser();
 };
+
+export { openBrowser, closeBrowser, closeBrowserDelayed };
