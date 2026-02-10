@@ -38,7 +38,7 @@ export const MACHINES_PROD = {
     id: 'A-001-miffal',
     name: 'Houses',
   },
-  'A-901-miffal ': {
+  'A-901-miffal': {
     id: 'A-901-miffal',
     name: 'Claygon',
   },
