@@ -1,46 +1,64 @@
 // browser.js
-// Shared helpers to open/close the A-901 browser window.
+// Raspberry Pi–first Chromium controller (single-tab, no relaunch)
 
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import http from 'node:http';
+import WebSocket from 'ws';
 import { identifyDevice } from '../utils/device.js';
 
-let browserOpen = false; // Track whether we *think* the browser is open
+/**
+ * Find Chromium binary safely.
+ */
+function findChromiumBinary() {
+  const candidates = [
+    'chromium',
+    'chromium-browser',
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+  ];
 
-// Devices we expect from identifyDevice():
-// - "pi-zero-1", "pi-zero-2", "pi-4", "pi-5", "mac"
+  for (const cmd of candidates) {
+    const res = spawnSync('which', [cmd], { stdio: 'ignore' });
+    if (res.status === 0) return cmd;
+  }
 
+  throw new Error('Chromium binary not found');
+}
+
+/**
+ * Detect Chromium process.
+ */
+function isBrowserRunning() {
+  const res = spawnSync('pgrep', ['-f', 'chromium'], { stdio: 'ignore' });
+  return res.status === 0;
+}
+
+/**
+ * Browser config.
+ */
 function getBrowserConfig() {
-  const info = identifyDevice();
-  const device = info.device;
+  const { device } = identifyDevice();
 
-  // Default: all Raspberry Pi variants (Bookworm)
-  // chromium binary is usually "chromium" on Bookworm
-  let openCmd = 'chromium';
+  // Raspberry Pi / Linux
+  let openCmd = findChromiumBinary();
   let openArgs = (url) => [
     '--noerrdialogs',
     '--disable-infobars',
     '--disable-session-crashed-bubble',
+    '--disable-restore-session-state',
+    '--no-first-run',
+    '--remote-debugging-port=9222',
     url,
   ];
+
   let killCmd = 'pkill';
   let killArgs = ['-f', 'chromium'];
 
+  // macOS (dev only)
   if (device === 'mac') {
-    // On macOS use Firefox
-    // Correct 'open' syntax is:
-    // open -a "Firefox" <url> --args <chrome-args...>
     openCmd = 'open';
-    openArgs = (url) => [
-      '-a',
-      'Firefox',
-      url,
-      '--args',
-      '--noerrdialogs',
-      '--disable-infobars',
-      '--disable-session-crashed-bubble',
-    ];
-
-    // Prefer a clean AppleScript quit over pkill
+    openArgs = (url) => ['-a', 'Firefox', url];
     killCmd = 'osascript';
     killArgs = ['-e', 'tell application "Firefox" to quit'];
   }
@@ -49,96 +67,202 @@ function getBrowserConfig() {
 }
 
 /**
- * Open the browser to the given URL.
- *
- * @param {string} url - URL to open.
- * @param {object} [options]
- * @param {boolean} [options.force=false] - If true, ignore the browserOpen flag and always try to open.
+ * GUI env safety (systemd / SSH).
  */
-export function applyBrowser(fieldId, value, meta) {
-  switch (fieldId) {
-    case 'browserUrl':
-      if (value) {
-        openBrowser(value);
-      } else {
-        closeBrowser();
-      }
-      break;
+function buildGuiEnv(env) {
+  if (process.platform !== 'linux') return env;
+
+  const nextEnv = { ...env };
+
+  if (!nextEnv.DISPLAY) nextEnv.DISPLAY = ':0';
+
+  if (!nextEnv.XAUTHORITY && nextEnv.HOME) {
+    const xauth = `${nextEnv.HOME}/.Xauthority`;
+    if (fs.existsSync(xauth)) nextEnv.XAUTHORITY = xauth;
+  }
+
+  if (!nextEnv.DBUS_SESSION_BUS_ADDRESS && process.getuid) {
+    const bus = `/run/user/${process.getuid()}/bus`;
+    if (fs.existsSync(bus)) {
+      nextEnv.DBUS_SESSION_BUS_ADDRESS = `unix:path=${bus}`;
+    }
+  }
+
+  return nextEnv;
+}
+
+/**
+ * Public entry.
+ */
+export function applyBrowser(fieldId, value) {
+  if (fieldId === 'browserUrl') {
+    openOrUpdateBrowser(value);
   }
 }
 
-export function openBrowser(url, { force = false } = {}) {
-  if (browserOpen && !force) {
-    console.log('Browser already marked as running.');
+/**
+ * Open or reuse Chromium.
+ */
+export function openOrUpdateBrowser(url) {
+  const nextUrl = url || 'about:blank';
+
+  if (isBrowserRunning()) {
+    updateBrowserUrl(nextUrl);
     return;
   }
 
+  openBrowser(nextUrl);
+}
+
+/**
+ * DevTools flow (Pi-safe):
+ * - POST /json/new
+ * - Close all other tabs
+ * - Activate remaining tab
+ */
+export async function updateBrowserUrl(url) {
+  try {
+    // 1. Create new tab
+    const newTab = await devtoolsJsonPUT('/json/new');
+
+    // 2. Navigate via WebSocket
+    await navigateViaWebSocket(newTab, url);
+
+    // 3. Close all other tabs
+    const targets = await devtoolsJsonGET('/json');
+    for (const t of targets) {
+      if (t.type === 'page' && t.id !== newTab.id) {
+        await devtoolsRequest(`/json/close/${t.id}`);
+      }
+    }
+
+    // 4. Activate
+    await devtoolsRequest(`/json/activate/${newTab.id}`);
+
+  } catch (err) {
+    console.error('Failed to update browser URL:', err);
+  }
+}
+
+async function navigateViaWebSocket(target, url) {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket(target.webSocketDebuggerUrl);
+
+    ws.on('open', () => {
+      ws.send(JSON.stringify({
+        id: 1,
+        method: 'Page.navigate',
+        params: { url },
+      }));
+    });
+
+    ws.on('message', () => {
+      ws.close();
+      resolve();
+    });
+
+    ws.on('error', reject);
+  });
+}
+
+/**
+ * DevTools GET JSON helper.
+ */
+function devtoolsJsonGET(path) {
+  return new Promise((resolve, reject) => {
+    http.get(`http://127.0.0.1:9222${path}`, (res) => {
+      let data = '';
+      res.on('data', c => (data += c));
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch {
+          reject(new Error(`Invalid JSON from ${path}: ${data.slice(0, 80)}`));
+        }
+      });
+    }).on('error', reject);
+  });
+}
+
+/**
+ * DevTools PUT JSON helper.
+ */
+function devtoolsJsonPUT(path) {
+  return new Promise((resolve, reject) => {
+    const req = http.request(
+      `http://127.0.0.1:9222${path}`,
+      { method: 'PUT' },
+      (res) => {
+        let data = '';
+        res.on('data', c => (data += c));
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch {
+            reject(new Error(`Invalid JSON from PUT ${path}: ${data.slice(0, 80)}`));
+          }
+        });
+      }
+    );
+
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+/**
+ * DevTools fire-and-forget.
+ */
+function devtoolsRequest(path) {
+  return new Promise((resolve) => {
+    http.get(`http://127.0.0.1:9222${path}`, () => resolve());
+  });
+}
+
+/**
+ * Open Chromium.
+ */
+export function openBrowser(url) {
   const { openCmd, openArgs, device } = getBrowserConfig();
   const args = openArgs(url);
 
-  console.log(`Opening browser (normal window)… [device=${device}]`);
-  console.log(`Command: ${openCmd} ${args.join(' ')}`);
+  console.log(`Opening browser… [${device}]`);
+  console.log(`${openCmd} ${args.join(' ')}`);
 
-  try {
-    const child = spawn(openCmd, args, {
-      stdio: 'ignore',
-      detached: true,
-    });
+  const child = spawn(openCmd, args, {
+    stdio: 'ignore',
+    detached: true,
+    env: buildGuiEnv(process.env),
+  });
 
-    // Important: many spawn failures are emitted as 'error' on the child,
-    // not thrown synchronously.
-    child.on('error', (err) => {
-      console.error('Failed to spawn browser process:', err);
-    });
-
-    // We do not rely on the child process lifetime (especially on macOS),
-    // we just mark it as "open" after spawning.
-    child.unref();
-    browserOpen = true;
-  } catch (err) {
-    console.error('Failed to open browser (synchronous error):', err);
-  }
+  child.unref();
 }
 
+/**
+ * Close Chromium.
+ */
 export function closeBrowser() {
-  console.log('closeBrowser called');
-
-  if (!browserOpen) {
-    console.log('Browser already marked as closed.');
-    return;
-  }
-
   const { killCmd, killArgs, device } = getBrowserConfig();
 
-  console.log(`Closing browser… [device=${device}]`);
-  console.log(`Command: ${killCmd} ${killArgs.join(' ')}`);
+  console.log(`Closing browser… [${device}]`);
 
-  try {
-    const child = spawn(killCmd, killArgs, { stdio: 'ignore', detached: true });
+  const child = spawn(killCmd, killArgs, {
+    stdio: 'ignore',
+    detached: true,
+    env: buildGuiEnv(process.env),
+  });
 
-    child.on('error', (err) => {
-      console.error('Failed to spawn browser-kill process:', err);
-    });
-
-    child.unref();
-  } catch (err) {
-    console.error('Failed to close browser (synchronous error):', err);
-  }
-
-  // We mark it closed from our perspective, even if the OS-level kill fails.
-  browserOpen = false;
+  child.unref();
 }
 
-let timeoutClose = null;
+let closeTimer = null;
 
+/**
+ * Close browser after delay.
+ */
 export function closeBrowserDelayed(delayMs) {
   if (!delayMs) return;
 
-  if (timeoutClose) {
-    clearTimeout(timeoutClose);
-  }
-
-  timeoutClose = setTimeout(() => {
-    closeBrowser();
-  }, delayMs);
+  if (closeTimer) clearTimeout(closeTimer);
+  closeTimer = setTimeout(closeBrowser, delayMs);
 }

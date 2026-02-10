@@ -1,8 +1,8 @@
+import { closeBrowser, openBrowserSingle } from '../hardware/index.js';
+
 export function onBridgeOpen(id, data) {
-/* TODO:
-1. once bridge is up, open browser instance, using openBrowser with url: about:blank
-2. to browser.js add a function: make sure only one tab is open.
-*/
+  console.log('onBridgeOpen');
+  openBrowserSingle('about:blank');
 }
 
 export function onChange(id, data) {
@@ -10,8 +10,7 @@ export function onChange(id, data) {
 }
 
 export function onBridgeClose(id, data) {
-  // TODO
-  // 1. close all browser instances
+  closeBrowser();
 }
 
 export const lifecycle = {

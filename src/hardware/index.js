@@ -1,5 +1,5 @@
 import { applyHardware as applyAudio, stopAudio } from './audio.js';
-import { applyBrowser, closeBrowser, closeBrowserDelayed, openBrowser } from './browser.js';
+import { applyBrowser, closeBrowser, closeBrowserDelayed, openBrowser, openOrUpdateBrowser as openBrowserSingle } from './browser.js';
 import { applyHardware as applyLights, turnLights } from './lights.js';
 
 const hardwareFields = {
@@ -10,7 +10,7 @@ const hardwareFields = {
     2. it's a URL=> change the only tab to the url
 
     applyUrlToOnlyTab
-    
+
 
   */
 };
@@ -35,7 +35,6 @@ export const applyHardware = (fieldId, value, meta) => {
 export const stopAllHardware = (machineId) => {
   stopAudio();
   turnLights('NONE');
-  closeBrowser();
 };
 
-export { closeBrowser, closeBrowserDelayed, openBrowser };
+export { closeBrowser, closeBrowserDelayed, openBrowser, openBrowserSingle };

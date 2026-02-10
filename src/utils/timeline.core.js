@@ -6,7 +6,7 @@ import { playTimeline } from './timeline.base.js';
 export async function playTimelineCore(machineId, timelineJson) {
   const currentTimelineStatus = getTimelineState(machineId);
 
-  if (currentTimelineStatus === 'PLAYBACK') {
+  if (currentTimelineStatus === 'PLAYBACK' && !machineId.includes('A-901')) {
     console.log('Timeline already in PLAYBACK state');
     return;
   }
