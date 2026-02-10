@@ -16,7 +16,7 @@ function getBrowserConfig() {
   // Default: all Raspberry Pi variants (Bookworm)
   // chromium binary is usually "chromium" on Bookworm
   let openCmd = 'chromium';
-  let openArgs = url => [
+  let openArgs = (url) => [
     '--noerrdialogs',
     '--disable-infobars',
     '--disable-session-crashed-bubble',
@@ -30,7 +30,7 @@ function getBrowserConfig() {
     // Correct 'open' syntax is:
     // open -a "Firefox" <url> --args <chrome-args...>
     openCmd = 'open';
-    openArgs = url => [
+    openArgs = (url) => [
       '-a',
       'Firefox',
       url,
@@ -55,6 +55,18 @@ function getBrowserConfig() {
  * @param {object} [options]
  * @param {boolean} [options.force=false] - If true, ignore the browserOpen flag and always try to open.
  */
+export function applyBrowser(fieldId, value, meta) {
+  switch (fieldId) {
+    case 'browserUrl':
+      if (value) {
+        openBrowser(value);
+      } else {
+        closeBrowser();
+      }
+      break;
+  }
+}
+
 export function openBrowser(url, { force = false } = {}) {
   if (browserOpen && !force) {
     console.log('Browser already marked as running.');
@@ -75,7 +87,7 @@ export function openBrowser(url, { force = false } = {}) {
 
     // Important: many spawn failures are emitted as 'error' on the child,
     // not thrown synchronously.
-    child.on('error', err => {
+    child.on('error', (err) => {
       console.error('Failed to spawn browser process:', err);
     });
 
@@ -104,7 +116,7 @@ export function closeBrowser() {
   try {
     const child = spawn(killCmd, killArgs, { stdio: 'ignore', detached: true });
 
-    child.on('error', err => {
+    child.on('error', (err) => {
       console.error('Failed to spawn browser-kill process:', err);
     });
 

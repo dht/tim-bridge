@@ -1,10 +1,11 @@
 import { applyHardware as applyAudio, stopAudio } from './audio.js';
+import { applyBrowser, closeBrowser, closeBrowserDelayed, openBrowser } from './browser.js';
 import { applyHardware as applyLights, turnLights } from './lights.js';
-import { closeBrowser, closeBrowserDelayed, openBrowser } from './browser.js';
 
 const hardwareFields = {
   mp3LocalPath: applyAudio,
   lightStatus: applyLights,
+  browserUrl: applyBrowser,
 };
 
 // meta has { machineId }
@@ -12,6 +13,8 @@ export const applyHardware = (fieldId, value, meta) => {
   if (!Object.keys(hardwareFields).includes(fieldId)) {
     return;
   }
+
+  console.log('value ->', value);
 
   const applyFunction = hardwareFields[fieldId];
 
@@ -28,4 +31,4 @@ export const stopAllHardware = (machineId) => {
   closeBrowser();
 };
 
-export { openBrowser, closeBrowser, closeBrowserDelayed };
+export { closeBrowser, closeBrowserDelayed, openBrowser };
