@@ -1,11 +1,11 @@
 import { lifecycle as A_001 } from './A-001.js';
 import { lifecycle as A_002 } from './A-002.js';
-import { lifecycle as A_003 } from './A-003.js';
 import { lifecycle as A_004 } from './A-004.js';
 import { lifecycle as A_005 } from './A-005.js';
 import { lifecycle as A_006 } from './A-006.js';
 import { lifecycle as A_007 } from './A-007.js';
-import { lifecycle as A_901 } from './A-901.js';
+import { lifecycle as A_901 } from './S-001.js';
+import { lifecycle as A_003 } from './X-001.js';
 import {
   onBridgeClose as onBridgeCloseGeneric,
   onBridgeOpen as onBridgeOpenGeneric,
@@ -14,12 +14,12 @@ import {
 const all = {
   'A-001': A_001,
   'A-002': A_002,
-  'A-003': A_003,
+  'X-001': A_003,
   'A-004': A_004,
   'A-005': A_005,
   'A-006': A_006,
   'A-007': A_007,
-  'A-901': A_901,
+  'S-001': A_901,
 };
 
 export function normalizeId(id) {

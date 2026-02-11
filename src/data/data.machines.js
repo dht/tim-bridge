@@ -7,8 +7,8 @@ export const MACHINES_DEV = {
     id: 'A-002-dev',
     name: '2084',
   },
-  'A-003-dev': {
-    id: 'A-003-dev',
+  'X-001-dev': {
+    id: 'X-001-dev',
     name: 'Homosapiens',
   },
   'A-004-dev': {
@@ -27,8 +27,8 @@ export const MACHINES_DEV = {
     id: 'A-007-dev',
     name: 'Coffeeshop',
   },
-  'A-901-dev': {
-    id: 'A-901-dev',
+  'S-001-dev': {
+    id: 'S-001-dev',
     name: 'Claygon',
   },
 };
@@ -38,8 +38,8 @@ export const MACHINES_PROD = {
     id: 'A-001-miffal',
     name: 'Houses',
   },
-  'A-901-miffal': {
-    id: 'A-901-miffal',
+  'S-001-miffal': {
+    id: 'S-001-miffal',
     name: 'Claygon',
   },
 };
