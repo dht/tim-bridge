@@ -7,9 +7,9 @@ export const MACHINES_DEV = {
     id: 'A-002-dev',
     name: '2084',
   },
-  'X-001-dev': {
-    id: 'X-001-dev',
-    name: 'Homosapiens',
+  'A-003-dev': {
+    id: 'A-003-dev',
+    name: 'Micro:bit',
   },
   'A-004-dev': {
     id: 'A-004-dev',
@@ -27,9 +27,9 @@ export const MACHINES_DEV = {
     id: 'A-007-dev',
     name: 'Coffeeshop',
   },
-  'S-001-dev': {
-    id: 'S-001-dev',
-    name: 'Claygon',
+  'X-001-dev': {
+    id: 'X-001-dev',
+    name: 'Homosapiens',
   },
 };
 
