@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { playMp3, stopAudio } from '../src/hardware/audio.js';
 
-const MP3_PATH = path.resolve('playground/gossip/lines-1A.mp3');
+const MP3_PATH = path.resolve('./test-audio.mp3');
 const AUTO_STOP_SECONDS = 10;
 
 async function main() {
