@@ -20,9 +20,19 @@ echo "Deploying to ${REMOTE_USER}@${REMOTE_HOST}"
 # Rsync src directory (mirror)
 rsync -avz --delete \
   --exclude node_modules \
+  --exclude venv \
+  --exclude .venv \
   --exclude .env \
   src/ \
   ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/
+
+# Rsync playground directory (mirror)
+rsync -avz --delete \
+  --exclude node_modules \
+  --exclude venv \
+  --exclude .venv \
+  playground/ \
+  ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/playground/
 
 # Copy .env.pi to remote .env
 rsync -avz \
