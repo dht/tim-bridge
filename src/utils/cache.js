@@ -53,9 +53,5 @@ export const cacheOrder = async (order) => {
 };
 
 export const getTimelineUrl = (machineId, sessionId) => {
-<<<<<<< HEAD
   return `${STORAGE_BASE_URL}/${machineId}/sessions/${sessionId}/_timeline.json?t=21`;
-=======
-  return `${STORAGE_BASE_URL}/${machineId}/sessions/${sessionId}/_timeline.json?t=12`;
->>>>>>> 4b220f1 (wip)
 };
