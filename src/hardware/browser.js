@@ -9,6 +9,8 @@ import path from 'node:path';
 import WebSocket from 'ws';
 import { identifyDevice } from '../utils/device.js';
 
+const OFFLINE_MODE = process.env.OFFLINE_MODE === 'true';
+
 /**
  * Find Chromium binary safely.
  */
@@ -285,7 +287,50 @@ export function closeBrowserDelayed(delayMs) {
   closeTimer = setTimeout(closeBrowser, delayMs);
 }
 
-export function changeToImageInBrowser(fieldId, value) {
-  const url = `http://localhost:3000/#image=${value}`;
+function toOfflineCacheImagePath(rawValue, machineId = '') {
+  const trimmed = String(rawValue || '').trim();
+  if (!trimmed) return '';
+
+  const withoutHash = trimmed.split('#')[0];
+  const withoutQuery = withoutHash.split('?')[0];
+
+  if (withoutQuery.startsWith('/cache/')) return withoutQuery;
+  if (withoutQuery.startsWith('./cache/')) return withoutQuery.replace(/^\./, '');
+  if (withoutQuery.startsWith('cache/')) return `/${withoutQuery}`;
+
+  const storageMatch = withoutQuery.match(/\/([^/]+)\/sessions\/([^/]+)\/([^/]+)$/);
+  if (storageMatch) {
+    const [, machineFromUrl, sessionId, fileName] = storageMatch;
+    const nextMachineId = machineId || machineFromUrl;
+    return `/cache/${nextMachineId}/${sessionId}/${fileName}`;
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const parts = parsed.pathname.split('/').filter(Boolean).map(decodeURIComponent);
+    const sessionsIndex = parts.indexOf('sessions');
+
+    if (sessionsIndex >= 1 && parts.length > sessionsIndex + 2) {
+      const machineFromUrl = parts[sessionsIndex - 1];
+      const sessionId = parts[sessionsIndex + 1];
+      const fileName = parts[sessionsIndex + 2];
+      const nextMachineId = machineId || machineFromUrl;
+      return `/cache/${nextMachineId}/${sessionId}/${fileName}`;
+    }
+  } catch {
+    // Keep original value when URL parsing fails.
+  }
+
+  return withoutQuery;
+}
+
+export function changeToImageInBrowser(fieldId, value, meta = {}) {
+  const { machineId = '' } = meta;
+  const imageValue = OFFLINE_MODE ? toOfflineCacheImagePath(value, machineId) : String(value || '');
+  const hash = new URLSearchParams({
+    image: imageValue,
+    ...(OFFLINE_MODE ? { offline: '1' } : {}),
+  }).toString();
+  const url = `http://localhost:3000/#${hash}`;
   openOrUpdateBrowser(url);
 }
