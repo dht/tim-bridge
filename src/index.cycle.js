@@ -1,9 +1,8 @@
 import 'dotenv/config';
 import { announce } from './utils/announce.js';
-import { initFirestore } from './utils/firestore.js';
+import { BRIDGE_EVENTS, onBridgeEvent } from './utils/events.js';
 import { guid4 } from './utils/guid.js';
 import { initLogger } from './utils/logger.js';
-import { BRIDGE_EVENTS, onBridgeEvent } from './utils/events.js';
 import { playOrder } from './utils/orders.js';
 import { delay } from './utils/timeline.utils.js';
 
@@ -43,7 +42,6 @@ function waitForPlaybackEnded(machineId, orderId) {
 }
 
 export async function mainCycle() {
-  initFirestore();
   const logger = initLogger(CLIENT_ID, OFFLINE_MODE);
 
   logger.clearLogs();
