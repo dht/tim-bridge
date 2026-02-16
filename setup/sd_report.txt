@@ -1,0 +1,25 @@
+==============================
+Raspberry Pi SD Diagnostics
+==============================
+
+---- System ----
+Darwin Admins-Mac-mini.local 25.0.0 Darwin Kernel Version 25.0.0: Wed Sep 17 21:38:03 PDT 2025; root:xnu-12377.1.9~141/RELEASE_ARM64_T8112 arm64
+
+---- Pi Model ----
+Not a Raspberry Pi?
+
+---- Bootloader (Pi 4/5) ----
+vcgencmd not available
+
+---- Kernel cmdline ----
+
+
+---- /etc/fstab ----
+
+---- Root device ----
+
+---- Block devices ----
+
+---- blkid ----
+
+---- Partition table ----
