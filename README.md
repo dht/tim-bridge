@@ -9,21 +9,31 @@ Each TIM Bridge instance represents a **single machine installation** (physical 
 
 ## Table of Contents
 
-- [High-Level Overview](#high-level-overview)
-- [Machine Instances](#machine-instances)
-- [Architecture](#architecture)
-- [Orders & Playback](#orders--playback)
-- [Timelines & Keyframes](#timelines--keyframes)
-- [Hardware & Sensors](#hardware--sensors)
-- [Statuses & State Model](#statuses--state-model)
-- [Playback Timeline Modes](#playback-timeline-modes)
-- [Firestore as Source of Truth](#firestore-as-source-of-truth)
-- [Phone Interaction (QR Flow)](#phone-interaction-qr-flow)
-- [Stopping a Session](#stopping-a-session)
-- [Networking & Connectivity](#networking--connectivity)
-- [Autonomy & Design Principles](#autonomy--design-principles)
-- [Security Notes](#security-notes)
-- [Development & Simulation](#development--simulation)
+- [TIM Bridge](#tim-bridge)
+  - [Table of Contents](#table-of-contents)
+  - [High-Level Overview](#high-level-overview)
+  - [Machine Instances](#machine-instances)
+  - [Architecture](#architecture)
+  - [Orders \& Playback](#orders--playback)
+  - [Timelines \& Keyframes](#timelines--keyframes)
+    - [Keyframes can control:](#keyframes-can-control)
+  - [Hardware \& Sensors](#hardware--sensors)
+  - [Statuses \& State Model](#statuses--state-model)
+    - [Bridge Status](#bridge-status)
+    - [Server Status](#server-status)
+    - [Phone (Guest UI) Status](#phone-guest-ui-status)
+  - [Playback Timeline Modes](#playback-timeline-modes)
+    - [Timeline Modes](#timeline-modes)
+    - [Autonomous Switching](#autonomous-switching)
+  - [Firestore as Source of Truth](#firestore-as-source-of-truth)
+    - [Who can read/write?](#who-can-readwrite)
+  - [Phone Interaction (QR Flow)](#phone-interaction-qr-flow)
+  - [Stopping a Session](#stopping-a-session)
+  - [Networking \& Connectivity](#networking--connectivity)
+  - [Autonomy \& Design Principles](#autonomy--design-principles)
+  - [Security Notes](#security-notes)
+  - [Development \& Simulation](#development--simulation)
+  - [Summary](#summary)
 
 ---
 
@@ -346,16 +356,3 @@ TIM Bridge is the **execution backbone** of The Incredible Machine:
 - It turns timelines into tangible experiences
 - It bridges cloud intelligence with physical reality
 - It enables both production installations and virtual experimentation
-
-  await announce(sessionId);
-  await delay(40 \* 1000); // wait for 40 seconds before moving to the next session
-
-  const order = {
-  id: guid4(),
-  ts: Date.now(),
-  machineId: MACHINE_ID,
-  sessionId,
-  orderType: 'PLAY',
-  };
-
-  playOrder(order);

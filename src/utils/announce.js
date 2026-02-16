@@ -47,7 +47,7 @@ export async function announce(sessionId, options = {}) {
   const waitMs =
     Number.isFinite(durationMs) && durationMs > 0 ? durationMs : DEFAULT_ANNOUNCE_DURATION_MS;
 
-  const backgroundPath = path.join(ANNOUNCEMENTS_DIR, 'bk.mp3');
+  const backgroundPath = path.join(ANNOUNCEMENTS_DIR, 'bk.out.mp3');
   const sessionPath = resolveAnnouncementPath(sessionId);
 
   const [bgAudio, voiceAudio] = await Promise.all([
@@ -65,7 +65,7 @@ export async function announce(sessionId, options = {}) {
   }
 
   if (sessionPath) {
-    await delay(2500); // slight delay to ensure bgAudio starts first
+    await delay(2 * 1000);
     await voiceAudio.playMp3(sessionPath);
   } else {
     console.warn(`[announce] Missing session track for "${sessionId}" in ${ANNOUNCEMENTS_DIR}`);

@@ -60,11 +60,11 @@ export async function playMp3(filePath) {
 
   player = spawn(cmd, [...args, absPath], spawnOptions);
 
-  player.on('exit', (code, signal) => {
+  player.on('exit', () => {
     player = null;
   });
 
-  player.on('error', (err) => {
+  player.on('error', () => {
     player = null;
   });
 }
