@@ -211,6 +211,7 @@
           currentUrl: '',
           currentEffectId: Math.floor(Math.random() * TOTAL_EFFECTS),
           zIndex: 1,
+          mode: 'idle',
         };
 
         const rnd = (max) => Math.floor(Math.random() * max);
@@ -275,15 +276,22 @@
         }
 
         function setIdleMode() {
+          if (state.mode === 'idle') {
+            return;
+          }
+          state.mode = 'idle';
           running.classList.add('is-hidden');
           idleVideo.style.display = 'block';
           idleVideo.play().catch(() => {});
         }
 
         function setRunningMode(imageUrl) {
-          idleVideo.pause();
-          idleVideo.style.display = 'none';
-          running.classList.remove('is-hidden');
+          if (state.mode !== 'running') {
+            state.mode = 'running';
+            idleVideo.pause();
+            idleVideo.style.display = 'none';
+            running.classList.remove('is-hidden');
+          }
 
           const hasChanged = imageUrl && imageUrl !== state.currentUrl;
           if (!hasChanged) {
@@ -305,6 +313,10 @@
 
         function syncFromHash() {
           const imageUrl = parseHashImageUrl();
+          if (imageUrl === state.currentUrl) {
+            return;
+          }
+
           if (!imageUrl) {
             state.currentUrl = '';
             state.queue = [];
@@ -317,8 +329,6 @@
         }
 
         window.addEventListener('hashchange', syncFromHash);
-        window.addEventListener('load', syncFromHash);
-
         syncFromHash();
       })();
     </script>

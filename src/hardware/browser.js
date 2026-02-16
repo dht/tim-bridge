@@ -4,6 +4,8 @@
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import http from 'node:http';
+import os from 'node:os';
+import path from 'node:path';
 import WebSocket from 'ws';
 import { identifyDevice } from '../utils/device.js';
 
@@ -39,15 +41,22 @@ function isBrowserRunning() {
  */
 function getBrowserConfig() {
   const { device } = identifyDevice();
+  let profileDir = path.join(os.tmpdir(), 'tim-bridge-chromium-profile');
 
   // Raspberry Pi / Linux
   let openCmd = findChromiumBinary();
   let openArgs = (url) => [
+    '--kiosk',
+    '--start-fullscreen',
+    '--start-maximized',
     '--noerrdialogs',
     '--disable-infobars',
     '--disable-session-crashed-bubble',
     '--disable-restore-session-state',
     '--no-first-run',
+    '--no-default-browser-check',
+    '--disable-features=Translate,InfiniteSessionRestore',
+    `--user-data-dir=${profileDir}`,
     '--remote-debugging-port=9222',
     url,
   ];
@@ -58,12 +67,13 @@ function getBrowserConfig() {
   // macOS (dev only)
   if (device === 'mac') {
     openCmd = 'open';
-    openArgs = (url) => ['-a', 'Firefox', url];
+    openArgs = (url) => ['-a', 'Firefox', '--args', '-kiosk', '-private-window', url];
     killCmd = 'osascript';
     killArgs = ['-e', 'tell application "Firefox" to quit'];
+    profileDir = null;
   }
 
-  return { openCmd, openArgs, killCmd, killArgs, device };
+  return { openCmd, openArgs, killCmd, killArgs, device, profileDir };
 }
 
 /**
@@ -222,8 +232,17 @@ function devtoolsRequest(path) {
  * Open Chromium.
  */
 export function openBrowser(url) {
-  const { openCmd, openArgs, device } = getBrowserConfig();
+  const { openCmd, openArgs, device, profileDir } = getBrowserConfig();
   const args = openArgs(url);
+
+  if (profileDir) {
+    try {
+      fs.rmSync(profileDir, { recursive: true, force: true });
+      fs.mkdirSync(profileDir, { recursive: true });
+    } catch (err) {
+      console.warn(`Failed to reset browser profile dir "${profileDir}":`, err);
+    }
+  }
 
   console.log(`Opening browser… [${device}]`);
   console.log(`${openCmd} ${args.join(' ')}`);
@@ -267,7 +286,6 @@ export function closeBrowserDelayed(delayMs) {
 }
 
 export function changeToImageInBrowser(fieldId, value) {
-  console.log('value ->', value);
   const url = `http://localhost:3000/#image=${value}`;
   openOrUpdateBrowser(url);
 }

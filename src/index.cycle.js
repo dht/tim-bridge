@@ -1,7 +1,9 @@
 import 'dotenv/config';
+import { onBridgeOpen } from './lifecycle/index.js';
 import { announce } from './utils/announce.js';
 import { BRIDGE_EVENTS, onBridgeEvent } from './utils/events.js';
 import { guid4 } from './utils/guid.js';
+import { getIp } from './utils/ip.js';
 import { initLogger } from './utils/logger.js';
 import { playOrder } from './utils/orders.js';
 import { delay } from './utils/timeline.utils.js';
@@ -55,6 +57,9 @@ export async function mainCycle() {
 
   console.log('CYCLE_SESSIONS_ID ->', sessionIds.join(', '));
   console.log(`Starting cycle for machine ${MACHINE_ID} with ${sessionIds.length} sessions...`);
+
+  const ip = await getIp();
+  onBridgeOpen(MACHINE_ID, { ip });
 
   for (const sessionId of sessionIds) {
     console.log(`Starting session ${sessionId}...`);
