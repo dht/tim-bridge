@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TIM Bridge TV</title>
+    <style>
+      :root {
+        --bg: #040404;
+        --panel-bg: rgba(255, 255, 255, 0.06);
+        --panel-border: rgba(255, 255, 255, 0.14);
+        --text: rgba(245, 245, 245, 0.9);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        overflow: hidden;
+      }
+
+      .stage {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        isolation: isolate;
+      }
+
+      .idle-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: contrast(1.08) saturate(0.9);
+      }
+
+      .running {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        background:
+          radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.08), transparent 45%),
+          radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.07), transparent 40%),
+          #030303;
+      }
+
+      .running.is-hidden {
+        display: none;
+      }
+
+      .gallery {
+        position: absolute;
+        inset: 0;
+        perspective: 1200px;
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transform-origin: center;
+        background-size: cover;
+        background-position: center;
+        transition: opacity 900ms ease;
+        filter: brightness(0.95) contrast(1.05);
+        will-change: transform, opacity;
+      }
+
+      .slide.is-visible {
+        opacity: 1;
+      }
+
+      .slide::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.26), transparent 40%);
+      }
+
+      .hud {
+        position: absolute;
+        right: 16px;
+        bottom: 16px;
+        z-index: 5;
+        padding: 10px 12px;
+        border: 1px solid var(--panel-border);
+        background: var(--panel-bg);
+        backdrop-filter: blur(6px);
+        border-radius: 8px;
+        letter-spacing: 0.04em;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .hud span {
+        opacity: 0.75;
+        margin-right: 6px;
+      }
+
+      .effect-0 {
+        animation: zoomInSlow 12s ease-in-out forwards;
+      }
+
+      .effect-1 {
+        animation: zoomOutSlow 12s ease-in-out forwards;
+      }
+
+      .effect-2 {
+        animation: driftLeft 12s ease-in-out forwards;
+      }
+
+      .effect-3 {
+        animation: driftRight 12s ease-in-out forwards;
+      }
+
+      .effect-4 {
+        animation: tiltA 12s ease-in-out forwards;
+      }
+
+      .effect-5 {
+        animation: tiltB 12s ease-in-out forwards;
+      }
+
+      .effect-6 {
+        animation: riseIn 12s ease-in-out forwards;
+      }
+
+      .effect-7 {
+        animation: fallOut 12s ease-in-out forwards;
+      }
+
+      @keyframes zoomInSlow {
+        from { transform: scale(1) translate3d(0, 0, 0); }
+        to { transform: scale(1.16) translate3d(0, -2%, 0); }
+      }
+
+      @keyframes zoomOutSlow {
+        from { transform: scale(1.18) translate3d(0, 0, 0); }
+        to { transform: scale(1.02) translate3d(0, 1.2%, 0); }
+      }
+
+      @keyframes driftLeft {
+        from { transform: scale(1.1) translate3d(1.8%, 0, 0); }
+        to { transform: scale(1.16) translate3d(-2.2%, -0.5%, 0); }
+      }
+
+      @keyframes driftRight {
+        from { transform: scale(1.08) translate3d(-2%, 0, 0); }
+        to { transform: scale(1.15) translate3d(2.4%, 1.2%, 0); }
+      }
+
+      @keyframes tiltA {
+        from { transform: scale(1.06) rotate(-0.45deg) translate3d(0, 0, 0); }
+        to { transform: scale(1.16) rotate(0.45deg) translate3d(1.2%, -1.1%, 0); }
+      }
+
+      @keyframes tiltB {
+        from { transform: scale(1.12) rotate(0.5deg) translate3d(0, 0, 0); }
+        to { transform: scale(1.03) rotate(-0.6deg) translate3d(-1.4%, 1%, 0); }
+      }
+
+      @keyframes riseIn {
+        from { transform: scale(1.02) translate3d(0, 2.5%, 0); }
+        to { transform: scale(1.14) translate3d(0, -1.8%, 0); }
+      }
+
+      @keyframes fallOut {
+        from { transform: scale(1.14) translate3d(0, -2%, 0); }
+        to { transform: scale(1.04) translate3d(0, 2%, 0); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <video
+        id="idleVideo"
+        class="idle-video"
+        src="./no-signal.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+      ></video>
+
+      <div id="running" class="running is-hidden">
+        <div id="gallery" class="gallery"></div>
+        <div class="hud"><span>mode</span>running</div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const TOTAL_EFFECTS = 8;
+        const MAX_IMAGES = 4;
+        const gallery = document.getElementById('gallery');
+        const idleVideo = document.getElementById('idleVideo');
+        const running = document.getElementById('running');
+
+        const state = {
+          queue: [],
+          currentUrl: '',
+          currentEffectId: Math.floor(Math.random() * TOTAL_EFFECTS),
+          zIndex: 1,
+        };
+
+        const rnd = (max) => Math.floor(Math.random() * max);
+
+        function normalizeImagePath(rawValue) {
+          const trimmed = String(rawValue || '').trim();
+          if (!trimmed) return '';
+
+          // Accept legacy typo style like line.4A.jpg and normalize to line-4A.jpg
+          return trimmed.replace(/\/line\.(\d+A\.[a-z0-9]+)$/i, '/line-$1');
+        }
+
+        function parseHashImageUrl() {
+          const rawHash = window.location.hash || '';
+          const cleaned = rawHash.startsWith('#') ? rawHash.slice(1) : rawHash;
+          if (!cleaned) return '';
+
+          const params = new URLSearchParams(cleaned);
+          const hashImage = params.get('image') || params.get('imageUrl') || '';
+          if (!hashImage) return '';
+
+          try {
+            return normalizeImagePath(decodeURIComponent(hashImage));
+          } catch {
+            return normalizeImagePath(hashImage);
+          }
+        }
+
+        function pickNextEffect(current) {
+          if (TOTAL_EFFECTS < 2) return 0;
+          const next = rnd(TOTAL_EFFECTS);
+          return next === current ? (next + 1) % TOTAL_EFFECTS : next;
+        }
+
+        function createSlide(url) {
+          const slide = document.createElement('div');
+          const nextEffectId = pickNextEffect(state.currentEffectId);
+          state.currentEffectId = nextEffectId;
+
+          slide.className = `slide effect-${nextEffectId}`;
+          slide.style.backgroundImage = `url("${url.replace(/"/g, '\\"')}")`;
+          slide.style.zIndex = String(state.zIndex++);
+          return slide;
+        }
+
+        function pushImage(imageUrl) {
+          const nextSlide = createSlide(imageUrl);
+          const previousVisible = gallery.querySelector('.slide.is-visible');
+
+          gallery.appendChild(nextSlide);
+          requestAnimationFrame(() => {
+            nextSlide.classList.add('is-visible');
+          });
+
+          if (previousVisible) {
+            previousVisible.classList.remove('is-visible');
+          }
+
+          while (gallery.children.length > MAX_IMAGES) {
+            gallery.removeChild(gallery.firstElementChild);
+          }
+        }
+
+        function setIdleMode() {
+          running.classList.add('is-hidden');
+          idleVideo.style.display = 'block';
+          idleVideo.play().catch(() => {});
+        }
+
+        function setRunningMode(imageUrl) {
+          idleVideo.pause();
+          idleVideo.style.display = 'none';
+          running.classList.remove('is-hidden');
+
+          const hasChanged = imageUrl && imageUrl !== state.currentUrl;
+          if (!hasChanged) {
+            if (!gallery.children.length && imageUrl) {
+              state.queue.push(imageUrl);
+              pushImage(imageUrl);
+            }
+            return;
+          }
+
+          state.currentUrl = imageUrl;
+          state.queue.push(imageUrl);
+          if (state.queue.length > MAX_IMAGES) {
+            state.queue.splice(0, state.queue.length - MAX_IMAGES);
+          }
+
+          pushImage(imageUrl);
+        }
+
+        function syncFromHash() {
+          const imageUrl = parseHashImageUrl();
+          if (!imageUrl) {
+            state.currentUrl = '';
+            state.queue = [];
+            state.zIndex = 1;
+            gallery.innerHTML = '';
+            setIdleMode();
+            return;
+          }
+          setRunningMode(imageUrl);
+        }
+
+        window.addEventListener('hashchange', syncFromHash);
+        window.addEventListener('load', syncFromHash);
+
+        syncFromHash();
+      })();
+    </script>
+  </body>
+</html>

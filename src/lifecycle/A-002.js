@@ -1,10 +1,17 @@
-export function onBridgeOpen(id, data) {}
+import { closeBrowser, openBrowserSingle } from '../hardware/index.js';
+
+export function onBridgeOpen(id, data) {
+  console.log('onBridgeOpen');
+  openBrowserSingle('http://localhost:3000/');
+}
 
 export function onChange(id, data) {
   const { timelineUrl, status, originWebpageUrl } = ev.data;
 }
 
-export function onBridgeClose(id, data) {}
+export function onBridgeClose(id, data) {
+  closeBrowser();
+}
 
 export const lifecycle = {
   onBridgeOpen,

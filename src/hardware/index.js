@@ -1,6 +1,7 @@
 import { applyHardware as applyAudio, stopAudio } from './audio.js';
 import {
   applyBrowser,
+  changeToImageInBrowser,
   closeBrowser,
   closeBrowserDelayed,
   openBrowser,
@@ -11,15 +12,13 @@ import { applyHardware as applyLights, turnLights } from './lights.js';
 const hardwareFields = {
   mp3LocalPath: applyAudio,
   lightStatus: applyLights,
-  browserUrl: applyBrowser /*
+  browserUrl: applyBrowser,
+  imageUrl: changeToImageInBrowser,
+};
+/*
     1. it's empty ('') => change the only tab to about:blank
     2. it's a URL=> change the only tab to the url
-
-    applyUrlToOnlyTab
-
-
-  */,
-};
+*/
 
 // meta has { machineId }
 export const applyHardware = (fieldId, value, meta) => {

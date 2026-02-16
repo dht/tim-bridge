@@ -138,7 +138,6 @@ export async function updateBrowserUrl(url) {
 
     // 4. Activate
     await devtoolsRequest(`/json/activate/${newTab.id}`);
-
   } catch (err) {
     console.error('Failed to update browser URL:', err);
   }
@@ -149,11 +148,13 @@ async function navigateViaWebSocket(target, url) {
     const ws = new WebSocket(target.webSocketDebuggerUrl);
 
     ws.on('open', () => {
-      ws.send(JSON.stringify({
-        id: 1,
-        method: 'Page.navigate',
-        params: { url },
-      }));
+      ws.send(
+        JSON.stringify({
+          id: 1,
+          method: 'Page.navigate',
+          params: { url },
+        })
+      );
     });
 
     ws.on('message', () => {
@@ -170,17 +171,19 @@ async function navigateViaWebSocket(target, url) {
  */
 function devtoolsJsonGET(path) {
   return new Promise((resolve, reject) => {
-    http.get(`http://127.0.0.1:9222${path}`, (res) => {
-      let data = '';
-      res.on('data', c => (data += c));
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(data));
-        } catch {
-          reject(new Error(`Invalid JSON from ${path}: ${data.slice(0, 80)}`));
-        }
-      });
-    }).on('error', reject);
+    http
+      .get(`http://127.0.0.1:9222${path}`, (res) => {
+        let data = '';
+        res.on('data', (c) => (data += c));
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(data));
+          } catch {
+            reject(new Error(`Invalid JSON from ${path}: ${data.slice(0, 80)}`));
+          }
+        });
+      })
+      .on('error', reject);
   });
 }
 
@@ -189,21 +192,17 @@ function devtoolsJsonGET(path) {
  */
 function devtoolsJsonPUT(path) {
   return new Promise((resolve, reject) => {
-    const req = http.request(
-      `http://127.0.0.1:9222${path}`,
-      { method: 'PUT' },
-      (res) => {
-        let data = '';
-        res.on('data', c => (data += c));
-        res.on('end', () => {
-          try {
-            resolve(JSON.parse(data));
-          } catch {
-            reject(new Error(`Invalid JSON from PUT ${path}: ${data.slice(0, 80)}`));
-          }
-        });
-      }
-    );
+    const req = http.request(`http://127.0.0.1:9222${path}`, { method: 'PUT' }, (res) => {
+      let data = '';
+      res.on('data', (c) => (data += c));
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch {
+          reject(new Error(`Invalid JSON from PUT ${path}: ${data.slice(0, 80)}`));
+        }
+      });
+    });
 
     req.on('error', reject);
     req.end();
@@ -265,4 +264,10 @@ export function closeBrowserDelayed(delayMs) {
 
   if (closeTimer) clearTimeout(closeTimer);
   closeTimer = setTimeout(closeBrowser, delayMs);
+}
+
+export function changeToImageInBrowser(fieldId, value) {
+  console.log('value ->', value);
+  const url = `http://localhost:3000/#image=${value}`;
+  openOrUpdateBrowser(url);
 }

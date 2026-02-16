@@ -3,10 +3,13 @@ set -e
 
 REMOTE_USER="admin"
 
-# Default last octet = 51 if not provided
-LAST_OCTET="${1:-51}"
+if [ -z "${1:-}" ]; then
+  echo "Usage: $0 <ip_last_octet (1-254)>"
+  exit 1
+fi
 
-# Basic validation: must be a number between 1–254
+LAST_OCTET="$1"
+
 if ! [[ "$LAST_OCTET" =~ ^[0-9]+$ ]] || [ "$LAST_OCTET" -lt 1 ] || [ "$LAST_OCTET" -gt 254 ]; then
   echo "Error: IP last octet must be a number between 1 and 254"
   exit 1
@@ -17,7 +20,6 @@ REMOTE_DIR="~/projects/tim-bridge"
 
 echo "Deploying to ${REMOTE_USER}@${REMOTE_HOST}"
 
-# Rsync src directory (mirror)
 rsync -avz --delete \
   --exclude node_modules \
   --exclude venv \
@@ -26,7 +28,6 @@ rsync -avz --delete \
   src/ \
   ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/
 
-# Rsync playground directory (mirror)
 rsync -avz --delete \
   --exclude node_modules \
   --exclude venv \
@@ -34,7 +35,6 @@ rsync -avz --delete \
   playground/ \
   ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/playground/
 
-# Copy .env.pi to remote .env
 rsync -avz \
   .env.pi \
   ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/.env
