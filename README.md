@@ -346,3 +346,16 @@ TIM Bridge is the **execution backbone** of The Incredible Machine:
 - It turns timelines into tangible experiences
 - It bridges cloud intelligence with physical reality
 - It enables both production installations and virtual experimentation
+
+  await announce(sessionId);
+  await delay(40 \* 1000); // wait for 40 seconds before moving to the next session
+
+  const order = {
+  id: guid4(),
+  ts: Date.now(),
+  machineId: MACHINE_ID,
+  sessionId,
+  orderType: 'PLAY',
+  };
+
+  playOrder(order);
