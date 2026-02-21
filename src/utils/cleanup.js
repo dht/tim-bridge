@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import './load-env.js';
 import { onBridgeClose } from '../lifecycle/index.js';
 import { getLogger } from './globals.js';
 import { getIp } from './ip.js';

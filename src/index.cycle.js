@@ -1,12 +1,18 @@
-import 'dotenv/config';
 import { onBridgeOpen } from './lifecycle/index.js';
 import { announce } from './utils/announce.js';
 import { BRIDGE_EVENTS, onBridgeEvent } from './utils/events.js';
 import { guid4 } from './utils/guid.js';
 import { getIp } from './utils/ip.js';
+import './utils/load-env.js';
 import { initLogger } from './utils/logger.js';
 import { playOrder } from './utils/orders.js';
 import { delay } from './utils/timeline.utils.js';
+
+const sessionIdsPerMachine = {
+  'A-001-dev': ['_milki', '_meditation', '_shower'],
+  'A-001-miffal': ['_milki', '_meditation', '_shower'],
+  'A-002-dev': ['_nostalgia', '_mayo', '_hipsters'],
+};
 
 function waitForPlaybackEnded(machineId, orderId) {
   return new Promise((resolve) => {
@@ -25,15 +31,11 @@ function waitForPlaybackEnded(machineId, orderId) {
   });
 }
 
-export async function mainCycle({
-  clientId,
-  machineIds,
-  sessionIds,
-  durationMs,
-  postPlayOrderDelayMs,
-}) {
+export async function mainCycle({ clientId, machineIds, durationMs, postPlayOrderDelayMs }) {
   const logger = initLogger(clientId, true);
   const machineId = machineIds[0];
+
+  const sessionIds = sessionIdsPerMachine[machineId];
 
   logger.clearLogs();
 

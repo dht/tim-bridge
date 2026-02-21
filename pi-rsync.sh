@@ -36,5 +36,5 @@ rsync -avz --delete \
   ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/playground/
 
 rsync -avz \
-  .env.pi \
+  .env \
   ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/.env

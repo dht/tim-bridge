@@ -9,11 +9,8 @@ import {
   onSnapshot,
   setDoc,
 } from '@firebase/firestore';
-import 'dotenv/config';
 import { identifyDevice } from './device.js';
-
-const IS_DEV = process.env.IS_DEV === 'true';
-const OFFLINE_MODE = process.env.OFFLINE_MODE === 'true';
+import './load-env.js';
 
 const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
@@ -317,13 +314,11 @@ export function listenToCollection(collectionName, callback) {
 
   const useShortPoll = isPiZero1;
 
-  if (!IS_DEV) {
-    console.log(
-      `Listening to Firestore collection "${collectionName}" using device type: ${device} → ${
-        useShortPoll ? 'short-poll' : 'realtime onSnapshot'
-      }`
-    );
-  }
+  console.log(
+    `Listening to Firestore collection "${collectionName}" using device type: ${device} → ${
+      useShortPoll ? 'short-poll' : 'realtime onSnapshot'
+    }`
+  );
 
   const method = useShortPoll ? listenToCollectionShortPull : listenToCollectionSockets;
 
@@ -338,13 +333,11 @@ export function listenToDoc(collectionName, id, callback, options = {}) {
 
   const useShortPoll = isPiZero1;
 
-  if (!IS_DEV) {
-    console.log(
-      `Listening to Firestore doc "${collectionName}/${id}" using device type: ${device} → ${
-        useShortPoll ? 'short-poll' : 'realtime onSnapshot'
-      }`
-    );
-  }
+  console.log(
+    `Listening to Firestore doc "${collectionName}/${id}" using device type: ${device} → ${
+      useShortPoll ? 'short-poll' : 'realtime onSnapshot'
+    }`
+  );
 
   return useShortPoll
     ? listenToDocShortPull(collectionName, id, callback, options)
