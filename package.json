@@ -4,9 +4,10 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "TIM_ENV_SUFFIX=${TIM_ENV_SUFFIX:-pi} node src/index.js",
-    "dev": "TIM_ENV_SUFFIX=${TIM_ENV_SUFFIX:-dev} nodemon --watch src --ext js,json --exec node src/index.js",
+    "start": "node src/index.js",
+    "dev": "nodemon --watch src --ext js,json --exec node src/index.js",
     "watch": "npm run dev",
+    "launcher:start-only": "node launcher/start-only-listener.js",
     "pi:sync": "nodemon --watch src --watch playground --ext js,json --ignore '**/node_modules/**' --ignore '**/venv/**' --ignore '**/.venv/**' --exec ./pi-rsync.sh",
     "build": "find src -type f -name \"*.js\" -print0 | xargs -0 -n1 node --check",
     "test": "echo \"Error: no test specified\" && exit 1",

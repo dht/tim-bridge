@@ -15,6 +15,7 @@ Each TIM Bridge instance represents a **single machine installation** (physical 
   - [Machine Instances](#machine-instances)
   - [Architecture](#architecture)
   - [Orders \& Playback](#orders--playback)
+  - [Launcher Orders (No SSH)](#launcher-orders-no-ssh)
   - [Timelines \& Keyframes](#timelines--keyframes)
     - [Keyframes can control:](#keyframes-can-control)
   - [Hardware \& Sensors](#hardware--sensors)
@@ -30,6 +31,7 @@ Each TIM Bridge instance represents a **single machine installation** (physical 
   - [Phone Interaction (QR Flow)](#phone-interaction-qr-flow)
   - [Stopping a Session](#stopping-a-session)
   - [Networking \& Connectivity](#networking--connectivity)
+  - [Network Operation Modes](#network-operation-modes)
   - [Autonomy \& Design Principles](#autonomy--design-principles)
   - [Security Notes](#security-notes)
   - [Development \& Simulation](#development--simulation)
@@ -114,6 +116,42 @@ Currently supported orders:
    - Stops the active playback and returns the machine to idle
 
 Orders are processed sequentially and deterministically.
+
+---
+
+## Launcher Orders (No SSH)
+
+For networks where SSH access is blocked, the bridge can be controlled through Firestore `orders` with all-caps `orderType`.
+
+Supported launcher order types:
+
+- `RESTART_PM2`
+- `STOP_PM2`
+- `START_PM2`
+- `SET_VOLUME` (requires `value` in 0-100)
+- `CHANGE_ENV` (requires `values` object)
+- `DUMP_LOGS` (stores last logs on the same order doc)
+- `SYNC_GIT` (hard resets local checkout to `origin/nextgen`, discarding local changes)
+
+`STOP_PM2` is paired with `launcher/start-only-listener.js`, a dedicated listener that only handles `START_PM2` so the main app can be brought back after it was stopped.
+
+Example local order scripts are in `launcher/`:
+
+- `launcher/add-order-restart-pm2.js`
+- `launcher/add-order-stop-pm2.js`
+- `launcher/add-order-start-pm2.js`
+- `launcher/add-order-set-volume.js`
+- `launcher/add-order-change-env.js`
+- `launcher/add-order-dump-logs.js`
+- `launcher/add-order-sync-git.js`
+
+Run the auxiliary listener with:
+
+```bash
+npm run launcher:start-only
+# recommended in PM2:
+pm2 start npm --name houses-launcher -- run launcher:start-only
+```
 
 ---
 
@@ -301,6 +339,40 @@ Result:
   - Publishes its **local IP address** to Firestore
 
 The server IP and online status are also tracked.
+
+---
+
+## Network Operation Modes
+
+Use one of two operation modes depending on network access.
+
+1. **Regular Network Mode (SSH)**
+   - Use when the Pi is reachable on the same network.
+   - Typical workflow:
+     - Sync code with `./pi-rsync.sh`
+     - Pull latest repo updates over SSH (`git pull`)
+     - Operate PM2 via SSH scripts:
+       - `./pi-start.sh`
+       - `./pi-restart.sh`
+       - `./pi-log.sh`
+       - `./pi-env.sh`
+
+2. **Limited Network Mode (Orders)**
+   - Use when SSH is blocked/unavailable (for example exhibition networks).
+   - Control is done through Firestore `orders` only.
+   - Main bridge handles launcher order types in `src/listen.js`.
+   - Keep the auxiliary start listener running:
+     - `npm run launcher:start-only`
+     - Recommended PM2 process:
+       - `pm2 start npm --name houses-launcher -- run launcher:start-only`
+   - Create orders from `launcher/` scripts (examples):
+     - `launcher/add-order-restart-pm2.js`
+     - `launcher/add-order-stop-pm2.js`
+     - `launcher/add-order-start-pm2.js`
+     - `launcher/add-order-set-volume.js`
+     - `launcher/add-order-change-env.js`
+     - `launcher/add-order-dump-logs.js`
+     - `launcher/add-order-sync-git.js`
 
 ---
 
