@@ -1,5 +1,5 @@
-// browser.js
-// Raspberry Pi–first Chromium controller (single-tab, no relaunch)
+// browser.pi.js
+// Raspberry Pi Chromium controller (single-tab, no relaunch)
 
 import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -7,13 +7,9 @@ import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import WebSocket from 'ws';
-import { identifyDevice } from '../utils/device.js';
 
-const OFFLINE_MODE = process.env.OFFLINE_MODE === 'true';
+const OFFLINE_MODE = false;
 
-/**
- * Find Chromium binary safely.
- */
 function findChromiumBinary() {
   const candidates = [
     'chromium',
@@ -30,24 +26,16 @@ function findChromiumBinary() {
   throw new Error('Chromium binary not found');
 }
 
-/**
- * Detect Chromium process.
- */
 function isBrowserRunning() {
   const res = spawnSync('pgrep', ['-f', 'chromium'], { stdio: 'ignore' });
   return res.status === 0;
 }
 
-/**
- * Browser config.
- */
 function getBrowserConfig() {
-  const { device } = identifyDevice();
-  let profileDir = path.join(os.tmpdir(), 'tim-bridge-chromium-profile');
+  const profileDir = path.join(os.tmpdir(), 'tim-bridge-chromium-profile');
 
-  // Raspberry Pi / Linux
-  let openCmd = findChromiumBinary();
-  let openArgs = (url) => [
+  const openCmd = findChromiumBinary();
+  const openArgs = (url) => [
     '--kiosk',
     '--start-fullscreen',
     '--start-maximized',
@@ -63,24 +51,12 @@ function getBrowserConfig() {
     url,
   ];
 
-  let killCmd = 'pkill';
-  let killArgs = ['-f', 'chromium'];
+  const killCmd = 'pkill';
+  const killArgs = ['-f', 'chromium'];
 
-  // macOS (dev only)
-  if (device === 'mac') {
-    openCmd = 'open';
-    openArgs = (url) => ['-a', 'Firefox', '--args', '-kiosk', '-private-window', url];
-    killCmd = 'osascript';
-    killArgs = ['-e', 'tell application "Firefox" to quit'];
-    profileDir = null;
-  }
-
-  return { openCmd, openArgs, killCmd, killArgs, device, profileDir };
+  return { openCmd, openArgs, killCmd, killArgs, profileDir };
 }
 
-/**
- * GUI env safety (systemd / SSH).
- */
 function buildGuiEnv(env) {
   if (process.platform !== 'linux') return env;
 
@@ -103,18 +79,12 @@ function buildGuiEnv(env) {
   return nextEnv;
 }
 
-/**
- * Public entry.
- */
 export function applyBrowser(fieldId, value) {
   if (fieldId === 'browserUrl') {
     openOrUpdateBrowser(value);
   }
 }
 
-/**
- * Open or reuse Chromium.
- */
 export function openOrUpdateBrowser(url) {
   const nextUrl = url || 'about:blank';
 
@@ -126,21 +96,12 @@ export function openOrUpdateBrowser(url) {
   openBrowser(nextUrl);
 }
 
-/**
- * DevTools flow (Pi-safe):
- * - POST /json/new
- * - Close all other tabs
- * - Activate remaining tab
- */
 export async function updateBrowserUrl(url) {
   try {
-    // 1. Create new tab
     const newTab = await devtoolsJsonPUT('/json/new');
 
-    // 2. Navigate via WebSocket
     await navigateViaWebSocket(newTab, url);
 
-    // 3. Close all other tabs
     const targets = await devtoolsJsonGET('/json');
     for (const t of targets) {
       if (t.type === 'page' && t.id !== newTab.id) {
@@ -148,7 +109,6 @@ export async function updateBrowserUrl(url) {
       }
     }
 
-    // 4. Activate
     await devtoolsRequest(`/json/activate/${newTab.id}`);
   } catch (err) {
     console.error('Failed to update browser URL:', err);
@@ -178,9 +138,6 @@ async function navigateViaWebSocket(target, url) {
   });
 }
 
-/**
- * DevTools GET JSON helper.
- */
 function devtoolsJsonGET(path) {
   return new Promise((resolve, reject) => {
     http
@@ -199,9 +156,6 @@ function devtoolsJsonGET(path) {
   });
 }
 
-/**
- * DevTools PUT JSON helper.
- */
 function devtoolsJsonPUT(path) {
   return new Promise((resolve, reject) => {
     const req = http.request(`http://127.0.0.1:9222${path}`, { method: 'PUT' }, (res) => {
@@ -221,20 +175,14 @@ function devtoolsJsonPUT(path) {
   });
 }
 
-/**
- * DevTools fire-and-forget.
- */
 function devtoolsRequest(path) {
   return new Promise((resolve) => {
     http.get(`http://127.0.0.1:9222${path}`, () => resolve());
   });
 }
 
-/**
- * Open Chromium.
- */
 export function openBrowser(url) {
-  const { openCmd, openArgs, device, profileDir } = getBrowserConfig();
+  const { openCmd, openArgs, profileDir } = getBrowserConfig();
   const args = openArgs(url);
 
   if (profileDir) {
@@ -246,7 +194,7 @@ export function openBrowser(url) {
     }
   }
 
-  console.log(`Opening browser… [${device}]`);
+  console.log('Opening browser… [pi]');
   console.log(`${openCmd} ${args.join(' ')}`);
 
   const child = spawn(openCmd, args, {
@@ -258,13 +206,10 @@ export function openBrowser(url) {
   child.unref();
 }
 
-/**
- * Close Chromium.
- */
 export function closeBrowser() {
-  const { killCmd, killArgs, device } = getBrowserConfig();
+  const { killCmd, killArgs } = getBrowserConfig();
 
-  console.log(`Closing browser… [${device}]`);
+  console.log('Closing browser… [pi]');
 
   const child = spawn(killCmd, killArgs, {
     stdio: 'ignore',
@@ -277,9 +222,6 @@ export function closeBrowser() {
 
 let closeTimer = null;
 
-/**
- * Close browser after delay.
- */
 export function closeBrowserDelayed(delayMs) {
   if (!delayMs) return;
 

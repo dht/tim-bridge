@@ -1,4 +1,4 @@
-import { applyHardware as applyAudio, stopAudio } from './audio.js';
+import { applyHardware as applyAudio, stopAudio } from './audio/index.js';
 import {
   applyBrowser,
   changeToImageInBrowser,
@@ -6,8 +6,8 @@ import {
   closeBrowserDelayed,
   openBrowser,
   openOrUpdateBrowser as openBrowserSingle,
-} from './browser.js';
-import { applyHardware as applyLights, turnLights } from './lights.js';
+} from './browser/index.js';
+import { applyHardware as applyLights, turnLights } from './lights/index.js';
 
 const hardwareFields = {
   mp3LocalPath: applyAudio,

@@ -8,7 +8,7 @@ const ANNOUNCEMENTS_DIR = path.resolve(
   '../data/announcements'
 );
 const AUDIO_MODULE_URL = pathToFileURL(
-  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../hardware/audio.js')
+  path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../hardware/audio/index.js')
 ).href;
 const DEFAULT_ANNOUNCE_DURATION_MS = 40 * 1000;
 

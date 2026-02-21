@@ -1,14 +1,4 @@
-export const applyHardware = (fieldId, value, meta) => {
-  const { machineId } = meta;
-
-  switch (fieldId) {
-    case 'lightStatus':
-      turnLights(value);
-      break;
-  }
-};
-
-// lights.js — safe on Mac & Raspberry Pi
+// lights.pi.js — Raspberry Pi GPIO controller
 
 let rpio = null;
 
@@ -70,3 +60,13 @@ export async function turnLights(lightStatus) {
       await turnLed(LED2, false);
   }
 }
+
+export const applyHardware = (fieldId, value, meta) => {
+  switch (fieldId) {
+    case 'lightStatus':
+      turnLights(value);
+      break;
+    default:
+      break;
+  }
+};

@@ -1,18 +1,16 @@
 import 'dotenv/config';
-import { MACHINES_DEV } from '../data/data.machines.js';
 import { onBridgeClose } from '../lifecycle/index.js';
 import { getLogger } from './globals.js';
 import { getIp } from './ip.js';
 
-const MACHINE_ID = process.env.MACHINE_ID;
-const IS_DEV = process.env.IS_DEV === 'true';
+const MACHINE_IDS = process.env.MACHINE_IDS;
 
 async function cleanupAndExit(code = 0) {
   const logger = getLogger();
   try {
     logger.info('Cleaning up before exit...');
 
-    const ids = IS_DEV ? Object.keys(MACHINES_DEV) : [MACHINE_ID];
+    const ids = MACHINE_IDS.split(',').map((id) => id.trim());
 
     for (const id of ids) {
       try {

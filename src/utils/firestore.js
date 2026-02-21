@@ -33,7 +33,7 @@ export function initFirestore() {
 }
 
 export function listenToCollectionSockets(name, callback) {
-  if(!app) return;
+  if (!app) return;
   if (!name) {
     throw new Error('listenToCollection requires a collection name');
   }
@@ -69,7 +69,7 @@ export function listenToCollectionSockets(name, callback) {
 }
 
 export function listenToDocSockets(collectionName, id, callback, options = {}) {
-  if(!app) return;
+  if (!app) return;
   const { ignoreInitialLoad = true } = options;
 
   const docRef = doc(db, collectionName, id);
@@ -102,7 +102,7 @@ export function listenToDocSockets(collectionName, id, callback, options = {}) {
 }
 
 export function listenToDocShortPull(collectionName, id, callback, options = {}) {
-  if(!app) return;
+  if (!app) return;
   const db = getFirestore();
 
   const interval = options.interval ?? 3000;
@@ -175,11 +175,9 @@ export function listenToDocShortPull(collectionName, id, callback, options = {})
 }
 
 export function crud(collectionName) {
-  
-
   return {
     add: async (values) => {
-      if(!app) return;
+      if (!app) return;
       if (!values) {
         throw new Error('crud.add requires a values object');
       }
@@ -198,7 +196,7 @@ export function crud(collectionName) {
       return ref.id;
     },
     update: async (id, change) => {
-      if(!app) return;
+      if (!app) return;
       if (!id) {
         throw new Error('crud.update requires a document id');
       }
@@ -212,7 +210,7 @@ export function crud(collectionName) {
       await setDoc(ref, newChange, { merge: true });
     },
     delete: async (id) => {
-      if(!app) return;
+      if (!app) return;
       if (!id) {
         throw new Error('crud.delete requires a document id');
       }
@@ -220,11 +218,11 @@ export function crud(collectionName) {
       await deleteDoc(ref);
     },
     listen: (callback) => {
-      if(!app) return;
+      if (!app) return;
       return listenToCollection(collectionName, callback);
     },
     getAll: async () => {
-      if(!app) return;
+      if (!app) return;
       const collectionRef = collection(db, collectionName);
       const snapshot = await getDocs(collectionRef);
       const results = [];
@@ -234,7 +232,7 @@ export function crud(collectionName) {
       return results;
     },
     deleteByPredicate: async (predicate) => {
-      if(!app) return;
+      if (!app) return;
       const collectionRef = collection(db, collectionName);
       const snapshot = await getDocs(collectionRef);
       const deletePromises = [];
@@ -250,7 +248,7 @@ export function crud(collectionName) {
 }
 
 export async function clearCollection(name) {
-  if(!app) return;
+  if (!app) return;
   const collectionRef = collection(db, name);
   // Note: Firestore does not support direct collection deletion.
   // You would need to delete documents individually or use a batch operation.
@@ -310,7 +308,7 @@ export function listenToCollectionShortPull(collectionName, onChange, options = 
 }
 
 export function listenToCollection(collectionName, callback) {
-  if(!app) return;
+  if (!app) return;
   // Detect CPU architecture
   const info = identifyDevice();
   const device = info.device;
@@ -333,7 +331,7 @@ export function listenToCollection(collectionName, callback) {
 }
 
 export function listenToDoc(collectionName, id, callback, options = {}) {
-  if(!app) return;
+  if (!app) return;
   const info = identifyDevice();
   const device = info.device;
   const isPiZero1 = device === 'pi-zero-1';
