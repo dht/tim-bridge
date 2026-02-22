@@ -15,7 +15,8 @@ if ! [[ "$LAST_OCTET" =~ ^[0-9]+$ ]] || [ "$LAST_OCTET" -lt 1 ] || [ "$LAST_OCTE
   exit 1
 fi
 
-REMOTE_HOST="10.0.0.${LAST_OCTET}"
+REMOTE_HOST1="10.0.0.${LAST_OCTET}"
+REMOTE_HOST="192.168.75.132"
 REMOTE_DIR="~/projects/tim-bridge"
 
 echo "Deploying to ${REMOTE_USER}@${REMOTE_HOST}"
