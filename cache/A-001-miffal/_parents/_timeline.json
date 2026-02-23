@@ -1,0 +1,106 @@
+[
+  {
+    "id": "A-001-miffal|_parents|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "id": "1",
+          "speakerName": "הלל הזקן",
+          "text": "מהי דירה—קירות, או מנוחת לב? אם תחת גג ההורים גופך שבע אך נפשך דחוקה, מה הרווחת. הרי אמרו: \"אין אדם דר עם נחש בכפיפה אחת\"—וכשבית נעשה מקום של עוקץ תמידי, מוטב לצאת אפילו בדלות. ועם זאת, אם אפשר לקבוע גבולות בכבוד ולשמור שלום, יש מעלה בכיבוד אב ואם ובחסכון שמאפשר לבנות עתיד ולא להישבר מן העוני.",
+          "duration": 35.44,
+          "cost": 0.1299,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_parents/line-1A.mp3"
+        },
+        {
+          "id": "2",
+          "speakerName": "שמאי הזקן",
+          "text": "הגדר את המשתנים. \"בריאות נפשית\"—מה פגיעה, מה סכנה. עוני—מה חסרון: מזון, חוב, חוסר יציבות. כלל: אין בונים בית על חול. אם יציאה לבד תכניס אותך לחובות ותמוטט סדר חיים, זו טעות הנדסית. \"איזהו חכם? הרואה את הנולד\". ואם בבית ההורים יש פגיעה ממשית—השפלה יומיומית, שליטה, חרדה—זה כשל יסוד, ואז יוצאים. אבל לא בגלל אי-נוחות כללית.",
+          "duration": 38.72,
+          "cost": 0.142,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_parents/line-2B.mp3"
+        },
+        {
+          "id": "3",
+          "speakerName": "הלל הזקן",
+          "text": "ואני אומר: אל תהפוך את האדם לטבלת אקסל. לפעמים \"אי-נוחות\" היא שם מכובס לכאב שמתמשך עד שנעשה מחלה. כבר הזהירו: \"דאגה בלב איש ישיחנה\"—אין קיום לתורה ולמלאכה כשהלב טרוד. אם אפשר לגור אצל ההורים רק זמנית עם תנאים כתובים: השתתפות בהוצאות, פרטיות, שעות שקט—יפה; ואם לא, יגור לבדו אפילו בצמצום, ויקבע לעצמו קהילה, חברותא, מסגרת—שלא יהא עני גם ברוח.",
+          "duration": 41.44,
+          "cost": 0.1519,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_parents/line-3A.mp3"
+        },
+        {
+          "id": "4",
+          "speakerName": "שמאי הזקן",
+          "text": "מילים יפות, אבל צריך מדידה. תנאים כתובים—כן; לוח זמנים—כן; יעד יציאה—כן. בלי יעד, זה נגרר. ומי שבוחר לבד—שיעשה תקציב קבוע, עבודה יציבה, ואל יקריב מצוות בסיסיות של הגוף בשם רגש. \"ונשמרתם מאוד לנפשותיכם\" כולל גם לא להרעיב ולא לישון ברחוב. הרחמים צריכים מסגרת, אחרת הם סדק בקיר.",
+          "duration": 34.4,
+          "cost": 0.1261,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_parents/line-4B.mp3"
+        }
+      ],
+      "params": {
+        "topic": "לגור אצל ההורים ולשלם בבריאות הנפשית או לגור לבד ולהיות עני?"
+      }
+    }
+  },
+  {
+    "id": "A-001-miffal|_parents|1",
+    "index": 1,
+    "ts": 0,
+    "duration": 35.44,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_parents/line-1A.mp3?1770233920025",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0,
+      "mp3LocalPath": "./cache/A-001-miffal/_parents/line-1A.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|_parents|2",
+    "index": 2,
+    "ts": 36.94,
+    "duration": 38.72,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_parents/line-2B.mp3?1770233920025",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1,
+      "mp3LocalPath": "./cache/A-001-miffal/_parents/line-2B.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|_parents|3",
+    "index": 3,
+    "ts": 77.16,
+    "duration": 41.44,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_parents/line-3A.mp3?1770233920025",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2,
+      "mp3LocalPath": "./cache/A-001-miffal/_parents/line-3A.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|_parents|4",
+    "index": 4,
+    "ts": 120.1,
+    "duration": 34.4,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_parents/line-4B.mp3?1770233920025",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3,
+      "mp3LocalPath": "./cache/A-001-miffal/_parents/line-4B.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|_parents|5",
+    "index": 5,
+    "ts": 156,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]

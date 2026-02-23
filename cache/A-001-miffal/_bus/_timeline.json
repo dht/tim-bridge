@@ -1,0 +1,115 @@
+[
+  {
+    "id": "A-001-miffal|_bus|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "id": "1",
+          "speakerName": "הלל הזקן",
+          "text": "שמאי, קודם שאמדוד דין—אשאל: כשהאור עובר בין שני הבתים הללו, מה תכליתו: לשמור גבול או לקרב לבבות? הרי נאמר: \"ואהבת לרעך כמוך\"—כלל גדול. אם המבקר בא ושואל תורה דרך קוד קר, האם לא נפתח לו פתח רחב, כדי שייכנס, ואז נדקדק עמו לאט?",
+          "duration": 33.65,
+          "cost": 0.1234,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/undefined/line-1A.mp3"
+        },
+        {
+          "id": "2",
+          "speakerName": "שמאי הזקן",
+          "text": "הגשר נועד לשני דברים: מעבר וקו גבול. בלי גבול—אין מעבר, רק נפילה. \"עשו סייג לתורה\" (אבות א, א). אתה אומר: נפתח רחב; אני אומר: נפתח נכון. אם השואל נכנס בלי מסגרת, הוא יקרא רגש במקום הלכה ויחשוב שמותר מפני שנעים.",
+          "duration": 32.52,
+          "cost": 0.1192,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/undefined/line-2B.mp3"
+        },
+        {
+          "id": "3",
+          "speakerName": "הלל הזקן",
+          "text": "אבל מסגרת שאינה יודעת את האדם—נעשית שער נעול. כבר לימדתי: \"דעלך סני לחברך לא תעביד\"—זו תורה, והשאר פירוש. ואם בא אחד מבוהל מרעש האלגוריתמים ושואל בקצרה, האם נדחהו עד שילמד ניסוח מדויק? מוטב לקרבו בדיבור רך, כי \"דרכיה דרכי נעם\"; ואז ילמד גם סייגיך מתוך אהבה, לא מתוך פחד.",
+          "duration": 32.76,
+          "cost": 0.1201,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/undefined/line-3A.mp3"
+        },
+        {
+          "id": "4",
+          "speakerName": "שמאי הזקן",
+          "text": "דיוק אינו אכזריות; הוא חסד ארוך-טווח. אם אתה מלמד בלי להבחין בין עיקר לטפל, אתה מייצר דור שמבלבל. \"לא תסור\" מחייב קו ברור. אתה מצטט נעם—אני שואל: נעם למי? לשואל עכשיו, או לקהילה אחר כך? כשאין מדרגות מדודות, כולם מחליקים—והאחריות עלינו.",
+          "duration": 39.16,
+          "cost": 0.1436,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/undefined/line-4B.mp3"
+        }
+      ],
+      "params": {
+        "preset": "P005",
+        "topic": "תודה לנהג אוטובוס\n\nכן או לא? "
+      }
+    }
+  },
+  {
+    "id": "A-001-miffal|_bus|1",
+    "index": 1,
+    "ts": 0,
+    "duration": 33.65,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_bus/line-1A.mp3?1769720691212",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_bus/line-1A.jpg?1769720691212",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0,
+      "mp3LocalPath": "./cache/A-001-miffal/_bus/line-1A.mp3",
+      "imageLocalPath": "./cache/A-001-miffal/_bus/line-1A.jpg"
+    }
+  },
+  {
+    "id": "A-001-miffal|_bus|2",
+    "index": 2,
+    "ts": 35.15,
+    "duration": 32.52,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_bus/line-2B.mp3?1769720691212",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_bus/line-2B.jpg?1769720691212",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1,
+      "mp3LocalPath": "./cache/A-001-miffal/_bus/line-2B.mp3",
+      "imageLocalPath": "./cache/A-001-miffal/_bus/line-2B.jpg"
+    }
+  },
+  {
+    "id": "A-001-miffal|_bus|3",
+    "index": 3,
+    "ts": 69.17,
+    "duration": 32.76,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_bus/line-3A.mp3?1769720691212",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_bus/line-3A.jpg?1769720691212",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2,
+      "mp3LocalPath": "./cache/A-001-miffal/_bus/line-3A.mp3",
+      "imageLocalPath": "./cache/A-001-miffal/_bus/line-3A.jpg"
+    }
+  },
+  {
+    "id": "A-001-miffal|_bus|4",
+    "index": 4,
+    "ts": 103.43,
+    "duration": 39.16,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_bus/line-4B.mp3?1769720691212",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_bus/line-4B.jpg?1769720691212",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3,
+      "mp3LocalPath": "./cache/A-001-miffal/_bus/line-4B.mp3",
+      "imageLocalPath": "./cache/A-001-miffal/_bus/line-4B.jpg"
+    }
+  },
+  {
+    "id": "A-001-miffal|_bus|5",
+    "index": 5,
+    "ts": 144.09,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]

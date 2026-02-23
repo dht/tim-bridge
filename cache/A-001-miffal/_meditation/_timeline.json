@@ -1,0 +1,106 @@
+[
+  {
+    "id": "A-001-miffal|_meditation|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "id": "1",
+          "speakerName": "הלל הזקן",
+          "text": "מדיטציה כל בוקר—לשם מה אתה קובע אותה כחובה? אם כוונתה ליישב דעתו של אדם לעבודת היום, הרי אמרו: \"איזהו חכם? הרואה את הנולד\"—ואם רגע של שקט מוליד מתינות ומעשה טוב, למה לא? ואף קרוב הוא ל\"הוי מתלמידיו של אהרן—אוהב שלום ורודף שלום\"; איך ירדוף שלום מי שנפשו סוערת מן הבוקר?",
+          "duration": 32.32,
+          "cost": 0.1185,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_meditation/line-1A.mp3"
+        },
+        {
+          "id": "2",
+          "speakerName": "שמאי הזקן",
+          "text": "הגדרה. \"מדיטציה\" אינה מצווה. לקבוע \"כל בוקר\" כמנהג קבוע—עלול להידמות כתוספת שאינה מן הדרך. יש סדר: תחילה מודה אני, ברכות השחר, תפילה. אחר כך—אם נותר זמן—התבוננות. אבל אל תחליף כלי במטרה. \"לא המדרש עיקר אלא המעשה\"; אם השקט נעשה תחליף לעשייה—הפסדת.",
+          "duration": 27.12,
+          "cost": 0.0994,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_meditation/line-2B.mp3"
+        },
+        {
+          "id": "3",
+          "speakerName": "הלל הזקן",
+          "text": "מי אמר להחליף? אני שואל: אם המדיטציה נעשית כ\"התבודדות\" קצרה לפני תפילה או לפני מפגש עם בני אדם, האם אינה מכשירה את הלב? \"חסידים הראשונים היו שוהים שעה אחת ומתפללים\"—לא מפני ביטול, אלא כדי לכוון לבם. לא לכל אדם שעה, אך דקה או שתיים—כדי שלא ייכנס ביום כבהמה לשוק. ועוד: אם היא מסייעת לו לכעוס פחות—הרי זו גדר של \"איזהו גיבור? הכובש את יצרו\".",
+          "duration": 38.4,
+          "cost": 0.1408,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_meditation/line-3A.mp3"
+        },
+        {
+          "id": "4",
+          "speakerName": "שמאי הזקן",
+          "text": "קבלה—בתנאי גבול. אם אתה קורא לזה \"הכנה לתפילה\" ויש לה מידה: זמן קצוב, תוכן נקי מדמיונות זרים, ותכליתה יראת שמים—יש מקום. אבל אל תעשה מזה אידאולוגיה רכה של \"תרגיש טוב\". עבודת הבוקר צריכה להיות מדידה: תורה, תפילה, דרך ארץ. כל כלי שאינו משתלב במבנה—מחליש אותו.",
+          "duration": 29.36,
+          "cost": 0.1077,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_meditation/line-4B.mp3"
+        }
+      ],
+      "params": {
+        "topic": "מדיטציה כל בוקר?"
+      }
+    }
+  },
+  {
+    "id": "A-001-miffal|_meditation|1",
+    "index": 1,
+    "ts": 0,
+    "duration": 32.32,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_meditation/line-1A.mp3?1769957962364",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0,
+      "mp3LocalPath": "./cache/A-001-miffal/_meditation/line-1A.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|_meditation|2",
+    "index": 2,
+    "ts": 33.82,
+    "duration": 27.12,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_meditation/line-2B.mp3?1769957962364",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1,
+      "mp3LocalPath": "./cache/A-001-miffal/_meditation/line-2B.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|_meditation|3",
+    "index": 3,
+    "ts": 62.44,
+    "duration": 38.4,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_meditation/line-3A.mp3?1769957962364",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2,
+      "mp3LocalPath": "./cache/A-001-miffal/_meditation/line-3A.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|_meditation|4",
+    "index": 4,
+    "ts": 102.34,
+    "duration": 29.36,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/_meditation/line-4B.mp3?1769957962364",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3,
+      "mp3LocalPath": "./cache/A-001-miffal/_meditation/line-4B.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|_meditation|5",
+    "index": 5,
+    "ts": 133.2,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]

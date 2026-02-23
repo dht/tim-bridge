@@ -1,0 +1,114 @@
+[
+  {
+    "id": "A-001-dev|_test|0",
+    "index": 0,
+    "ts": 1,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "id": "1",
+          "speakerName": "הלל הזקן",
+          "text": "שאלה אחת אפתח, שמאי: כשהמבקר סורק את הקוד ובוחר סוגיה—מה אנו מבקשים לבנות כאן, פסק או אדם? אם הבית שעל הגבעה נועד ללמד, הרי \"דרכיה דרכי נעם\"; והלוא אמרו: \"הווי מקבל את כל האדם בסבר פנים יפות\". אני אומר: נתחיל מן הכוונה, נקשיב, ואז נכריע—שמא יעמוד הגשר מפני הרוח.",
+          "duration": 2.59,
+          "cost": 0.0095,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/undefined/line-1A.mp3"
+        },
+        {
+          "id": "2",
+          "speakerName": "שמאי הזקן",
+          "text": "אדם—כן. אבל בלי פסק אין דרך, ובלי דרך אין אדם. \"עשה תורתך קבע\"—לא קישוט למיצב. אם כל שאלה תיפתח בחיבוק, תסתיים בערפל. גבול הוא חסד: מונע מן השואל לחשוב שכל אמת נמתחת כמו חוט אור לפי טעמו.",
+          "duration": 2.93,
+          "cost": 0.0107,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/undefined/line-2B.mp3"
+        },
+        {
+          "id": "3",
+          "speakerName": "הלל הזקן",
+          "text": "ואני אומר: קבע שאינו יודע לפגוש פנים—נעשה קיר. הרי כך שנינו: \"לא הביישן למד\"; ואם נעמיד את הרף גבוה מדי בתחילה, מי יעלה במעלה הגבעה? אדרבה—נקרב ונשאל, ואפילו לגר: \"מה דעלך סני לחברך לא תעביד\"—זו תחילת קבע, לא סופו. אחר כך נפרט ונבנה את הסייגים במתינות.",
+          "duration": 2.51,
+          "cost": 0.0092,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/undefined/line-3A.mp3"
+        },
+        {
+          "id": "4",
+          "speakerName": "שמאי הזקן",
+          "text": "מדויק: \"תחילה\" ו\"אחר כך\"—בלבד שלא תישארו בתחילה לעד. אני דורש לשאול את השואל: האם בא לשם שמים או לשם תצוגה? \"סייג לתורה\" אינו תוספת אסתטית; הוא מסגרת. אם לא נשרטט קווים ברורים, הגשר יקרוס תחת ריבוי פרשנויות.",
+          "duration": 2.85,
+          "cost": 0.0104,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/sessions/undefined/line-4B.mp3"
+        }
+      ],
+      "params": {
+        "topic": "איך בודקים מיקרופון"
+      }
+    }
+  },
+  {
+    "id": "A-001-dev|_test|1",
+    "index": 1,
+    "ts": 0,
+    "duration": 2.59,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_test/line-1A.mp3?1769720691170",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_test/line-1A.jpg?1769720691170",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0,
+      "mp3LocalPath": "./cache/A-001-dev/_test/line-1A.mp3",
+      "imageLocalPath": "./cache/A-001-dev/_test/line-1A.jpg"
+    }
+  },
+  {
+    "id": "A-001-dev|_test|2",
+    "index": 2,
+    "ts": 4.09,
+    "duration": 2.93,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_test/line-2B.mp3?1769720691170",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_test/line-2B.jpg?1769720691170",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1,
+      "mp3LocalPath": "./cache/A-001-dev/_test/line-2B.mp3",
+      "imageLocalPath": "./cache/A-001-dev/_test/line-2B.jpg"
+    }
+  },
+  {
+    "id": "A-001-dev|_test|3",
+    "index": 3,
+    "ts": 8.52,
+    "duration": 2.51,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_test/line-3A.mp3?1769720691170",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_test/line-3A.jpg?1769720691170",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2,
+      "mp3LocalPath": "./cache/A-001-dev/_test/line-3A.mp3",
+      "imageLocalPath": "./cache/A-001-dev/_test/line-3A.jpg"
+    }
+  },
+  {
+    "id": "A-001-dev|_test|4",
+    "index": 4,
+    "ts": 12.53,
+    "duration": 2.85,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_test/line-4B.mp3?1769720691170",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_test/line-4B.jpg?1769720691170",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3,
+      "mp3LocalPath": "./cache/A-001-dev/_test/line-4B.mp3",
+      "imageLocalPath": "./cache/A-001-dev/_test/line-4B.jpg"
+    }
+  },
+  {
+    "id": "A-001-dev|_test|5",
+    "index": 5,
+    "ts": 16.88,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]

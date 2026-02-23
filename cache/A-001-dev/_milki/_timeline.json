@@ -1,0 +1,107 @@
+[
+  {
+    "id": "A-001-dev|_milki|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "id": "1",
+          "speakerName": "הלל הזקן",
+          "text": "אשאל תחילה, שמאי אחי, אם ילד פותח גביע מילקי בעיניים נוצצות, האם נשימתו הראשונה נמשכת אל הענן או אל התהום? ענן הקצפת הוא הפגישה הראשונה עם השמחה. אם תצלול מיד לשוקולד, תעקוף את ההקדמה ותאבד את הלימוד שבסבלנות. הקצפת תחילה, טעימה דקה, משחקית, מכינה את החך לעומק המתוק שלמטה, כמו פרוזדור לפני קודש הקודשים. וכשם שהתורה ניתנה קמעא קמעא, כך גם המילקי, מן הרך אל האז, מן הלבן אל הכהה, כדי שהלב יעמוד באושר הטעם.",
+          "duration": 50.44,
+          "cost": 0.185,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_milki/line-1A.mp3"
+        },
+        {
+          "id": "2",
+          "speakerName": "שמאי הזקן",
+          "text": "הלל, החסד שלך מתפזל כמו קצפת ברוח. המילקי איננו פיוט אלא מבנה, תחתיתו שוקולד, יסוד העמוד, מעליו קצפת, גימור אסתטי. מי שאוכל ראשית קצפת כמי שמלטף את הטיח ומתעלם מן היסודות. ראוי שיחדור בכפיתו ישר לשוקולד, אל העיקר, ורק אחר כך יעלה אל הקצפת כסיום מסודר, שלא יבטל קערה של קצפת ריקה ושוקולד חשוף נטוש.",
+          "duration": 38.27,
+          "cost": 0.1403,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_milki/line-2B.mp3"
+        },
+        {
+          "id": "3",
+          "speakerName": "הלל הזקן",
+          "text": "אתה מדבר על יסודות, ואני שואל: מה תועלת בבית איתן שאין בו אור? אם יתחיל מן השוקולד הכבד, אולי ייעלץ לנטוש באמצע, ויאבד גם את העליונה וגם את התחתונה. כשמתחילים בקטיפת, נפתחת סבלנות הלב, והאדם מוזמן לערבב מעט, ליצור לו דרך אישית בין הקל לכבד. אינני מבטל את היסוד, אלא מושך את האדם אליו בעדינות, שלא יישבר הכפית הקטנה על דופן העומק.",
+          "duration": 35.08,
+          "cost": 0.1286,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_milki/line-3A.mp3"
+        },
+        {
+          "id": "4",
+          "speakerName": "שמאי הזקן",
+          "text": "בעד דמותך אתה מוחק את ההבחנות. אם יערבב מיד, שוב אין קצפת ואין שוקולד, הכל רפש אמצע רך. המסר לדור הצופה בנו מן הגבעות הדיגיטליות צריך להיות: יש סדר, יש תחילה ויש סוף. תחילה תיגש לעיקר, לשוקולד, תלמד לעמוד מול מתיקות מרוכזת ומדודה, ורק אחר כך תרשה לעצמך את ענן הקצפת כפרס. בלי היררכיה גם החסד שלך מתמסמס לחוסר צורה.",
+          "duration": 37.64,
+          "cost": 0.138,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_milki/line-4B.mp3"
+        }
+      ],
+      "params": {
+        "topic": "איך אוכלים מילקי?\n\nקודם קצפת או קודם שוקולד?",
+        "preset": "_milki"
+      }
+    }
+  },
+  {
+    "id": "A-001-dev|_milki|1",
+    "index": 1,
+    "ts": 0,
+    "duration": 50.44,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_milki/line-1A.mp3?1769720691024",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0,
+      "mp3LocalPath": "./cache/A-001-dev/_milki/line-1A.mp3"
+    }
+  },
+  {
+    "id": "A-001-dev|_milki|2",
+    "index": 2,
+    "ts": 51.94,
+    "duration": 38.27,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_milki/line-2B.mp3?1769720691024",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1,
+      "mp3LocalPath": "./cache/A-001-dev/_milki/line-2B.mp3"
+    }
+  },
+  {
+    "id": "A-001-dev|_milki|3",
+    "index": 3,
+    "ts": 91.71000000000001,
+    "duration": 35.08,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_milki/line-3A.mp3?1769720691024",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2,
+      "mp3LocalPath": "./cache/A-001-dev/_milki/line-3A.mp3"
+    }
+  },
+  {
+    "id": "A-001-dev|_milki|4",
+    "index": 4,
+    "ts": 128.29000000000002,
+    "duration": 37.64,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/_milki/line-4B.mp3?1769720691024",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3,
+      "mp3LocalPath": "./cache/A-001-dev/_milki/line-4B.mp3"
+    }
+  },
+  {
+    "id": "A-001-dev|_milki|5",
+    "index": 5,
+    "ts": 167.43,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]

@@ -1,0 +1,107 @@
+[
+  {
+    "id": "A-002-dev|_nostalgia|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "text": "קוֹל יִשְׂרָאֵל מִיְּרוּשָׁלַיִם שָׁלוֹם רַב כָּאן דָּן כַּנֵּר וּלְהַלָּן הַחֲדָשׁוֹת עִקָּרָן תְּחִלָּה",
+          "duration": 0,
+          "cost": 0,
+          "url": ""
+        },
+        {
+          "text": "המועצה לריסון זיכרון מפרסמת הערב הנחיות מעודכנות לסיווג \"נוסטלגיה\" כחומר ממריץ קל, ומרחיבה את חובת הסימון על אריזות מדיה ישנה ועל קבצי שמע פרטיים. במשרד הבריאות מדגישים כי הצריכה המותרת נשארת בעינה, אך הפיקוח מועבר לרשויות המקומיות בשעות הערב.",
+          "duration": 0,
+          "cost": 0,
+          "url": ""
+        },
+        {
+          "text": "ברשויות תל־אביב, חיפה ובאר־שבע נפתחות היום \"תחנות פריקה\" חדשות ליד תחנות התחבורה המהירה, ובהן ניתן להפקיד תמונות מודפסות, מכתבים וקלטות לשימור מבוקר תמורת שוברי תרבות. בעיריות מציינים עלייה בביקוש בעיקר בקרב משפחות שמעדיפות לחלק את החומרים ל\"מנות\" שבועיות.",
+          "duration": 0,
+          "cost": 0,
+          "url": ""
+        },
+        {
+          "text": "דאגה שקטה בדרום: בבית־המשפט המחוזי בבאר־שבע מוגש כתב אישום נגד עובד רווחה בחשד להפצת \"תמצית זיכרון\" בלתי מפוקחת בין דיירי דיור מוגן. במרכז הרפואי סורוקה נמסר כי שניים מהמאושפזים במצב בינוני, והחקירה נמשכת ללא מסירת פרטים נוספים.",
+          "duration": 0,
+          "cost": 0,
+          "url": ""
+        }
+      ],
+      "params": {
+        "timeline": "עתיד שבו נוסטלגיה נחשבת לסם קל"
+      }
+    }
+  },
+  {
+    "id": "A-002-dev|_nostalgia|1",
+    "index": 1,
+    "ts": 0,
+    "duration": 5,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-002-dev/sessions/_nostalgia/line-1A.mp3?1770627740217",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-002-dev/sessions/_nostalgia/line-1A.jpg?1770627740217",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": null,
+      "mp3LocalPath": "./cache/A-002-dev/_nostalgia/line-1A.mp3",
+      "imageLocalPath": "./cache/A-002-dev/_nostalgia/line-1A.jpg"
+    }
+  },
+  {
+    "id": "A-002-dev|_nostalgia|2",
+    "index": 2,
+    "ts": 6,
+    "duration": 20,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-002-dev/sessions/_nostalgia/line-2A.mp3?1770627740217",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-002-dev/sessions/_nostalgia/line-2A.jpg?1770627740217",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": null,
+      "mp3LocalPath": "./cache/A-002-dev/_nostalgia/line-2A.mp3",
+      "imageLocalPath": "./cache/A-002-dev/_nostalgia/line-2A.jpg"
+    }
+  },
+  {
+    "id": "A-002-dev|_nostalgia|3",
+    "index": 3,
+    "ts": 27,
+    "duration": 18,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-002-dev/sessions/_nostalgia/line-3A.mp3?1770627740217",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-002-dev/sessions/_nostalgia/line-3A.jpg?1770627740217",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": null,
+      "mp3LocalPath": "./cache/A-002-dev/_nostalgia/line-3A.mp3",
+      "imageLocalPath": "./cache/A-002-dev/_nostalgia/line-3A.jpg"
+    }
+  },
+  {
+    "id": "A-002-dev|_nostalgia|4",
+    "index": 4,
+    "ts": 46,
+    "duration": 17,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-002-dev/sessions/_nostalgia/line-4A.mp3?1770627740217",
+      "imageUrl": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-002-dev/sessions/_nostalgia/line-4A.jpg?1770627740217",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": null,
+      "mp3LocalPath": "./cache/A-002-dev/_nostalgia/line-4A.mp3",
+      "imageLocalPath": "./cache/A-002-dev/_nostalgia/line-4A.jpg"
+    }
+  },
+  {
+    "id": "A-002-dev|_nostalgia|5",
+    "index": 5,
+    "ts": 64,
+    "state": {
+      "mp3Url": "",
+      "imageUrl": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]

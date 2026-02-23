@@ -1,0 +1,106 @@
+[
+  {
+    "id": "A-001-dev|efcd|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "id": "1",
+          "speakerName": "הלל הזקן",
+          "text": "מה אתה מבקש לקנות בקימה בחמש — יראה, הספק, או שלווה? אם זו מצווה של סדר, יפה; אך אם היא שוט שמכה את הלב, הרי שנאמר \"לא עליך המלאכה לגמור\" ודי שיקדים אדם מעט כפי כוחו.",
+          "duration": 19.92,
+          "cost": 0.073,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/efcd/line-1A.mp3"
+        },
+        {
+          "id": "2",
+          "speakerName": "שמאי הזקן",
+          "text": "בחמש קמים כי היום נמדד, ומי שמאחר מאבד חומר בניין שאין לו תחליף. \"זריזין מקדימין למצוות\"—לא כסיסמה, אלא כשיטה שמונעת מן היצר לגנוב את השעה הראשונה.",
+          "duration": 15.76,
+          "cost": 0.0578,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/efcd/line-2B.mp3"
+        },
+        {
+          "id": "3",
+          "speakerName": "הלל הזקן",
+          "text": "ואם קם בחמש ועיניו כבויות, האם הזריזות הזו מביאה דעת או רק רעש של גוף נופל? \"טוב מעט בכוונה מהרבה בלא כוונה\", ולכן מוטב שיקבע עת קבועה שמתאימה לו ויעמוד בה באהבה.",
+          "duration": 19.84,
+          "cost": 0.0727,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/efcd/line-3A.mp3"
+        },
+        {
+          "id": "4",
+          "speakerName": "שמאי הזקן",
+          "text": "כוונה בלי משמעת היא ענן; משמעת יוצרת כלי שבו הכוונה שורה. \"היום קצר והמלאכה מרובה\"—אם לא תתפוס את הבוקר, יבלע אותו השוק ואתה תכנה זאת \"התאמה\".",
+          "duration": 15.84,
+          "cost": 0.0581,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/efcd/line-4B.mp3"
+        }
+      ],
+      "params": {
+        "topic": "האם לקום בחמש?"
+      }
+    }
+  },
+  {
+    "id": "A-001-dev|efcd|1",
+    "index": 1,
+    "ts": 0,
+    "duration": 19.92,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/efcd/line-1A.mp3?1771670707544",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0,
+      "mp3LocalPath": "./cache/A-001-dev/efcd/line-1A.mp3"
+    }
+  },
+  {
+    "id": "A-001-dev|efcd|2",
+    "index": 2,
+    "ts": 21.42,
+    "duration": 15.76,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/efcd/line-2B.mp3?1771670707544",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1,
+      "mp3LocalPath": "./cache/A-001-dev/efcd/line-2B.mp3"
+    }
+  },
+  {
+    "id": "A-001-dev|efcd|3",
+    "index": 3,
+    "ts": 38.68,
+    "duration": 19.84,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/efcd/line-3A.mp3?1771670707544",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2,
+      "mp3LocalPath": "./cache/A-001-dev/efcd/line-3A.mp3"
+    }
+  },
+  {
+    "id": "A-001-dev|efcd|4",
+    "index": 4,
+    "ts": 60.019999999999996,
+    "duration": 15.84,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-dev/sessions/efcd/line-4B.mp3?1771670707544",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3,
+      "mp3LocalPath": "./cache/A-001-dev/efcd/line-4B.mp3"
+    }
+  },
+  {
+    "id": "A-001-dev|efcd|5",
+    "index": 5,
+    "ts": 77.36,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]
