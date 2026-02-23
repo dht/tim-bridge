@@ -263,6 +263,6 @@ export function changeToImageInBrowser(fieldId, value, meta = {}) {
     image: imageValue,
     ...(OFFLINE_MODE ? { offline: '1' } : {}),
   }).toString();
-  const url = `http://localhost:3000/#${hash}`;
-  openOrUpdateBrowser(url);
+  // const url = `http://localhost:3000/#${hash}`;
+  // openOrUpdateBrowser(url);
 }

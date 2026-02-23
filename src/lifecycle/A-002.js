@@ -2,7 +2,8 @@ import { closeBrowser, openBrowserSingle } from '../hardware/index.js';
 
 export function onBridgeOpen(id, data) {
   console.log('onBridgeOpen');
-  openBrowserSingle('http://localhost:3000/');
+  // openBrowserSingle('http://localhost:3000/');
+  openBrowserSingle('https://tim-os.web.app/A-002-dev/edge');
 }
 
 export function onChange(id, data) {
