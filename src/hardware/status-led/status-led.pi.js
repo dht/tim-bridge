@@ -1,4 +1,4 @@
-// status-led.pi.js — placeholder for GPIO status LED
+// status-led.pi.js - placeholder for GPIO status LED
 
 export function setStatusLed(state) {
   // TODO: implement GPIO status LED on Pi

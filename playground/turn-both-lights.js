@@ -1,4 +1,4 @@
-// lights.js — safe on Mac & Raspberry Pi
+// lights.js - safe on Mac & Raspberry Pi
 
 let rpio = null;
 

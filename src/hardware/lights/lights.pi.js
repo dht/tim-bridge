@@ -1,4 +1,4 @@
-// lights.pi.js — Raspberry Pi GPIO controller
+// lights.pi.js - Raspberry Pi GPIO controller
 
 let rpio = null;
 

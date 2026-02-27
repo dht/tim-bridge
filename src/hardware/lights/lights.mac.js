@@ -1,4 +1,4 @@
-// lights.mac.js — stubbed on macOS
+// lights.mac.js - stubbed on macOS
 
 export async function turnLed(pin, isOn) {
   console.log(`[lights][mac] turnLed pin=${pin} on=${isOn}`);

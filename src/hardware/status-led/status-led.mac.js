@@ -1,4 +1,4 @@
-// status-led.mac.js — stubbed on macOS
+// status-led.mac.js - stubbed on macOS
 
 export function setStatusLed(state) {
   console.log(`[status-led][mac] setStatusLed state=${state}`);
