@@ -320,8 +320,8 @@ export function listenToCollection(collectionName, callback) {
     }`
   );
 
-  // const method = useShortPoll ? listenToCollectionShortPull : listenToCollectionSockets;
-  const method = listenToCollectionShortPull;
+  const method = useShortPoll ? listenToCollectionShortPull : listenToCollectionSockets;
+  // const method = listenToCollectionShortPull;
 
   return method(collectionName, callback);
 }
