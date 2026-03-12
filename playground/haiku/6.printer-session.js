@@ -37,6 +37,7 @@ function help() {
   console.log('  status                 -> request printer status');
   console.log('  text <message>         -> print plain text');
   console.log('  haiku                  -> print sample haiku');
+  console.log('  haiku-hebrew           -> print sample Hebrew haiku');
   console.log('  image <file-path>      -> print an image from disk');
   console.log('  rect                   -> print rectangle test pattern');
   console.log('  exit                   -> disconnect and quit\n');
@@ -129,6 +130,8 @@ function promptLoop() {
         await printText(arg || 'Hello from MXW01');
       } else if (cmd === 'haiku') {
         await printText('Morning light whispers\nInk blooms on quiet paper\nWinter breath lingers');
+      } else if (cmd === 'haiku-hebrew') {
+        await printHebrewHaiku();
       } else if (cmd === 'image') {
         if (!arg) throw new Error('Usage: image <file-path>');
         await printImage(arg);
@@ -521,12 +524,71 @@ async function printRectangle() {
   console.log('Rectangle print sent');
 }
 
+async function printHebrewHaiku() {
+  console.log('Printing Hebrew haiku...');
+  await printRows(rotateRows180(hebrewHaikuRows()));
+  console.log('Hebrew haiku print sent');
+}
+
 async function printImage(filePath) {
   console.log(`Printing image: ${filePath}`);
   const { canvas, createCanvas } = await imageToCanvas(filePath);
   await printCanvas(canvas, createCanvas);
   console.log('Image print sent');
 }
+
+const HEBREW_HAIKU_LINES = ['אור בא לאט', 'רוח קלה עולה', 'לב שקט נרגע'];
+
+function sanitizeHebrewLine(line) {
+  return [...line].map((char) => (HEBREW_FONT_5X7[char] ? char : ' ')).join('');
+}
+
+function hebrewHaikuRows() {
+  const scale = FALLBACK_TEXT_SCALE;
+  const charW = 5 * scale;
+  const charH = 7 * scale;
+  const gapX = scale;
+  const gapY = scale + 2;
+  const paddingX = 16;
+  const paddingY = 12;
+
+  const lines = HEBREW_HAIKU_LINES.map(sanitizeHebrewLine);
+  const lineHeight = charH + gapY;
+  const height = Math.max(120, paddingY * 2 + lines.length * lineHeight);
+  const rows = createBlankRows(height);
+
+  for (let i = 0; i < lines.length; i++) {
+    const y = paddingY + i * lineHeight;
+    const chars = [...lines[i]];
+    const rightX = PRINTER_WIDTH - paddingX - charW;
+
+    for (let j = 0; j < chars.length; j++) {
+      const x = rightX - j * (charW + gapX);
+      if (x < paddingX - charW) break;
+      const glyph = HEBREW_FONT_5X7[chars[j]] || HEBREW_FONT_5X7[' '];
+      drawGlyph(rows, glyph, x, y, scale);
+    }
+  }
+
+  return rows;
+}
+
+const HEBREW_FONT_5X7 = {
+  ' ': [0, 0, 0, 0, 0, 0, 0],
+  'א': [0b10001, 0b01010, 0b00100, 0b01010, 0b10001, 0b10001, 0b10001],
+  'ב': [0b11110, 0b10000, 0b10000, 0b11110, 0b10001, 0b10001, 0b11110],
+  'ג': [0b11111, 0b00001, 0b00001, 0b00001, 0b00001, 0b10001, 0b01110],
+  'ה': [0b11111, 0b10001, 0b10001, 0b11111, 0b10000, 0b10000, 0b10000],
+  'ו': [0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100],
+  'ח': [0b10001, 0b10001, 0b10001, 0b11111, 0b10001, 0b10001, 0b10001],
+  'ט': [0b01110, 0b10001, 0b10111, 0b10101, 0b10101, 0b10001, 0b01110],
+  'ל': [0b00111, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100],
+  'נ': [0b10001, 0b11001, 0b10101, 0b10011, 0b10001, 0b10001, 0b10001],
+  'ע': [0b10001, 0b10001, 0b10001, 0b01110, 0b00100, 0b01010, 0b10001],
+  'ק': [0b01110, 0b10001, 0b10001, 0b10101, 0b10010, 0b10001, 0b00001],
+  'ר': [0b11111, 0b00001, 0b00001, 0b00001, 0b00001, 0b00001, 0b00001],
+  'ש': [0b10101, 0b10101, 0b10101, 0b10101, 0b10101, 0b10101, 0b01110],
+};
 
 // Each glyph is 7 rows of 5 bits (bit 4 is left-most pixel).
 const FONT_5X7 = {
