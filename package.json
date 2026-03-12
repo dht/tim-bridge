@@ -12,7 +12,8 @@
     "build": "find src -type f -name \"*.js\" -print0 | xargs -0 -n1 node --check",
     "test": "echo \"Error: no test specified\" && exit 1",
     "web:serve": "ln -sfn ../cache web/cache && serve web -l 3000 -S",
-    "test.button": "node src/test.button.js"
+    "test.button": "node src/test.button.js",
+    "test.print": "node src/test.print.js"
   },
   "dependencies": {
     "@abandonware/noble": "1.9.2-26",
