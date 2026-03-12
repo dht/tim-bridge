@@ -15,9 +15,7 @@ if ! [[ "$LAST_OCTET" =~ ^[0-9]+$ ]] || [ "$LAST_OCTET" -lt 1 ] || [ "$LAST_OCTE
   exit 1
 fi
 
-REMOTE_HOST1="10.0.0.${LAST_OCTET}"
-# REMOTE_HOST="10.102.28.224" #retro TV shaon
-REMOTE_HOST="10.102.28.132" #hillel shaon
+REMOTE_HOST="10.0.0.${LAST_OCTET}"
 
 REMOTE_DIR="~/projects/tim-bridge"
 
