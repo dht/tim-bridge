@@ -12,7 +12,6 @@
   "type": "module",
   "dependencies": {
     "@stoprocent/noble": "^1.19.1",
-    "canvas": "^3.2.1",
     "fabric": "^7.1.0",
     "mxw01-thermal-printer": "^0.1.0"
   }
