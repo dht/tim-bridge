@@ -418,6 +418,10 @@ function wrapTextLinesByChars(text, maxChars) {
   return output;
 }
 
+function isHebrewText(text) {
+  return /[\u0590-\u05ff]/.test(String(text ?? ''));
+}
+
 function sanitizeTextLine(line) {
   return line.toUpperCase().replace(/[^A-Z0-9 .,!?:;'"-]/g, ' ');
 }
@@ -490,6 +494,81 @@ function rectangleRows() {
   return rows;
 }
 
+function wrapTextByWidth(ctx, text, maxWidth) {
+  const inputLines = String(text ?? '').split('\n');
+  const wrapped = [];
+
+  for (const raw of inputLines) {
+    const words = raw.trim().split(/\s+/).filter(Boolean);
+    if (!words.length) {
+      wrapped.push('');
+      continue;
+    }
+
+    let line = words[0];
+    for (let i = 1; i < words.length; i++) {
+      const candidate = `${line} ${words[i]}`;
+      if (ctx.measureText(candidate).width <= maxWidth) {
+        line = candidate;
+      } else {
+        wrapped.push(line);
+        line = words[i];
+      }
+    }
+
+    wrapped.push(line);
+  }
+
+  return wrapped.length ? wrapped : [' '];
+}
+
+async function textToCanvasRows(text, options = {}) {
+  const {
+    direction = 'auto',
+    fontSize = 42,
+    fontFamily = 'Arial, "Noto Sans Hebrew", sans-serif',
+    lineHeightMultiplier = 1.35,
+    paddingX = 20,
+    paddingY = 16,
+    minHeight = 120,
+  } = options;
+
+  const { createCanvas } = await getCanvasModule();
+  const rawText = String(text ?? '');
+  const rtl = direction === 'rtl' || (direction === 'auto' && isHebrewText(rawText));
+  const maxTextWidth = PRINTER_WIDTH - paddingX * 2;
+
+  const probeCanvas = createCanvas(PRINTER_WIDTH, 64);
+  const probeCtx = probeCanvas.getContext('2d');
+  probeCtx.font = `${fontSize}px ${fontFamily}`;
+
+  const lines = wrapTextByWidth(probeCtx, rawText, maxTextWidth);
+  const lineHeight = Math.max(1, Math.ceil(fontSize * lineHeightMultiplier));
+  const height = Math.max(minHeight, paddingY * 2 + lines.length * lineHeight);
+
+  const canvas = createCanvas(PRINTER_WIDTH, height);
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = 'black';
+  ctx.font = `${fontSize}px ${fontFamily}`;
+  ctx.textBaseline = 'top';
+  ctx.textAlign = rtl ? 'right' : 'left';
+
+  try {
+    ctx.direction = rtl ? 'rtl' : 'ltr';
+  } catch {}
+
+  const x = rtl ? PRINTER_WIDTH - paddingX : paddingX;
+  for (let i = 0; i < lines.length; i++) {
+    const y = paddingY + i * lineHeight;
+    ctx.fillText(lines[i], x, y, maxTextWidth);
+  }
+
+  return canvasToRows(canvas, DEFAULT_THRESHOLD);
+}
+
 async function imageToCanvas(filePath) {
   const { createCanvas, loadImage } = await getCanvasModule();
   const img = await loadImage(filePath);
@@ -514,7 +593,21 @@ async function printStatus() {
 
 async function printText(text) {
   console.log('Printing text...');
-  await printRows(rotateRows180(textToRows(text)));
+  const safeText = String(text ?? '');
+  const hasHebrew = isHebrewText(safeText);
+
+  if (hasHebrew) {
+    try {
+      const rows = await textToCanvasRows(safeText, { direction: 'rtl' });
+      await printRows(rotateRows180(rows));
+      console.log('Text print sent');
+      return;
+    } catch (error) {
+      console.warn(`Hebrew canvas render failed, falling back to ASCII renderer: ${error?.message || error}`);
+    }
+  }
+
+  await printRows(rotateRows180(textToRows(safeText)));
   console.log('Text print sent');
 }
 
@@ -526,7 +619,8 @@ async function printRectangle() {
 
 async function printHebrewHaiku() {
   console.log('Printing Hebrew haiku...');
-  await printRows(rotateRows180(hebrewHaikuRows()));
+  const rows = await textToCanvasRows(HEBREW_HAIKU_LINES.join('\n'), { direction: 'rtl' });
+  await printRows(rotateRows180(rows));
   console.log('Hebrew haiku print sent');
 }
 
@@ -538,57 +632,6 @@ async function printImage(filePath) {
 }
 
 const HEBREW_HAIKU_LINES = ['אור בא לאט', 'רוח קלה עולה', 'לב שקט נרגע'];
-
-function sanitizeHebrewLine(line) {
-  return [...line].map((char) => (HEBREW_FONT_5X7[char] ? char : ' ')).join('');
-}
-
-function hebrewHaikuRows() {
-  const scale = FALLBACK_TEXT_SCALE;
-  const charW = 5 * scale;
-  const charH = 7 * scale;
-  const gapX = scale;
-  const gapY = scale + 2;
-  const paddingX = 16;
-  const paddingY = 12;
-
-  const lines = HEBREW_HAIKU_LINES.map(sanitizeHebrewLine);
-  const lineHeight = charH + gapY;
-  const height = Math.max(120, paddingY * 2 + lines.length * lineHeight);
-  const rows = createBlankRows(height);
-
-  for (let i = 0; i < lines.length; i++) {
-    const y = paddingY + i * lineHeight;
-    const chars = [...lines[i]];
-    const rightX = PRINTER_WIDTH - paddingX - charW;
-
-    for (let j = 0; j < chars.length; j++) {
-      const x = rightX - j * (charW + gapX);
-      if (x < paddingX - charW) break;
-      const glyph = HEBREW_FONT_5X7[chars[j]] || HEBREW_FONT_5X7[' '];
-      drawGlyph(rows, glyph, x, y, scale);
-    }
-  }
-
-  return rows;
-}
-
-const HEBREW_FONT_5X7 = {
-  ' ': [0, 0, 0, 0, 0, 0, 0],
-  'א': [0b10001, 0b01010, 0b00100, 0b01010, 0b10001, 0b10001, 0b10001],
-  'ב': [0b11110, 0b10000, 0b10000, 0b11110, 0b10001, 0b10001, 0b11110],
-  'ג': [0b11111, 0b00001, 0b00001, 0b00001, 0b00001, 0b10001, 0b01110],
-  'ה': [0b11111, 0b10001, 0b10001, 0b11111, 0b10000, 0b10000, 0b10000],
-  'ו': [0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100],
-  'ח': [0b10001, 0b10001, 0b10001, 0b11111, 0b10001, 0b10001, 0b10001],
-  'ט': [0b01110, 0b10001, 0b10111, 0b10101, 0b10101, 0b10001, 0b01110],
-  'ל': [0b00111, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100],
-  'נ': [0b10001, 0b11001, 0b10101, 0b10011, 0b10001, 0b10001, 0b10001],
-  'ע': [0b10001, 0b10001, 0b10001, 0b01110, 0b00100, 0b01010, 0b10001],
-  'ק': [0b01110, 0b10001, 0b10001, 0b10101, 0b10010, 0b10001, 0b00001],
-  'ר': [0b11111, 0b00001, 0b00001, 0b00001, 0b00001, 0b00001, 0b00001],
-  'ש': [0b10101, 0b10101, 0b10101, 0b10101, 0b10101, 0b10101, 0b01110],
-};
 
 // Each glyph is 7 rows of 5 bits (bit 4 is left-most pixel).
 const FONT_5X7 = {
