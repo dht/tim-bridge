@@ -55,6 +55,7 @@ function help() {
   console.log('\nCommands:');
   console.log('  status                 -> request printer status');
   console.log('  text <message>         -> print plain text (normal font)');
+  console.log('  text-gap <gap> <msg>   -> print text with custom line gap');
   console.log('  text-small <message>   -> print plain text (compact font)');
   console.log('  haiku                  -> print sample haiku');
   console.log('  haiku-small            -> print sample haiku (compact font)');
@@ -150,6 +151,13 @@ function promptLoop() {
         await printStatus();
       } else if (cmd === 'text') {
         await printText(arg || 'Hello from MXW01', { variant: 'normal' });
+      } else if (cmd === 'text-gap') {
+        const [gapToken, ...messageParts] = arg.split(' ');
+        const lineGap = Number(gapToken);
+        if (!Number.isFinite(lineGap)) {
+          throw new Error('Usage: text-gap <gap> <message>');
+        }
+        await printText(messageParts.join(' ').trim() || 'Hello from MXW01', { variant: 'normal', lineGap });
       } else if (cmd === 'text-small') {
         await printText(arg || 'Hello from MXW01', { variant: 'compact' });
       } else if (cmd === 'haiku') {
@@ -396,11 +404,30 @@ function rowsToPaddedBuffer(rows) {
   return out;
 }
 
+function withFeedRows(rows, beforeLines = FEED_LINES_BEFORE_PRINT, afterLines = FEED_LINES_AFTER_PRINT) {
+  const safeBefore = Math.max(0, Math.floor(beforeLines));
+  const safeAfter = Math.max(0, Math.floor(afterLines));
+  const out = [];
+
+  for (let i = 0; i < safeBefore; i++) {
+    out.push(new Uint8Array(PRINTER_WIDTH_BYTES));
+  }
+
+  out.push(...rows);
+
+  for (let i = 0; i < safeAfter; i++) {
+    out.push(new Uint8Array(PRINTER_WIDTH_BYTES));
+  }
+
+  return out;
+}
+
 async function printRows(rows) {
   if (!rows.length) throw new Error('Nothing to print');
 
-  const numLines = rows.length;
-  const imageBuffer = rowsToPaddedBuffer(rows);
+  const fedRows = withFeedRows(rows);
+  const numLines = fedRows.length;
+  const imageBuffer = rowsToPaddedBuffer(fedRows);
 
   await setIntensity(DEFAULT_INTENSITY);
 
@@ -488,13 +515,13 @@ function drawGlyph(rows, glyph, x, y, glyphWidth, glyphHeight, scale) {
 
 function textToRows(text, options = {}) {
   const safeText = String(text ?? '');
-  const { variant = 'normal', direction = 'auto' } = options;
+  const { variant = 'normal', direction = 'auto', lineGap = DEFAULT_LINE_GAP } = options;
   const fontVariant = FONT_VARIANTS[variant] || FONT_VARIANTS.normal;
   const scale = Math.max(0.1, ACTIVE_FONT_BASE_SCALE * fontVariant.scaleMultiplier);
   const charW = Math.max(1, Math.round(ACTIVE_FONT_WIDTH * scale));
   const charH = Math.max(1, Math.round(ACTIVE_FONT_HEIGHT * scale));
-  const gapX = Math.max(1, Math.round(scale));
-  const gapY = Math.max(1, Math.round(scale) + fontVariant.gapYExtra);
+  const gapX = Math.max(1, Math.round(scale * 0.75));
+  const resolvedLineGap = Math.max(0, Math.round(lineGap));
   const paddingX = fontVariant.paddingX;
   const paddingY = fontVariant.paddingY;
   const maxChars = Math.max(1, Math.floor((PRINTER_WIDTH - paddingX * 2 + gapX) / (charW + gapX)));
@@ -505,7 +532,7 @@ function textToRows(text, options = {}) {
     .flatMap((line) => (line.length ? [line] : [' ']));
   const lines = wrapped.length ? wrapped : [' '];
 
-  const lineHeight = charH + gapY;
+  const lineHeight = charH + resolvedLineGap;
   const height = Math.max(fontVariant.minHeight, paddingY * 2 + lines.length * lineHeight);
   const rows = createBlankRows(height);
 
@@ -583,8 +610,8 @@ async function printStatus() {
 async function printText(text, options = {}) {
   console.log('Printing text...');
   const safeText = String(text ?? '');
-  const { variant = 'normal', direction = 'auto' } = options;
-  const rows = textToRows(safeText, { variant, direction });
+  const { variant = 'normal', direction = 'auto', lineGap = DEFAULT_LINE_GAP } = options;
+  const rows = textToRows(safeText, { variant, direction, lineGap });
   await printRows(rotateRows180(rows));
   console.log('Text print sent');
 }
@@ -597,8 +624,8 @@ async function printRectangle() {
 
 async function printHebrewHaiku(options = {}) {
   console.log('Printing Hebrew haiku...');
-  const { variant = 'normal' } = options;
-  const rows = textToRows(HEBREW_HAIKU_LINES.join('\n'), { direction: 'rtl', variant });
+  const { variant = 'normal', lineGap = DEFAULT_LINE_GAP } = options;
+  const rows = textToRows(HEBREW_HAIKU_LINES.join('\n'), { direction: 'rtl', variant, lineGap });
   await printRows(rotateRows180(rows));
   console.log('Hebrew haiku print sent');
 }
@@ -828,9 +855,9 @@ const FONT_10X16 = {
     0b1100000011, 0b1100000011, 0b1100000011, 0b1100000011,
   ],
   I: [
-    0b1111111111, 0b1111111111, 0b1111111111, 0b1111111111, 0b1111111111, 0b1111111111,
-    0b1111111111, 0b1111111111, 0b1111111111, 0b1111111111, 0b1111111111, 0b1111111111,
-    0b1111111111, 0b1111111111, 0b1111111111, 0b1111111111,
+    0b0011111100, 0b0011111100, 0b0001111000, 0b0001111000, 0b0001111000, 0b0001111000,
+    0b0001111000, 0b0001111000, 0b0001111000, 0b0001111000, 0b0001111000, 0b0001111000,
+    0b0001111000, 0b0001111000, 0b0011111100, 0b0011111100,
   ],
   J: [
     0b0000011111, 0b0000011111, 0b0000011111, 0b0000011111, 0b0000011111, 0b0000011111,
@@ -943,9 +970,9 @@ const FONT_10X16 = {
     0b1110000011, 0b1110000011, 0b1110000011, 0b1110000011,
   ],
   ו: [
-    0b1111111111, 0b1111111111, 0b1111111111, 0b0000011111, 0b0000011111, 0b0000011111,
-    0b0000011111, 0b0000011111, 0b0000011111, 0b0000011111, 0b0000011111, 0b0000011111,
-    0b0000011111, 0b0000011111, 0b0000011111, 0b0000011111,
+    0b1111111111, 0b1111111111, 0b0000011110, 0b0000011110, 0b0000011110, 0b0000011110,
+    0b0000011110, 0b0000011110, 0b0000011110, 0b0000011110, 0b0000011110, 0b0000011110,
+    0b0000011110, 0b0000011110, 0b0000011110, 0b0000111100,
   ],
   ז: [
     0b1111111111, 0b1111111111, 0b1111111111, 0b0001111000, 0b0001111000, 0b0001111000,

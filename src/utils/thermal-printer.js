@@ -1,4 +1,26 @@
+import { FONT_10X16 } from './thermal-printer-font-10x16.js';
+
 const DEFAULT_TARGET_ADDRESS = process.env.THERMAL_PRINTER_ADDRESS ?? '48:0f:57:c5:78:9d';
+const DEFAULT_LINE_GAP = 10;
+const COMPACT_FONT_SCALE_MULTIPLIER = 0.8;
+const ACTIVE_FONT_BASE_SCALE = 1.8;
+const ACTIVE_FONT_WIDTH = 10;
+const ACTIVE_FONT_HEIGHT = 16;
+const ACTIVE_FONT = FONT_10X16;
+const FONT_VARIANTS = {
+  normal: {
+    scaleMultiplier: 1,
+    paddingX: 14,
+    paddingY: 8,
+    minHeight: 72,
+  },
+  compact: {
+    scaleMultiplier: COMPACT_FONT_SCALE_MULTIPLIER,
+    paddingX: 12,
+    paddingY: 6,
+    minHeight: 56,
+  },
+};
 
 const DEFAULTS = {
   targetAddress: DEFAULT_TARGET_ADDRESS,
@@ -6,7 +28,7 @@ const DEFAULTS = {
   notifyUuid: 'ae02',
   dataUuid: 'ae03',
   printerWidth: 384,
-  minDataLines: 90,
+  minDataLines: 24,
   intensity: 0x5d,
   threshold: 150,
   dataWriteDelayMs: 15,
@@ -14,6 +36,10 @@ const DEFAULTS = {
   responseTimeoutMs: 5000,
   printTimeoutMs: 20000,
   fallbackTextScale: 4,
+  textVariant: 'normal',
+  lineGap: DEFAULT_LINE_GAP,
+  feedLinesBeforePrint: 2,
+  feedLinesAfterPrint: 3,
 };
 
 const Command = {
@@ -51,7 +77,7 @@ async function getCanvasModule() {
         canvasModulePromise = null;
         const reason = error?.message || String(error);
         throw new Error(
-          `Canvas failed to load (${reason}). Install canvas to print Hebrew/non-ASCII text.`
+          `Canvas failed to load (${reason}). Install canvas to print images.`
         );
       });
   }
@@ -165,6 +191,25 @@ function rowsToPaddedBuffer(rows, printerWidth, minDataLines) {
   return out;
 }
 
+function withFeedRows(rows, printerWidth, beforeLines = 0, afterLines = 0) {
+  const rowWidthBytes = printerWidth / 8;
+  const safeBefore = Math.max(0, Math.floor(beforeLines));
+  const safeAfter = Math.max(0, Math.floor(afterLines));
+  const out = [];
+
+  for (let i = 0; i < safeBefore; i++) {
+    out.push(new Uint8Array(rowWidthBytes));
+  }
+
+  out.push(...rows);
+
+  for (let i = 0; i < safeAfter; i++) {
+    out.push(new Uint8Array(rowWidthBytes));
+  }
+
+  return out;
+}
+
 function canvasToRows(canvas, printerWidth, threshold) {
   const width = canvas.width;
   const height = canvas.height;
@@ -199,70 +244,6 @@ function canvasToRows(canvas, printerWidth, threshold) {
   return rows;
 }
 
-function splitLongWordByWidth(ctx, word, maxWidth) {
-  const out = [];
-  let current = '';
-
-  for (const char of [...word]) {
-    const candidate = `${current}${char}`;
-    if (!current || ctx.measureText(candidate).width <= maxWidth) {
-      current = candidate;
-    } else {
-      out.push(current);
-      current = char;
-    }
-  }
-
-  if (current) {
-    out.push(current);
-  }
-
-  return out;
-}
-
-function wrapTextByWidth(ctx, text, maxWidth) {
-  const paragraphs = String(text ?? '').replace(/\r\n/g, '\n').split('\n');
-  const lines = [];
-
-  for (const paragraph of paragraphs) {
-    const words = paragraph.trim().split(/\s+/).filter(Boolean);
-
-    if (!words.length) {
-      lines.push('');
-      continue;
-    }
-
-    let line = '';
-
-    for (const word of words) {
-      const candidate = line ? `${line} ${word}` : word;
-
-      if (!line && ctx.measureText(word).width > maxWidth) {
-        const chunks = splitLongWordByWidth(ctx, word, maxWidth);
-        if (chunks.length > 0) {
-          line = chunks.shift() ?? '';
-          for (const chunk of chunks) {
-            lines.push(line);
-            line = chunk;
-          }
-        }
-        continue;
-      }
-
-      if (!line || ctx.measureText(candidate).width <= maxWidth) {
-        line = candidate;
-      } else {
-        lines.push(line);
-        line = word;
-      }
-    }
-
-    lines.push(line || '');
-  }
-
-  return lines.length ? lines : [''];
-}
-
 function wrapTextLinesByChars(text, maxChars) {
   const inputLines = String(text ?? '').replace(/\r\n/g, '\n').split('\n');
   const output = [];
@@ -292,112 +273,87 @@ function wrapTextLinesByChars(text, maxChars) {
   return output;
 }
 
-function sanitizeAsciiTextLine(line) {
-  return String(line ?? '')
-    .toUpperCase()
-    .replace(/[^A-Z0-9 .,!?:;'"-]/g, ' ');
+function sanitizeTextLine(line) {
+  return [...String(line ?? '').toUpperCase()]
+    .map((char) => (ACTIVE_FONT[char] ? char : ' '))
+    .join('');
 }
 
-function drawGlyph(rows, glyph, x, y, scale, printerWidth) {
-  for (let gy = 0; gy < 7; gy++) {
-    const bits = glyph[gy] || 0;
-    for (let gx = 0; gx < 5; gx++) {
-      if ((bits & (1 << (4 - gx))) === 0) continue;
-      for (let sy = 0; sy < scale; sy++) {
-        for (let sx = 0; sx < scale; sx++) {
-          setRowPixel(rows, x + gx * scale + sx, y + gy * scale + sy, printerWidth);
-        }
-      }
+function isGlyphPixelOn(glyph, glyphWidth, x, y) {
+  if (x < 0 || y < 0 || y >= glyph.length) return false;
+  const bits = glyph[y] || 0;
+  return (bits & (1 << (glyphWidth - 1 - x))) !== 0;
+}
+
+function drawGlyph(rows, glyph, x, y, glyphWidth, glyphHeight, scale, printerWidth) {
+  const drawW = Math.max(1, Math.round(glyphWidth * scale));
+  const drawH = Math.max(1, Math.round(glyphHeight * scale));
+
+  for (let dy = 0; dy < drawH; dy++) {
+    const sy = Math.min(glyphHeight - 1, Math.floor(dy / scale));
+    for (let dx = 0; dx < drawW; dx++) {
+      const sx = Math.min(glyphWidth - 1, Math.floor(dx / scale));
+      if (!isGlyphPixelOn(glyph, glyphWidth, sx, sy)) continue;
+      setRowPixel(rows, x + dx, y + dy, printerWidth);
     }
   }
 }
 
-function textToAsciiRows(text, printerWidth, textScale) {
+function textToBitmapRows(text, options = {}) {
+  const {
+    printerWidth,
+    variant = 'normal',
+    direction = 'auto',
+    lineGap = DEFAULT_LINE_GAP,
+  } = options;
+
   const rowWidthBytes = printerWidth / 8;
-  const scale = textScale;
-  const charW = 5 * scale;
-  const charH = 7 * scale;
-  const gapX = scale;
-  const gapY = scale + 2;
-  const paddingX = 16;
-  const paddingY = 12;
+  const fontVariant = FONT_VARIANTS[variant] || FONT_VARIANTS.normal;
+  const scale = Math.max(0.1, ACTIVE_FONT_BASE_SCALE * fontVariant.scaleMultiplier);
+  const charW = Math.max(1, Math.round(ACTIVE_FONT_WIDTH * scale));
+  const charH = Math.max(1, Math.round(ACTIVE_FONT_HEIGHT * scale));
+  const gapX = Math.max(1, Math.round(scale * 0.75));
+  const resolvedLineGap = Math.max(0, Math.round(lineGap));
+  const paddingX = fontVariant.paddingX;
+  const paddingY = fontVariant.paddingY;
+  const safeText = String(text ?? '');
+  const rtl = direction === 'rtl' || (direction === 'auto' && isHebrewText(safeText));
 
   const maxChars = Math.max(1, Math.floor((printerWidth - paddingX * 2 + gapX) / (charW + gapX)));
-  const wrapped = wrapTextLinesByChars(text, maxChars)
-    .map(sanitizeAsciiTextLine)
+  const wrapped = wrapTextLinesByChars(safeText, maxChars)
+    .map(sanitizeTextLine)
     .flatMap((line) => (line.length ? [line] : [' ']));
 
   const lines = wrapped.length ? wrapped : [' '];
-  const lineHeight = charH + gapY;
-  const height = Math.max(120, paddingY * 2 + lines.length * lineHeight);
+  const lineHeight = charH + resolvedLineGap;
+  const height = Math.max(fontVariant.minHeight, paddingY * 2 + lines.length * lineHeight);
   const rows = createBlankRows(height, rowWidthBytes);
 
   for (let i = 0; i < lines.length; i++) {
     const y = paddingY + i * lineHeight;
     const line = lines[i];
 
+    if (rtl) {
+      const chars = [...line];
+      const rightX = printerWidth - paddingX - charW;
+
+      for (let j = 0; j < chars.length; j++) {
+        const x = rightX - j * (charW + gapX);
+        if (x < paddingX - charW) break;
+        const glyph = ACTIVE_FONT[chars[j]] || ACTIVE_FONT[' '];
+        drawGlyph(rows, glyph, x, y, ACTIVE_FONT_WIDTH, ACTIVE_FONT_HEIGHT, scale, printerWidth);
+      }
+      continue;
+    }
+
     for (let j = 0; j < line.length; j++) {
       const x = paddingX + j * (charW + gapX);
-      const glyph = FONT_5X7[line[j]] || FONT_5X7[' '];
-      drawGlyph(rows, glyph, x, y, scale, printerWidth);
+      const glyph = ACTIVE_FONT[line[j]] || ACTIVE_FONT[' '];
+      drawGlyph(rows, glyph, x, y, ACTIVE_FONT_WIDTH, ACTIVE_FONT_HEIGHT, scale, printerWidth);
     }
   }
 
   return rows;
-}
-
-async function textToCanvasRows(text, options) {
-  const {
-    printerWidth,
-    threshold,
-    fontSize = 42,
-    fontFamily = 'Arial, "Noto Sans Hebrew", sans-serif',
-    direction = 'auto',
-    lineHeightMultiplier = 1.35,
-    paddingX = 20,
-    paddingY = 16,
-    minHeight = 120,
-  } = options;
-
-  const { createCanvas } = await getCanvasModule();
-  const maxTextWidth = printerWidth - paddingX * 2;
-
-  const probeCanvas = createCanvas(printerWidth, 64);
-  const probeCtx = probeCanvas.getContext('2d');
-  probeCtx.font = `${fontSize}px ${fontFamily}`;
-
-  const rawText = String(text ?? '');
-  const rtl = direction === 'rtl' || (direction === 'auto' && isHebrewText(rawText));
-  const lines = wrapTextByWidth(probeCtx, rawText, maxTextWidth);
-
-  const lineHeight = Math.max(1, Math.ceil(fontSize * lineHeightMultiplier));
-  const height = Math.max(minHeight, paddingY * 2 + lines.length * lineHeight);
-
-  const canvas = createCanvas(printerWidth, height);
-  const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = 'white';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  ctx.fillStyle = 'black';
-  ctx.font = `${fontSize}px ${fontFamily}`;
-  ctx.textBaseline = 'top';
-  ctx.textAlign = rtl ? 'right' : 'left';
-
-  // node-canvas may ignore this in some versions, but set it when available.
-  try {
-    ctx.direction = rtl ? 'rtl' : 'ltr';
-  } catch {
-    // no-op
-  }
-
-  const x = rtl ? printerWidth - paddingX : paddingX;
-  for (let i = 0; i < lines.length; i++) {
-    const y = paddingY + i * lineHeight;
-    ctx.fillText(lines[i], x, y, maxTextWidth);
-  }
-
-  return canvasToRows(canvas, printerWidth, threshold);
 }
 
 export class ThermalPrinter {
@@ -487,11 +443,12 @@ export class ThermalPrinter {
 
     return this._enqueueTask(async () => {
       const rows = rotateRows180(
-        textToAsciiRows(
-          safeText,
-          this.options.printerWidth,
-          options.textScale ?? this.options.fallbackTextScale
-        ),
+        textToBitmapRows(safeText, {
+          printerWidth: this.options.printerWidth,
+          direction: 'ltr',
+          variant: options.variant ?? this.options.textVariant,
+          lineGap: options.lineGap ?? this.options.lineGap,
+        }),
         this.options.printerWidth
       );
 
@@ -506,16 +463,11 @@ export class ThermalPrinter {
     }
 
     return this._enqueueTask(async () => {
-      const rows = await textToCanvasRows(safeText, {
+      const rows = textToBitmapRows(safeText, {
         printerWidth: this.options.printerWidth,
-        threshold: options.threshold ?? this.options.threshold,
         direction: 'rtl',
-        fontSize: options.fontSize,
-        fontFamily: options.fontFamily,
-        lineHeightMultiplier: options.lineHeightMultiplier,
-        paddingX: options.paddingX,
-        paddingY: options.paddingY,
-        minHeight: options.minHeight,
+        variant: options.variant ?? this.options.textVariant,
+        lineGap: options.lineGap ?? this.options.lineGap,
       });
 
       await this._printRows(rotateRows180(rows, this.options.printerWidth), options);
@@ -530,40 +482,12 @@ export class ThermalPrinter {
 
     return this._enqueueTask(async () => {
       const hasHebrew = isHebrewText(safeText);
-      const preferCanvas = options.preferCanvas ?? hasHebrew;
-
-      let rows;
-      if (preferCanvas) {
-        try {
-          rows = await textToCanvasRows(safeText, {
-            printerWidth: this.options.printerWidth,
-            threshold: options.threshold ?? this.options.threshold,
-            direction: options.direction ?? (hasHebrew ? 'rtl' : 'auto'),
-            fontSize: options.fontSize,
-            fontFamily: options.fontFamily,
-            lineHeightMultiplier: options.lineHeightMultiplier,
-            paddingX: options.paddingX,
-            paddingY: options.paddingY,
-            minHeight: options.minHeight,
-          });
-        } catch (error) {
-          if (hasHebrew) {
-            throw error;
-          }
-
-          rows = textToAsciiRows(
-            safeText,
-            this.options.printerWidth,
-            options.textScale ?? this.options.fallbackTextScale
-          );
-        }
-      } else {
-        rows = textToAsciiRows(
-          safeText,
-          this.options.printerWidth,
-          options.textScale ?? this.options.fallbackTextScale
-        );
-      }
+      const rows = textToBitmapRows(safeText, {
+        printerWidth: this.options.printerWidth,
+        direction: options.direction ?? (hasHebrew ? 'rtl' : 'auto'),
+        variant: options.variant ?? this.options.textVariant,
+        lineGap: options.lineGap ?? this.options.lineGap,
+      });
 
       await this._printRows(rotateRows180(rows, this.options.printerWidth), options);
     });
@@ -824,8 +748,18 @@ export class ThermalPrinter {
 
     const printerWidth = this.options.printerWidth;
     const rowWidthBytes = printerWidth / 8;
-    const numLines = rows.length;
-    const imageBuffer = rowsToPaddedBuffer(rows, printerWidth, this.options.minDataLines);
+    const fedRows = withFeedRows(
+      rows,
+      printerWidth,
+      options.feedLinesBeforePrint ?? this.options.feedLinesBeforePrint,
+      options.feedLinesAfterPrint ?? this.options.feedLinesAfterPrint
+    );
+    const numLines = fedRows.length;
+    const imageBuffer = rowsToPaddedBuffer(
+      fedRows,
+      printerWidth,
+      options.minDataLines ?? this.options.minDataLines
+    );
 
     this.printComplete = false;
 
@@ -884,51 +818,5 @@ export async function printImage(filePath, options = {}) {
   return defaultPrinter.printImage(filePath, options);
 }
 
-// Each glyph is 7 rows of 5 bits (bit 4 is left-most pixel).
-const FONT_5X7 = {
-  ' ': [0, 0, 0, 0, 0, 0, 0],
-  '!': [0b00100, 0b00100, 0b00100, 0b00100, 0, 0, 0b00100],
-  "'": [0b00100, 0b00100, 0b01000, 0, 0, 0, 0],
-  ',': [0, 0, 0, 0, 0b00100, 0b00100, 0b01000],
-  '-': [0, 0, 0, 0b11111, 0, 0, 0],
-  '.': [0, 0, 0, 0, 0, 0, 0b00100],
-  '0': [0b01110, 0b10001, 0b10011, 0b10101, 0b11001, 0b10001, 0b01110],
-  '1': [0b00100, 0b01100, 0b00100, 0b00100, 0b00100, 0b00100, 0b01110],
-  '2': [0b01110, 0b10001, 0b00001, 0b00010, 0b00100, 0b01000, 0b11111],
-  '3': [0b11110, 0b00001, 0b00001, 0b01110, 0b00001, 0b00001, 0b11110],
-  '4': [0b00010, 0b00110, 0b01010, 0b10010, 0b11111, 0b00010, 0b00010],
-  '5': [0b11111, 0b10000, 0b10000, 0b11110, 0b00001, 0b00001, 0b11110],
-  '6': [0b01110, 0b10000, 0b10000, 0b11110, 0b10001, 0b10001, 0b01110],
-  '7': [0b11111, 0b00001, 0b00010, 0b00100, 0b01000, 0b01000, 0b01000],
-  '8': [0b01110, 0b10001, 0b10001, 0b01110, 0b10001, 0b10001, 0b01110],
-  '9': [0b01110, 0b10001, 0b10001, 0b01111, 0b00001, 0b00001, 0b01110],
-  ':': [0, 0b00100, 0, 0, 0b00100, 0, 0],
-  ';': [0, 0b00100, 0, 0, 0b00100, 0b00100, 0b01000],
-  '?': [0b01110, 0b10001, 0b00001, 0b00010, 0b00100, 0, 0b00100],
-  A: [0b01110, 0b10001, 0b10001, 0b11111, 0b10001, 0b10001, 0b10001],
-  B: [0b11110, 0b10001, 0b10001, 0b11110, 0b10001, 0b10001, 0b11110],
-  C: [0b01110, 0b10001, 0b10000, 0b10000, 0b10000, 0b10001, 0b01110],
-  D: [0b11110, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b11110],
-  E: [0b11111, 0b10000, 0b10000, 0b11110, 0b10000, 0b10000, 0b11111],
-  F: [0b11111, 0b10000, 0b10000, 0b11110, 0b10000, 0b10000, 0b10000],
-  G: [0b01110, 0b10001, 0b10000, 0b10111, 0b10001, 0b10001, 0b01110],
-  H: [0b10001, 0b10001, 0b10001, 0b11111, 0b10001, 0b10001, 0b10001],
-  I: [0b01110, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b01110],
-  J: [0b00001, 0b00001, 0b00001, 0b00001, 0b10001, 0b10001, 0b01110],
-  K: [0b10001, 0b10010, 0b10100, 0b11000, 0b10100, 0b10010, 0b10001],
-  L: [0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b11111],
-  M: [0b10001, 0b11011, 0b10101, 0b10101, 0b10001, 0b10001, 0b10001],
-  N: [0b10001, 0b11001, 0b10101, 0b10011, 0b10001, 0b10001, 0b10001],
-  O: [0b01110, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01110],
-  P: [0b11110, 0b10001, 0b10001, 0b11110, 0b10000, 0b10000, 0b10000],
-  Q: [0b01110, 0b10001, 0b10001, 0b10001, 0b10101, 0b10010, 0b01101],
-  R: [0b11110, 0b10001, 0b10001, 0b11110, 0b10100, 0b10010, 0b10001],
-  S: [0b01111, 0b10000, 0b10000, 0b01110, 0b00001, 0b00001, 0b11110],
-  T: [0b11111, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100],
-  U: [0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01110],
-  V: [0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01010, 0b00100],
-  W: [0b10001, 0b10001, 0b10001, 0b10101, 0b10101, 0b10101, 0b01010],
-  X: [0b10001, 0b10001, 0b01010, 0b00100, 0b01010, 0b10001, 0b10001],
-  Y: [0b10001, 0b10001, 0b01010, 0b00100, 0b00100, 0b00100, 0b00100],
-  Z: [0b11111, 0b00001, 0b00010, 0b00100, 0b01000, 0b10000, 0b11111],
-};
+// Legacy 5x7 map removed from runtime path.
+// The active map is FONT_10X16 from thermal-printer-font-10x16.js.
