@@ -10,25 +10,27 @@ const DATA_UUID = 'ae03';
 
 const PRINTER_WIDTH = 384;
 const PRINTER_WIDTH_BYTES = PRINTER_WIDTH / 8; // 48
-const MIN_DATA_BYTES = 90 * PRINTER_WIDTH_BYTES; // 4320
+const MIN_DATA_LINES = 24;
+const MIN_DATA_BYTES = MIN_DATA_LINES * PRINTER_WIDTH_BYTES;
 const DEFAULT_INTENSITY = 0x5d;
 const DEFAULT_THRESHOLD = 150;
-const COMPACT_FONT_SCALE_MULTIPLIER = 0.5;
-const ACTIVE_FONT_BASE_SCALE = 1;
+const DEFAULT_LINE_GAP = 10;
+const FEED_LINES_BEFORE_PRINT = 2;
+const FEED_LINES_AFTER_PRINT = 3;
+const COMPACT_FONT_SCALE_MULTIPLIER = 0.8;
+const ACTIVE_FONT_BASE_SCALE = 1.8;
 const FONT_VARIANTS = {
   normal: {
     scaleMultiplier: 1,
-    paddingX: 16,
-    paddingY: 12,
-    gapYExtra: 2,
-    minHeight: 120,
+    paddingX: 14,
+    paddingY: 8,
+    minHeight: 72,
   },
   compact: {
     scaleMultiplier: COMPACT_FONT_SCALE_MULTIPLIER,
     paddingX: 12,
-    paddingY: 10,
-    gapYExtra: 1,
-    minHeight: 90,
+    paddingY: 6,
+    minHeight: 56,
   },
 };
 
