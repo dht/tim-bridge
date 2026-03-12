@@ -17,9 +17,8 @@ export function buildHaikuPrompt(args = {}) {
     installationName = 'המפעל',
     city = 'ירושלים',
     timeZone = 'Asia/Jerusalem',
-    extraContext = '',
   } = args;
-  const dailyContext = buildHaikuDailyContext({ nowIso, timeZone, extraContext });
+  const dailyContext = buildHaikuDailyContext({ nowIso, timeZone });
 
   return `
 כתוב הייקו מקורי אחד בן שלוש שורות עבור מיצב אמנות בשם "תחנת הייקו יומי".

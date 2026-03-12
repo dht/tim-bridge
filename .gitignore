@@ -13,3 +13,4 @@ playground/matrix-pixel/__pycache__/
 log.txt
 .env.pi
 playground/matrix-pixel/python3-idotmatrix-library
+logs/

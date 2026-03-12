@@ -11,9 +11,11 @@
     "pi:sync": "nodemon --watch src --watch playground --ext js,json --ignore '**/node_modules/**' --ignore '**/venv/**' --ignore '**/.venv/**' --exec ./pi-rsync.sh",
     "build": "find src -type f -name \"*.js\" -print0 | xargs -0 -n1 node --check",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "web:serve": "ln -sfn ../cache web/cache && serve web -l 3000 -S"
+    "web:serve": "ln -sfn ../cache web/cache && serve web -l 3000 -S",
+    "test.button": "node src/test.button.js"
   },
   "dependencies": {
+    "@abandonware/noble": "1.9.2-26",
     "@firebase/app": "^0.14.7",
     "@firebase/firestore": "^4.10.0",
     "axios": "^1.13.4",
@@ -29,7 +31,6 @@
     "ws": "^8.19.0"
   },
   "devDependencies": {
-    "@abandonware/noble": "1.9.2-26",
     "nodemon": "^3.1.10",
     "serve": "^14.2.5"
   },

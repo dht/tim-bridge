@@ -74,7 +74,7 @@ export function buildHaikuDailyContext(args = {}) {
   const hamifal = pickBySeed(DAILY_CONTEXT.hamifalNews, seedBase + 37);
   const night = pickBySeed(DAILY_CONTEXT.nightEvents, seedBase + 41);
   const exciting = pickBySeed(DAILY_CONTEXT.excitingEvents, seedBase + 53);
-  const manual = String(extraContext ?? '').trim();
+  const todayTopic = String(extraContext ?? '').trim();
 
   const lines = [
     `- ישראל: ${israel}`,
@@ -84,8 +84,8 @@ export function buildHaikuDailyContext(args = {}) {
     `- אירוע/התרגשות: ${exciting}`,
   ];
 
-  if (manual) {
-    lines.push(`- תוספת יומית ידנית: ${manual}`);
+  if (todayTopic) {
+    lines.push(`- נושא היום: ${todayTopic}`);
   }
 
   lines.push('- השתמש/י בהקשרים כרמז עדין בלבד, לא כדיווח חדשותי.');
