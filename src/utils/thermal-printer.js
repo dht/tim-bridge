@@ -1,12 +1,13 @@
-import { FONT_10X16 } from './thermal-printer-font-10x16.js';
+import { FONT_12X18 } from './thermal-printer-font.js';
 
 const DEFAULT_TARGET_ADDRESS = process.env.THERMAL_PRINTER_ADDRESS ?? '48:0f:57:c5:78:9d';
 const DEFAULT_LINE_GAP = 10;
 const COMPACT_FONT_SCALE_MULTIPLIER = 0.8;
-const ACTIVE_FONT_BASE_SCALE = 1.8;
-const ACTIVE_FONT_WIDTH = 10;
-const ACTIVE_FONT_HEIGHT = 16;
-const ACTIVE_FONT = FONT_10X16;
+// Keep physical print size close to previous 10x16@1.8 behavior.
+const ACTIVE_FONT_BASE_SCALE = 2;
+const ACTIVE_FONT_WIDTH = 12;
+const ACTIVE_FONT_HEIGHT = 18;
+const ACTIVE_FONT = FONT_12X18;
 const FONT_VARIANTS = {
   normal: {
     scaleMultiplier: 1,
@@ -76,9 +77,7 @@ async function getCanvasModule() {
       .catch((error) => {
         canvasModulePromise = null;
         const reason = error?.message || String(error);
-        throw new Error(
-          `Canvas failed to load (${reason}). Install canvas to print images.`
-        );
+        throw new Error(`Canvas failed to load (${reason}). Install canvas to print images.`);
       });
   }
 
@@ -245,7 +244,9 @@ function canvasToRows(canvas, printerWidth, threshold) {
 }
 
 function wrapTextLinesByChars(text, maxChars) {
-  const inputLines = String(text ?? '').replace(/\r\n/g, '\n').split('\n');
+  const inputLines = String(text ?? '')
+    .replace(/\r\n/g, '\n')
+    .split('\n');
   const output = [];
 
   for (const raw of inputLines) {
@@ -383,10 +384,10 @@ export class ThermalPrinter {
   isConnected() {
     return Boolean(
       this.peripheral &&
-        this.peripheral.state === 'connected' &&
-        this.controlChar &&
-        this.notifyChar &&
-        this.dataChar
+      this.peripheral.state === 'connected' &&
+      this.controlChar &&
+      this.notifyChar &&
+      this.dataChar
     );
   }
 
@@ -791,7 +792,9 @@ const defaultPrinter = createThermalPrinter();
 
 export async function connectThermalPrinter(options = undefined) {
   if (options) {
-    throw new Error('connectThermalPrinter does not accept options. Use createThermalPrinter(options).');
+    throw new Error(
+      'connectThermalPrinter does not accept options. Use createThermalPrinter(options).'
+    );
   }
 
   await defaultPrinter.connect();
@@ -819,4 +822,4 @@ export async function printImage(filePath, options = {}) {
 }
 
 // Legacy 5x7 map removed from runtime path.
-// The active map is FONT_10X16 from thermal-printer-font-10x16.js.
+// The active map is FONT_12X18 from thermal-printer-font.js.

@@ -20,6 +20,7 @@
     "@firebase/app": "^0.14.7",
     "@firebase/firestore": "^4.10.0",
     "axios": "^1.13.4",
+    "canvas": "^3.2.1",
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
     "firebase-admin": "^12.7.0",

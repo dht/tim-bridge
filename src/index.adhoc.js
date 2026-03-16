@@ -7,7 +7,7 @@ import {
   connectThermalPrinter,
   disconnectThermalPrinter,
   printText,
-} from './utils/thermal-printer.js';
+} from './utils/thermal-printer.ttf.js';
 
 const OPENAI_MODEL = process.env.HAIKU_MODEL ?? 'gpt-5.2';
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1';
@@ -81,35 +81,14 @@ function sanitizePrintableText(value) {
     .trim();
 }
 
-function formatPrintTimestamp(date) {
-  const stamp = new Intl.DateTimeFormat('en-GB', {
-    timeZone: TIME_ZONE,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  }).format(date);
-
-  return `${stamp} ${TIME_ZONE}`;
-}
-
-function formatHaikuTicket(haiku, date) {
+function formatHaikuTicket(haiku) {
   const { line1, line2, line3 } = haiku;
 
   return sanitizePrintableText(
     [
-      'תחנת הייקו יומי',
-      `${INSTALLATION_NAME} / ${INSTALLATION_CITY}`,
-      '',
       line1,
       line2,
       line3,
-      '',
-      'תאריך:',
-      formatPrintTimestamp(date),
     ].join('\n')
   );
 }
@@ -233,7 +212,7 @@ async function runHaikuFlow(trigger = {}) {
   try {
     console.log(`[flow:${flowId}] Generating haiku...`);
     const haiku = await requestHaikuFromLlm(now);
-    const ticket = formatHaikuTicket(haiku, now);
+    const ticket = formatHaikuTicket(haiku);
     await appendHaikuLog('print_ticket', { flowId, ticket });
 
     console.log(`[flow:${flowId}] Printing haiku...`);
