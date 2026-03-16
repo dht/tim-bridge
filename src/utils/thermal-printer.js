@@ -1,13 +1,18 @@
-import { FONT_12X18 } from './thermal-printer-font.js';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { FONT_16X24 } from './thermal-printer-font.js';
 
 const DEFAULT_TARGET_ADDRESS = process.env.THERMAL_PRINTER_ADDRESS ?? '48:0f:57:c5:78:9d';
+const DEFAULT_TARGET_ADDRESS_PATH =
+  process.env.THERMAL_PRINTER_ADDRESS_PATH ??
+  path.resolve(process.cwd(), 'cache', 'thermal-printer-address.json');
 const DEFAULT_LINE_GAP = 10;
 const COMPACT_FONT_SCALE_MULTIPLIER = 0.8;
-// Keep physical print size close to previous 10x16@1.8 behavior.
-const ACTIVE_FONT_BASE_SCALE = 2;
-const ACTIVE_FONT_WIDTH = 12;
-const ACTIVE_FONT_HEIGHT = 18;
-const ACTIVE_FONT = FONT_12X18;
+// Keep physical print size close to previous 12x18@2 behavior.
+const ACTIVE_FONT_BASE_SCALE = 1.5;
+const ACTIVE_FONT_WIDTH = 16;
+const ACTIVE_FONT_HEIGHT = 24;
+const ACTIVE_FONT = FONT_16X24;
 const FONT_VARIANTS = {
   normal: {
     scaleMultiplier: 1,
@@ -25,6 +30,7 @@ const FONT_VARIANTS = {
 
 const DEFAULTS = {
   targetAddress: DEFAULT_TARGET_ADDRESS,
+  targetAddressPath: DEFAULT_TARGET_ADDRESS_PATH,
   controlUuid: 'ae01',
   notifyUuid: 'ae02',
   dataUuid: 'ae03',
@@ -33,7 +39,7 @@ const DEFAULTS = {
   intensity: 0x5d,
   threshold: 150,
   dataWriteDelayMs: 15,
-  connectTimeoutMs: 15000,
+  connectTimeoutMs: 30000,
   responseTimeoutMs: 5000,
   printTimeoutMs: 20000,
   fallbackTextScale: 4,
@@ -92,6 +98,15 @@ function normalizeAddress(value) {
   return String(value ?? '')
     .trim()
     .toLowerCase();
+}
+
+function getPeripheralIdentifier(peripheral) {
+  const address = normalizeAddress(peripheral?.address);
+  if (address && address !== 'unknown') {
+    return address;
+  }
+
+  return normalizeAddress(peripheral?.id);
 }
 
 function crc8(data) {
@@ -365,6 +380,9 @@ export class ThermalPrinter {
     };
 
     this.targetAddress = normalizeAddress(this.options.targetAddress);
+    this.targetAddressPath = path.resolve(String(this.options.targetAddressPath));
+    this.autoDiscoveryEnabled = !this.targetAddress;
+    this.addressCacheLoaded = false;
     this.peripheral = null;
     this.controlChar = null;
     this.notifyChar = null;
@@ -528,10 +546,48 @@ export class ThermalPrinter {
     return run;
   }
 
+  async _loadCachedTargetAddress() {
+    if (this.addressCacheLoaded || !this.autoDiscoveryEnabled) {
+      return;
+    }
+
+    this.addressCacheLoaded = true;
+
+    try {
+      const raw = await readFile(this.targetAddressPath, 'utf8');
+      const parsed = JSON.parse(raw);
+      const cachedAddress = normalizeAddress(parsed?.targetAddress);
+
+      if (cachedAddress) {
+        this.targetAddress = cachedAddress;
+        this.autoDiscoveryEnabled = false;
+      }
+    } catch (error) {
+      if (error?.code !== 'ENOENT') {
+        console.warn('Failed reading thermal printer address cache:', error?.message || error);
+      }
+    }
+  }
+
+  async _saveCachedTargetAddress(targetAddress) {
+    const normalized = normalizeAddress(targetAddress);
+    if (!normalized) {
+      return;
+    }
+
+    const dirPath = path.dirname(this.targetAddressPath);
+    await mkdir(dirPath, { recursive: true });
+    await writeFile(
+      this.targetAddressPath,
+      `${JSON.stringify({ targetAddress: normalized, updatedAt: new Date().toISOString() }, null, 2)}\n`,
+      'utf8'
+    );
+  }
+
   async _connectImpl() {
     this.noble = await getNoble();
     await this._waitForPoweredOn(this.options.connectTimeoutMs);
-
+    await this._loadCachedTargetAddress();
     const peripheral = await this._scanForPeripheral(this.options.connectTimeoutMs);
 
     await peripheral.connectAsync();
@@ -561,6 +617,16 @@ export class ThermalPrinter {
     this.controlChar = controlChar;
     this.notifyChar = notifyChar;
     this.dataChar = dataChar;
+
+    const discoveredTarget = getPeripheralIdentifier(peripheral);
+    if (this.autoDiscoveryEnabled && discoveredTarget) {
+      this.targetAddress = discoveredTarget;
+      this.autoDiscoveryEnabled = false;
+      await this._saveCachedTargetAddress(discoveredTarget).catch((error) => {
+        console.warn('Failed writing thermal printer address cache:', error?.message || error);
+      });
+      console.log(`Thermal printer discovered and cached: ${discoveredTarget}`);
+    }
 
     await this.notifyChar.subscribeAsync();
     this.notifyChar.on('data', this._onNotifyData);
@@ -619,12 +685,21 @@ export class ThermalPrinter {
       };
 
       const timeout = setTimeout(() => {
-        finish(null, new Error(`Printer not found within ${timeoutMs}ms: ${targetAddress}`));
+        finish(
+          null,
+          new Error(
+            `Printer not found within ${timeoutMs}ms: ${targetAddress || 'auto-discovery mode'}`
+          )
+        );
       }, timeoutMs);
 
       const onDiscover = (peripheral) => {
-        const address = normalizeAddress(peripheral.address);
-        if (!address || address !== targetAddress) {
+        const identifier = getPeripheralIdentifier(peripheral);
+        if (!identifier) {
+          return;
+        }
+
+        if (targetAddress && identifier !== targetAddress) {
           return;
         }
 
@@ -822,4 +897,4 @@ export async function printImage(filePath, options = {}) {
 }
 
 // Legacy 5x7 map removed from runtime path.
-// The active map is FONT_12X18 from thermal-printer-font.js.
+// The active map is FONT_16X24 from thermal-printer-font.js.

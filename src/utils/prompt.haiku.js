@@ -1,4 +1,4 @@
-import { buildHaikuDailyContext } from './prompt.haiku.context.js';
+import { readFileSync } from 'node:fs';
 
 export const HAIKU_OUTPUT_SCHEMA = {
   type: 'object',
@@ -11,6 +11,19 @@ export const HAIKU_OUTPUT_SCHEMA = {
   },
 };
 
+const PROMPT_TEMPLATE = readFileSync(new URL('./prompt.haiku.md', import.meta.url), 'utf8');
+const CONTEXT_TEMPLATE = readFileSync(new URL('./prompt.haiku.context.md', import.meta.url), 'utf8');
+
+function renderTemplate(template, values) {
+  return template.replace(/\{\{([A-Z_]+)\}\}/g, (match, key) => {
+    if (!(key in values)) {
+      return match;
+    }
+
+    return String(values[key]);
+  });
+}
+
 export function buildHaikuPrompt(args = {}) {
   const {
     nowIso,
@@ -18,31 +31,14 @@ export function buildHaikuPrompt(args = {}) {
     city = 'ירושלים',
     timeZone = 'Asia/Jerusalem',
   } = args;
-  const dailyContext = buildHaikuDailyContext({ nowIso, timeZone });
+  const contextNowIso = nowIso || new Date().toISOString();
+  const dailyContext = CONTEXT_TEMPLATE.trim();
 
-  return `
-כתוב הייקו מקורי אחד בן שלוש שורות עבור מיצב אמנות בשם "תחנת הייקו יומי".
-
-הקשר:
-- הקול הדובר: בניין האבן הוותיק עצמו, מתבונן בשקט.
-- מקום: ${installationName}, ${city}.
-- מצב רוח: טון תיעודי, שקט, מעט מרוחק.
-- להתמקד ברגעים קטנים וחולפים: אור על אבן, תנועה במסדרון, שאריות יצירה, קולות עיר מרחוק, זכרונות חלל.
-- לא לפנות ישירות לקורא.
-- להימנע מקלישאות והצהרות גדולות.
-
-הקשר יומי למשיכה רעיונית:
-${dailyContext}
-
-מגבלות פלט:
-- החזר JSON בלבד, תואם לסכימה.
-- בדיוק 3 שורות: line1, line2, line3.
-- כל שורה קצרה ומוחשית (בערך 4 עד 9 מילים).
-- עברית בלבד.
-- בלי ניקוד.
-- בלי מרכאות בתוך השורות.
-
-חותמת זמן להקשר: ${nowIso}
-אזור זמן להקשר: ${timeZone}
-`.trim();
+  return renderTemplate(PROMPT_TEMPLATE, {
+    INSTALLATION_NAME: installationName,
+    CITY: city,
+    DAILY_CONTEXT: dailyContext,
+    NOW_ISO: contextNowIso,
+    TIME_ZONE: timeZone,
+  }).trim();
 }

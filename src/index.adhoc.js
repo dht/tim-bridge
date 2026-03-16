@@ -7,13 +7,17 @@ import {
   connectThermalPrinter,
   disconnectThermalPrinter,
   printText,
-} from './utils/thermal-printer.ttf.js';
+} from './utils/thermal-printer.js';
 
 const OPENAI_MODEL = process.env.HAIKU_MODEL ?? 'gpt-5.2';
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1';
 const TIME_ZONE = process.env.HAIKU_TIMEZONE ?? 'Asia/Jerusalem';
 const INSTALLATION_NAME = process.env.HAIKU_INSTALLATION_NAME ?? 'המפעל';
 const INSTALLATION_CITY = process.env.HAIKU_INSTALLATION_CITY ?? 'ירושלים';
+const TEMPERATURE_MIN_DEFAULT = 0.8;
+const TEMPERATURE_MAX_DEFAULT = 1.2;
+const TEMPERATURE_MIN_LIMIT = 0;
+const TEMPERATURE_MAX_LIMIT = 2;
 const PRESS_SNOOZE_MS = 10_000;
 const LOG_DIR = path.resolve(process.cwd(), 'logs');
 const LOG_FILE = path.join(LOG_DIR, 'haiku-station.jsonl');
@@ -71,6 +75,40 @@ function getResponseOutputText(responseJson = {}) {
   return '';
 }
 
+function parseNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+function clamp(number, min, max) {
+  return Math.min(Math.max(number, min), max);
+}
+
+function getHaikuTemperature() {
+  const fixed = parseNumber(process.env.HAIKU_TEMPERATURE);
+  if (fixed !== null) {
+    return clamp(fixed, TEMPERATURE_MIN_LIMIT, TEMPERATURE_MAX_LIMIT);
+  }
+
+  const envMin = parseNumber(process.env.HAIKU_TEMPERATURE_MIN);
+  const envMax = parseNumber(process.env.HAIKU_TEMPERATURE_MAX);
+  const min = clamp(
+    envMin ?? TEMPERATURE_MIN_DEFAULT,
+    TEMPERATURE_MIN_LIMIT,
+    TEMPERATURE_MAX_LIMIT
+  );
+  const max = clamp(
+    envMax ?? TEMPERATURE_MAX_DEFAULT,
+    TEMPERATURE_MIN_LIMIT,
+    TEMPERATURE_MAX_LIMIT
+  );
+  const low = Math.min(min, max);
+  const high = Math.max(min, max);
+  const randomValue = low + Math.random() * (high - low);
+
+  return Number(randomValue.toFixed(2));
+}
+
 function sanitizePrintableText(value) {
   return String(value ?? '')
     .normalize('NFC')
@@ -84,13 +122,7 @@ function sanitizePrintableText(value) {
 function formatHaikuTicket(haiku) {
   const { line1, line2, line3 } = haiku;
 
-  return sanitizePrintableText(
-    [
-      line1,
-      line2,
-      line3,
-    ].join('\n')
-  );
+  return sanitizePrintableText([line1, line2, line3].join('\n'));
 }
 
 async function requestHaikuFromLlm(date) {
@@ -105,8 +137,10 @@ async function requestHaikuFromLlm(date) {
     city: INSTALLATION_CITY,
     timeZone: TIME_ZONE,
   });
+  const temperature = getHaikuTemperature();
   await appendHaikuLog('llm_prompt', {
     model: OPENAI_MODEL,
+    temperature,
     prompt,
   });
 
@@ -118,6 +152,7 @@ async function requestHaikuFromLlm(date) {
     },
     body: JSON.stringify({
       model: OPENAI_MODEL,
+      temperature,
       input: [
         {
           role: 'user',
