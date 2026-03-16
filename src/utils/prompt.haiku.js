@@ -25,20 +25,10 @@ function renderTemplate(template, values) {
 }
 
 export function buildHaikuPrompt(args = {}) {
-  const {
-    nowIso,
-    installationName = 'המפעל',
-    city = 'ירושלים',
-    timeZone = 'Asia/Jerusalem',
-  } = args;
-  const contextNowIso = nowIso || new Date().toISOString();
+  void args;
   const dailyContext = CONTEXT_TEMPLATE.trim();
 
   return renderTemplate(PROMPT_TEMPLATE, {
-    INSTALLATION_NAME: installationName,
-    CITY: city,
     DAILY_CONTEXT: dailyContext,
-    NOW_ISO: contextNowIso,
-    TIME_ZONE: timeZone,
   }).trim();
 }
