@@ -16,11 +16,11 @@ const PRINTER_RETRY_BACKOFF_AFTER_ATTEMPTS = 10;
 const LOG_DIR = path.resolve(process.cwd(), 'logs');
 const LOG_FILE = path.join(LOG_DIR, 'haiku-station.jsonl');
 const FLOW_START_PRINT_MESSAGES = [
-  'מחבר שיר חדש זה לוקח בערך 10 שניות',
+  'מחבר שיר חדש זה לוקח בערך 01 שניות',
   'רגע קטן של קסם בדרך להדפסה',
   'מקשיב לרגע ומרכיב שיר טרי',
   'עוד נשימה והשיר אצלך',
-  'מחפש מילים יפות שמתאימות עכשיו',
+  'מחפש מילים שמתאימות לרגע הזה',
   'השיר מתחמם על אש קטנה',
   'בונה הייקו חדש מהאוויר',
   'עוד כמה שניות ויש שיר טרי',
