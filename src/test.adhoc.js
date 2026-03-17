@@ -15,7 +15,9 @@ function formatHaiku(haiku) {
 
 async function main() {
   const generatedAt = new Date();
+  console.time('Haiku generation time');
   const haiku = await requestHaikuFromLlm(generatedAt);
+  console.timeEnd('Haiku generation time');
   const output = `${generatedAt.toISOString()}\n${formatHaiku(haiku)}\n\n`;
 
   await appendFile(OUTPUT_FILE, output, 'utf8');
