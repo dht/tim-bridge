@@ -1,0 +1,15 @@
+{
+  "positions": [
+    {
+      "id": "basePosition",
+      "description": "Default resting position for the robotic arm.",
+      "settleMs": 1500,
+      "base": 90,
+      "shoulder": 0,
+      "elbow": 90,
+      "wristPitch": 180,
+      "wristRoll": 180,
+      "gripperOpen": 180
+    }
+  ]
+}
