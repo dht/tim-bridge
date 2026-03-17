@@ -15,6 +15,18 @@ const PRINTER_RETRY_BACKOFF_MS = 60_000;
 const PRINTER_RETRY_BACKOFF_AFTER_ATTEMPTS = 10;
 const LOG_DIR = path.resolve(process.cwd(), 'logs');
 const LOG_FILE = path.join(LOG_DIR, 'haiku-station.jsonl');
+const FLOW_START_PRINT_MESSAGES = [
+  'מחבר שיר חדש זה לוקח בערך 15 שניות',
+  'רגע קטן של קסם בדרך להדפסה',
+  'מקשיב לרגע ומרכיב שיר טרי',
+  'עוד נשימה והשיר אצלך ביד',
+  'מחפש מילים יפות שמתאימות עכשיו',
+  'השיר מתחמם על אש קטנה',
+  'בונה הייקו חדש מהאוויר סביב',
+  'עוד כמה שניות ויש שיר טרי',
+  'מכין לך שורה ראשונה ממש עכשיו',
+  'המדפסת מתכוננת לשיר הבא',
+];
 
 let isRunning = false;
 let snoozeUntilMs = 0;
@@ -80,6 +92,11 @@ function formatHaikuTicket(haiku) {
   return sanitizePrintableText([line1, line2, line3].join('\n'));
 }
 
+function pickRandomStartMessage() {
+  const index = Math.floor(Math.random() * FLOW_START_PRINT_MESSAGES.length);
+  return FLOW_START_PRINT_MESSAGES[index];
+}
+
 async function runHaikuFlow(trigger = {}) {
   const { eventId = 'manual', pressId = 'manual' } = trigger;
   const flowId = ++flowRunCount;
@@ -120,6 +137,23 @@ async function runHaikuFlow(trigger = {}) {
   const now = new Date();
 
   try {
+    const statusTicket = sanitizePrintableText(pickRandomStartMessage());
+
+    try {
+      console.log(`[flow:${flowId}] Printing status ticket...`);
+      await printText(statusTicket, { variant: 'mini', lineGap: 4 });
+      await appendHaikuLog('print_status_ticket', { flowId, statusTicket });
+    } catch (statusError) {
+      await appendHaikuLog('print_status_ticket_failed', {
+        flowId,
+        message: statusError?.message || String(statusError),
+      });
+      console.error(
+        `[flow:${flowId}] Failed to print status ticket:`,
+        statusError?.message || statusError
+      );
+    }
+
     console.log(`[flow:${flowId}] Generating haiku...`);
     const haiku = await requestHaikuFromLlm(now);
     const ticket = formatHaikuTicket(haiku);

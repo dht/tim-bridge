@@ -8,6 +8,7 @@ const DEFAULT_TARGET_ADDRESS_PATH =
   path.resolve(process.cwd(), 'cache', 'thermal-printer-address.json');
 const DEFAULT_LINE_GAP = 10;
 const COMPACT_FONT_SCALE_MULTIPLIER = 0.8;
+const MINI_FONT_SCALE_MULTIPLIER = 0.65;
 // Keep physical print size close to previous 12x18@2 behavior.
 const ACTIVE_FONT_BASE_SCALE = 1.5;
 const ACTIVE_FONT_WIDTH = 16;
@@ -25,6 +26,12 @@ const FONT_VARIANTS = {
     paddingX: 12,
     paddingY: 6,
     minHeight: 56,
+  },
+  mini: {
+    scaleMultiplier: MINI_FONT_SCALE_MULTIPLIER,
+    paddingX: 10,
+    paddingY: 4,
+    minHeight: 42,
   },
 };
 
