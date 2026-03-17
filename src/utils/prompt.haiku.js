@@ -5,184 +5,207 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
+
 const LOG_FILE = path.join(PROJECT_ROOT, 'logs', 'haiku-station.jsonl');
 const MEMORY_FILE = path.join(PROJECT_ROOT, 'logs', 'haiku-memory.jsonl');
+
 const OPENAI_MODEL = process.env.HAIKU_MODEL ?? 'gpt-5.2';
 const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1';
-const HAIKU_MOODS = ['שקט', 'מתוח', 'עייף', 'מתבונן', 'זר', 'עמוס', 'ריק'];
 
-const STOP_WORDS = new Set([
-  'את',
-  'עם',
-  'על',
-  'של',
-  'אל',
-  'בלי',
-  'עוד',
-  'כבר',
-  'אחר',
-  'אחרי',
-  'לפני',
-  'בתוך',
-  'מחוץ',
-  'כמו',
-  'הוא',
-  'היא',
-  'הם',
-  'הן',
-  'אני',
-  'אתה',
-  'אתם',
-  'אנחנו',
-  'היום',
-  'מחר',
-  'אתמול',
-  'רגע',
-]);
-
-export async function loadRecentHaikus(limit = 10) {
-  const collectors = [
-    { file: MEMORY_FILE, parse: parseRecentFromMemoryFile },
-    { file: LOG_FILE, parse: parseRecentFromStationLog },
-  ];
-  const haikus = [];
-  const seen = new Set();
-
-  for (const collector of collectors) {
-    if (haikus.length >= limit) {
-      break;
-    }
-
-    try {
-      const content = await readFile(collector.file, 'utf8');
-      const parsed = collector.parse(content, limit - haikus.length);
-
-      for (const text of parsed) {
-        if (!text || seen.has(text)) {
-          continue;
-        }
-
-        seen.add(text);
-        haikus.push(text);
-        if (haikus.length >= limit) {
-          break;
-        }
-      }
-    } catch {}
-  }
-
-  return haikus;
-}
-
-const FRAGMENT_POOLS = {
-  human: [
-    'יד מחפשת מפתח בכיס',
-    'שתי אחיות לוחשות ליד החלון',
-    'שומר מפהק מול מסך קפוא',
-    'צחוק קצר נחתך באמצע',
-    'מישהו סופר מטבעות בכף היד',
-    'כתף נוגעת בדלת זכוכית',
-    'ילדה גוררת שרוול רטוב',
-    'צעדים נעצרים לפני המעלית',
-  ],
-  object: [
-    'כרטיס נסיעה מקופל',
-    'כפפה אחת על ספסל',
-    'עט בלי מכסה',
-    'שקית נייר לחה',
-    'מטרייה הפוכה ליד הדלת',
-    'אוזנייה בודדת בין כיסאות',
-    'ספל קפה עם שפה סדוקה',
-    'מטען מסובב סביב רגל שולחן',
-  ],
-  space: [
-    'אור ניאון מרצד בתקרה',
-    'חלון עם אדים דקים',
-    'רצפה עם סימני מים',
-    'פינה קרה במסדרון',
-    'אוויר יבש של מזגן',
-    'הדהוד מתחת לתקרה נמוכה',
-    'כתם אור נע על הקיר',
-    'וילון נושם מרוח דקה',
-  ],
-  signal: [
-    'צפצוף דלת נסגרת',
-    'טלפון רוטט בתיק סגור',
-    'נקישת מתכת קצרה',
-    'קריאה עמומה מהרמקול',
-    'גלגלים חורקים מרחוק',
-    'זמזום קבוע של מנוע',
-    'שעון דיגיטלי מהבהב',
-    'מעלית נעצרת בין קומות',
-  ],
+const HAIKU_MOODS = ['שקט', 'מתוח', 'עייף', 'זר', 'עמוס', 'ריק'];
+const HAIKU_RESPONSE_FORMAT = {
+  name: 'haiku_options',
+  type: 'json_schema',
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      options: {
+        type: 'array',
+        minItems: 1,
+        maxItems: 8,
+        items: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            line1: { type: 'string' },
+            line2: { type: 'string' },
+            line3: { type: 'string' },
+          },
+          required: ['line1', 'line2', 'line3'],
+        },
+      },
+    },
+    required: ['options'],
+  },
 };
 
-function pickRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+// ---------------- MEMORY ----------------
+
+export async function loadRecentHaikus(limit = 10) {
+  try {
+    const content = await readFile(LOG_FILE, 'utf8');
+    return content
+      .trim()
+      .split('\n')
+      .reverse()
+      .map((l) => {
+        try {
+          const p = JSON.parse(l);
+          if (p.line1 && p.line2 && p.line3) {
+            return `${p.line1} ${p.line2} ${p.line3}`;
+          }
+        } catch {}
+        return null;
+      })
+      .filter(Boolean)
+      .slice(0, limit);
+  } catch {
+    return [];
+  }
 }
 
-function buildFragments(bannedTerms) {
-  return [
-    pickFragment(FRAGMENT_POOLS.human, bannedTerms),
-    pickFragment(FRAGMENT_POOLS.object, bannedTerms),
-    pickFragment(FRAGMENT_POOLS.space, bannedTerms),
-    pickFragment(FRAGMENT_POOLS.signal, bannedTerms),
-  ];
+// ---------------- FRAGMENTS ----------------
+
+// 🔥 MUCH larger pool (critical)
+const FRAGMENTS = [
+  'רובוט מלוחות אלקטרוניים',
+  'מזוזות על מעקה',
+  'קוף מביט בכניסה',
+  'מטריות תלויות',
+  'יונים עם כובעי צמר',
+  'דלת רכב מקרינה נוף',
+  'אבק עץ באוויר',
+  'סנדלים על קיר',
+  'פסל בתוך מזרקה תלויה',
+  'כוס קפה שנשכחה',
+  'יד נוגעת בזכוכית',
+  'צעדים מהדהדים',
+  'אור נשבר על רצפה',
+  'ריח מתכת קרה',
+  'מפתח נופל',
+  'צל זז בלי גוף',
+];
+
+// 🔥 sample WITHOUT repetition bias
+function pickFragments() {
+  return [...FRAGMENTS].sort(() => 0.5 - Math.random()).slice(0, 3);
 }
 
-function buildPrompt({ fragments, mood, recentHaikus, bannedTerms, nowIso }) {
-  const recentSection = recentHaikus.length
-    ? recentHaikus.map((haiku, index) => `${index + 1}. ${haiku}`).join('\n')
-    : 'אין שירים קודמים.';
-  const bannedTermsSection = bannedTerms.length ? bannedTerms.join(', ') : 'אין';
+// ---------------- PROMPT ----------------
+
+function buildPrompt({ mood, recentHaikus, nowIso }) {
+  const fragments = pickFragments();
 
   return `
-# משימה
+הפק 8 הייקואים שונים מאוד.
 
-כתוב הייקו עברי אחד בלבד.
+חוקים:
+- כל הייקואים שונים לחלוטין זה מזה
+- כל אחד מתאר רגע אחר
+- אסור: אני / קיר / בניין / אבן
+- אסור להשתמש באותם דימויים בין השירים
 
-## חוקים קשיחים
-
-- בדיוק 3 שורות
-- רגע קונקרטי אחד בלבד
-- בלי שימוש במילים: אני / קיר / בניין / אבן
-- בלי הסבר או מוסר השכל
-- בלי רשימת אפשרויות, רק שיר אחד
-
-## רשמי חושים
-
+השראה (לא חובה להשתמש ישירות):
 ${fragments.join(', ')}
 
-## מצב רוח
+הימנע מחזרה:
+${recentHaikus.join('\n')}
 
+מצב:
 ${mood}
 
-## מילים אסורות
+פורמט JSON:
+{
+  "options": [
+    { "line1": "...", "line2": "...", "line3": "..." }
+  ]
+}
 
-אל תשתמש במילים הבאות בשום שורה:
-${bannedTermsSection}
-
-## שירים אחרונים להימנעות מחזרה
-
-${recentSection}
-
-## איכות
-
-- פרט מוזר עדיף על יופי צפוי
-- התחל מתופעה קטנה ולא מזהות המספר
-- הקפד שהדימוי המרכזי יהיה חדש ביחס לשירים הקודמים
-
-## פורמט פלט
-
-JSON בלבד:
-{ "line1": "...", "line2": "...", "line3": "..." }
-
-חותמת זמן: ${nowIso}
+${nowIso}
 `;
 }
 
-async function requestSingleHaiku({ apiKey, prompt }) {
-  const response = await fetch(`${OPENAI_BASE_URL}/responses`, {
+// ---------------- LLM ----------------
+
+function extractResponseText(responseBody) {
+  const outputText = responseBody?.output_text;
+  if (typeof outputText === 'string' && outputText.trim()) {
+    return outputText.trim();
+  }
+
+  const outputItems = Array.isArray(responseBody?.output) ? responseBody.output : [];
+  for (const outputItem of outputItems) {
+    const contentItems = Array.isArray(outputItem?.content) ? outputItem.content : [];
+    for (const contentItem of contentItems) {
+      if (typeof contentItem?.text === 'string' && contentItem.text.trim()) {
+        return contentItem.text.trim();
+      }
+    }
+  }
+
+  return '';
+}
+
+function parseJsonPayload(text) {
+  if (!text || typeof text !== 'string') {
+    return null;
+  }
+
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(trimmed);
+  } catch {}
+
+  const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fencedMatch?.[1]) {
+    try {
+      return JSON.parse(fencedMatch[1]);
+    } catch {}
+  }
+
+  const objectStart = trimmed.indexOf('{');
+  const objectEnd = trimmed.lastIndexOf('}');
+  if (objectStart >= 0 && objectEnd > objectStart) {
+    try {
+      return JSON.parse(trimmed.slice(objectStart, objectEnd + 1));
+    } catch {}
+  }
+
+  return null;
+}
+
+function toNormalizedCandidates(value) {
+  let maybeCandidates = [];
+
+  if (Array.isArray(value)) {
+    maybeCandidates = value;
+  } else if (Array.isArray(value?.options)) {
+    maybeCandidates = value.options;
+  } else if (value?.line1 || value?.line2 || value?.line3) {
+    maybeCandidates = [value];
+  }
+
+  return maybeCandidates
+    .map((candidate) => ({
+      line1: String(candidate?.line1 ?? '').trim(),
+      line2: String(candidate?.line2 ?? '').trim(),
+      line3: String(candidate?.line3 ?? '').trim(),
+    }))
+    .filter((candidate) => candidate.line1 && candidate.line2 && candidate.line3);
+}
+
+function truncate(value, max = 220) {
+  const text = String(value ?? '');
+  return text.length <= max ? text : `${text.slice(0, max)}...`;
+}
+
+async function requestBatch({ apiKey, prompt }) {
+  const res = await fetch(`${OPENAI_BASE_URL}/responses`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -190,270 +213,95 @@ async function requestSingleHaiku({ apiKey, prompt }) {
     },
     body: JSON.stringify({
       model: OPENAI_MODEL,
-      temperature: 1.0,
-      top_p: 0.9,
-      presence_penalty: 1.1,
-      frequency_penalty: 1.0,
       input: [{ role: 'user', content: [{ type: 'input_text', text: prompt }] }],
       text: {
-        format: {
-          type: 'json_schema',
-          name: 'daily_haiku_single',
-          schema: HAIKU_OUTPUT_SCHEMA,
-        },
+        format: HAIKU_RESPONSE_FORMAT,
       },
     }),
   });
 
-  if (!response.ok) {
-    const body = await response.text().catch(() => '');
-    throw new Error(`Haiku request failed (${response.status}): ${body.slice(0, 200)}`);
-  }
+  const rawBody = await res.text();
 
-  const json = await response.json();
-  const parsed = parseHaikuFromResponse(json);
-
-  if (!parsed) {
-    throw new Error('No valid haiku in response');
-  }
-
-  return parsed;
-}
-
-export const HAIKU_OUTPUT_SCHEMA = {
-  type: 'object',
-  additionalProperties: false,
-  required: ['line1', 'line2', 'line3'],
-  properties: {
-    line1: { type: 'string', minLength: 2, maxLength: 120 },
-    line2: { type: 'string', minLength: 2, maxLength: 120 },
-    line3: { type: 'string', minLength: 2, maxLength: 120 },
-  },
-};
-
-function parseHaikuFromResponse(responseJson) {
-  const outputParsedCandidate = coerceHaiku(responseJson?.output_parsed);
-  if (outputParsedCandidate) {
-    return outputParsedCandidate;
-  }
-
-  const outputBlocks = Array.isArray(responseJson?.output) ? responseJson.output : [];
-  for (const block of outputBlocks) {
-    const contentItems = Array.isArray(block?.content) ? block.content : [];
-    for (const item of contentItems) {
-      const parsedCandidate = coerceHaiku(item?.parsed);
-      if (parsedCandidate) {
-        return parsedCandidate;
-      }
-
-      if (typeof item?.text !== 'string' || !item.text.trim()) {
-        continue;
-      }
-
-      const fromText = parseHaikuText(item.text);
-      if (fromText) {
-        return fromText;
-      }
-    }
-  }
-
-  if (typeof responseJson?.output_text === 'string' && responseJson.output_text.trim()) {
-    return parseHaikuText(responseJson.output_text);
-  }
-
-  return null;
-}
-
-function parseHaikuText(text) {
+  let json = null;
   try {
-    return coerceHaiku(JSON.parse(text));
-  } catch {
-    return null;
-  }
-}
-
-function coerceHaiku(candidate) {
-  if (!candidate || typeof candidate !== 'object') {
-    return null;
-  }
-
-  const line1 = String(candidate.line1 ?? '').trim();
-  const line2 = String(candidate.line2 ?? '').trim();
-  const line3 = String(candidate.line3 ?? '').trim();
-
-  if (!line1 || !line2 || !line3) {
-    return null;
-  }
-
-  return { line1, line2, line3 };
-}
-
-function pickFragment(pool, bannedTerms) {
-  const filtered = pool.filter((fragment) => !containsBannedTerms(fragment, bannedTerms));
-  return pickRandom(filtered.length ? filtered : pool);
-}
-
-function containsBannedTerms(text, bannedTerms) {
-  return bannedTerms.some((term) => text.includes(term));
-}
-
-function normalizeHaikuText(line1, line2, line3) {
-  return [line1, line2, line3].join(' ').replace(/\s+/g, ' ').trim();
-}
-
-function parseRecentFromStationLog(content, limit) {
-  const lines = content.split('\n');
-  const out = [];
-
-  for (let i = lines.length - 1; i >= 0 && out.length < limit; i--) {
-    const raw = lines[i].trim();
-    if (!raw) {
-      continue;
-    }
-
-    let parsed;
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      continue;
-    }
-
-    const event = parsed?.event;
-    if (event === 'llm_output_parsed') {
-      const haiku = coerceHaiku(parsed);
-      if (haiku) {
-        out.push(normalizeHaikuText(haiku.line1, haiku.line2, haiku.line3));
-      }
-      continue;
-    }
-
-    if (event !== 'print_ticket' || typeof parsed?.ticket !== 'string') {
-      continue;
-    }
-
-    const ticketLines = parsed.ticket
-      .split('\n')
-      .map((line) => line.trim())
-      .filter(Boolean);
-    const ticketHaiku = coerceHaiku({
-      line1: ticketLines[0],
-      line2: ticketLines[1],
-      line3: ticketLines[2],
-    });
-    if (ticketHaiku) {
-      out.push(normalizeHaikuText(ticketHaiku.line1, ticketHaiku.line2, ticketHaiku.line3));
-    }
-  }
-
-  return out;
-}
-
-function parseRecentFromMemoryFile(content, limit) {
-  const lines = content.split('\n');
-  const out = [];
-
-  for (let i = lines.length - 1; i >= 0 && out.length < limit; i--) {
-    const raw = lines[i].trim();
-    if (!raw) {
-      continue;
-    }
-
-    let parsed;
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      continue;
-    }
-
-    const haiku = coerceHaiku(parsed);
-    if (haiku) {
-      out.push(normalizeHaikuText(haiku.line1, haiku.line2, haiku.line3));
-    }
-  }
-
-  return out;
-}
-
-function tokenizeContentWords(text) {
-  return String(text ?? '')
-    .normalize('NFC')
-    .replace(/[^\p{L}\p{N}\s-]/gu, ' ')
-    .split(/\s+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 3 && !STOP_WORDS.has(token) && !/^\d+$/.test(token));
-}
-
-function buildBannedTerms(recentHaikus, maxTerms = 10) {
-  if (!recentHaikus.length) {
-    return [];
-  }
-
-  const counts = new Map();
-  for (const haiku of recentHaikus) {
-    const tokens = tokenizeContentWords(haiku);
-    for (const token of tokens) {
-      counts.set(token, (counts.get(token) ?? 0) + 1);
-    }
-  }
-
-  const repeatedTerms = [...counts.entries()]
-    .filter(([, count]) => count >= 2)
-    .sort((a, b) => b[1] - a[1])
-    .map(([token]) => token);
-
-  const latestTerms = tokenizeContentWords(recentHaikus[0]);
-  const merged = [...repeatedTerms, ...latestTerms];
-
-  return [...new Set(merged)].slice(0, maxTerms);
-}
-
-async function appendParsedHaikuToMemory(haiku, meta = {}) {
-  const memoryPayload = {
-    ts: new Date().toISOString(),
-    event: 'haiku_memory',
-    line1: haiku.line1,
-    line2: haiku.line2,
-    line3: haiku.line3,
-    ...meta,
-  };
-
-  const stationPayload = { ...memoryPayload, event: 'llm_output_parsed' };
-  await Promise.allSettled([
-    appendJsonLine(MEMORY_FILE, memoryPayload),
-    appendJsonLine(LOG_FILE, stationPayload),
-  ]);
-}
-
-async function appendJsonLine(file, payload) {
-  try {
-    await mkdir(path.dirname(file), { recursive: true });
-    await appendFile(file, `${JSON.stringify(payload)}\n`, 'utf8');
+    json = rawBody ? JSON.parse(rawBody) : null;
   } catch {}
+
+  if (!res.ok) {
+    const message = json?.error?.message || truncate(rawBody) || `OpenAI request failed (${res.status})`;
+    throw new Error(`OpenAI request failed (${res.status}): ${message}`);
+  }
+
+  const text = extractResponseText(json);
+  const parsed = parseJsonPayload(text);
+  const candidates = toNormalizedCandidates(parsed);
+  if (candidates.length) {
+    return candidates;
+  }
+
+  const fallbackCandidates = toNormalizedCandidates(json?.output?.[0]?.content?.[0]?.json);
+  if (fallbackCandidates.length) {
+    return fallbackCandidates;
+  }
+
+  throw new Error(`Model returned no valid haiku options. output_text=${truncate(text)}`);
 }
+
+// ---------------- SCORING ----------------
+
+const BANNED_PATTERNS = ['יד מחפשת', 'בקבוק ריק', 'טלפון רוטט', 'אור ניאון מרצד'];
+
+function score(h) {
+  const text = `${h.line1} ${h.line2} ${h.line3}`;
+
+  let s = 0;
+
+  // 🔥 HARD KILL repetition
+  for (const b of BANNED_PATTERNS) {
+    if (text.includes(b)) return -100;
+  }
+
+  // reward unusual words
+  if (text.match(/קוף|מטריות|יונים|מזרקה|סנדלים/)) s += 5;
+
+  // reward diversity
+  const unique = new Set(text.split(' '));
+  s += unique.size * 0.5;
+
+  return s;
+}
+
+// ---------------- SAVE ----------------
+
+async function saveHaiku(h) {
+  await mkdir(path.dirname(MEMORY_FILE), { recursive: true });
+  await appendFile(MEMORY_FILE, JSON.stringify({ ts: new Date().toISOString(), ...h }) + '\n');
+}
+
+// ---------------- MAIN ----------------
 
 export async function requestHaikuFromLlm(date) {
   const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('Missing API key');
-  }
+  if (!apiKey) throw new Error('Missing API key');
 
-  const recent = await loadRecentHaikus(12);
-  const bannedTerms = buildBannedTerms(recent);
-  const fragments = buildFragments(bannedTerms);
+  const recent = await loadRecentHaikus(10);
 
+  // 🔥 SINGLE request (fast) but MULTI output
   const prompt = buildPrompt({
-    fragments,
-    mood: pickRandom(HAIKU_MOODS),
+    mood: HAIKU_MOODS[Math.floor(Math.random() * HAIKU_MOODS.length)],
     recentHaikus: recent,
-    bannedTerms,
     nowIso: date.toISOString(),
   });
 
-  const haiku = await requestSingleHaiku({ apiKey, prompt });
-  await appendParsedHaikuToMemory(haiku, {
-    model: OPENAI_MODEL,
-    banned_terms: bannedTerms,
-  });
+  const candidates = await requestBatch({ apiKey, prompt });
 
-  return haiku;
+  if (!candidates.length) {
+    throw new Error('No haiku generated');
+  }
+
+  const best = candidates.sort((a, b) => score(b) - score(a))[0];
+
+  await saveHaiku(best);
+
+  return best;
 }
