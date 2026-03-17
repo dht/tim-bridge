@@ -19,6 +19,9 @@ const TEMPERATURE_MAX_DEFAULT = 1.2;
 const TEMPERATURE_MIN_LIMIT = 0;
 const TEMPERATURE_MAX_LIMIT = 2;
 const PRESS_SNOOZE_MS = 10_000;
+const PRINTER_HEALTHCHECK_MS = 30_000;
+const PRINTER_RETRY_BACKOFF_MS = 60_000;
+const PRINTER_RETRY_BACKOFF_AFTER_ATTEMPTS = 10;
 const LOG_DIR = path.resolve(process.cwd(), 'logs');
 const LOG_FILE = path.join(LOG_DIR, 'haiku-station.jsonl');
 
@@ -28,6 +31,8 @@ let buttonEventCount = 0;
 let buttonPressCount = 0;
 let flowRunCount = 0;
 let lastButtonEventAtMs = 0;
+let keepPrinterConnectionAlive = true;
+let printerConnectionLoopPromise = null;
 
 async function appendHaikuLog(event, payload = {}) {
   try {
@@ -82,6 +87,18 @@ function parseNumber(value) {
 
 function clamp(number, min, max) {
   return Math.min(Math.max(number, min), max);
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getPrinterRetryDelayMs(consecutiveFailures) {
+  if (consecutiveFailures > PRINTER_RETRY_BACKOFF_AFTER_ATTEMPTS) {
+    return PRINTER_RETRY_BACKOFF_MS;
+  }
+
+  return 0;
 }
 
 function getHaikuTemperature() {
@@ -278,14 +295,65 @@ async function runHaikuFlow(trigger = {}) {
   }
 }
 
-async function preconnectPrinter() {
-  try {
-    console.log('Pre-connecting to thermal printer...');
-    await connectThermalPrinter();
-    console.log('Thermal printer is connected and ready.');
-  } catch (error) {
-    console.error('Thermal printer pre-connect failed:', error?.message || error);
+async function runPrinterConnectionLoop() {
+  let consecutiveFailures = 0;
+  let hasConnected = false;
+
+  console.log('Starting thermal printer connection loop...');
+
+  while (keepPrinterConnectionAlive) {
+    try {
+      await connectThermalPrinter();
+
+      if (!hasConnected || consecutiveFailures > 0) {
+        console.log('Thermal printer is connected and ready.');
+        await appendHaikuLog('printer_connected', {
+          consecutiveFailures,
+        });
+      }
+
+      hasConnected = true;
+      consecutiveFailures = 0;
+      await delay(PRINTER_HEALTHCHECK_MS);
+    } catch (error) {
+      consecutiveFailures += 1;
+      hasConnected = false;
+
+      const retryDelayMs = getPrinterRetryDelayMs(consecutiveFailures);
+      const retryInSeconds = Math.ceil(retryDelayMs / 1000);
+
+      console.error(
+        `Thermal printer connection attempt ${consecutiveFailures} failed:`,
+        error?.message || error
+      );
+      await appendHaikuLog('printer_connect_failed', {
+        consecutiveFailures,
+        retryDelayMs,
+        message: error?.message || String(error),
+      });
+
+      if (!keepPrinterConnectionAlive) {
+        break;
+      }
+
+      if (retryDelayMs > 0) {
+        console.log(`Retrying thermal printer connection in ${retryInSeconds}s...`);
+        await delay(retryDelayMs);
+      }
+    }
   }
+}
+
+function startPrinterConnectionLoop() {
+  if (printerConnectionLoopPromise) {
+    return printerConnectionLoopPromise;
+  }
+
+  printerConnectionLoopPromise = runPrinterConnectionLoop().finally(() => {
+    printerConnectionLoopPromise = null;
+  });
+
+  return printerConnectionLoopPromise;
 }
 
 async function main() {
@@ -342,9 +410,12 @@ async function main() {
   });
 
   console.log('Listening for button presses...');
-  await preconnectPrinter();
+  startPrinterConnectionLoop().catch((error) => {
+    console.error('Thermal printer connection loop stopped unexpectedly:', error?.message || error);
+  });
 
   process.on('SIGINT', async () => {
+    keepPrinterConnectionAlive = false;
     stopListening();
     await disconnectThermalPrinter().catch(() => {});
     process.exit(0);
