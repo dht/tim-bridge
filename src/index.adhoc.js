@@ -9,10 +9,6 @@ import {
   printText,
 } from './utils/thermal-printer.js';
 
-const TEMPERATURE_MIN_DEFAULT = 0.8;
-const TEMPERATURE_MAX_DEFAULT = 1.2;
-const TEMPERATURE_MIN_LIMIT = 0;
-const TEMPERATURE_MAX_LIMIT = 2;
 const PRESS_SNOOZE_MS = 10_000;
 const PRINTER_HEALTHCHECK_MS = 30_000;
 const PRINTER_RETRY_BACKOFF_MS = 60_000;
@@ -56,34 +52,6 @@ function toIsoOrNull(value) {
   return date.toISOString();
 }
 
-function getResponseOutputText(responseJson = {}) {
-  const directText = responseJson?.output_text;
-  if (typeof directText === 'string' && directText.trim()) {
-    return directText;
-  }
-
-  const outputBlocks = Array.isArray(responseJson?.output) ? responseJson.output : [];
-  for (const block of outputBlocks) {
-    const contentItems = Array.isArray(block?.content) ? block.content : [];
-    for (const item of contentItems) {
-      if (typeof item?.text === 'string' && item.text.trim()) {
-        return item.text;
-      }
-    }
-  }
-
-  return '';
-}
-
-function parseNumber(value) {
-  const number = Number(value);
-  return Number.isFinite(number) ? number : null;
-}
-
-function clamp(number, min, max) {
-  return Math.min(Math.max(number, min), max);
-}
-
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -94,31 +62,6 @@ function getPrinterRetryDelayMs(consecutiveFailures) {
   }
 
   return 0;
-}
-
-function getHaikuTemperature() {
-  const fixed = parseNumber(process.env.HAIKU_TEMPERATURE);
-  if (fixed !== null) {
-    return clamp(fixed, TEMPERATURE_MIN_LIMIT, TEMPERATURE_MAX_LIMIT);
-  }
-
-  const envMin = parseNumber(process.env.HAIKU_TEMPERATURE_MIN);
-  const envMax = parseNumber(process.env.HAIKU_TEMPERATURE_MAX);
-  const min = clamp(
-    envMin ?? TEMPERATURE_MIN_DEFAULT,
-    TEMPERATURE_MIN_LIMIT,
-    TEMPERATURE_MAX_LIMIT
-  );
-  const max = clamp(
-    envMax ?? TEMPERATURE_MAX_DEFAULT,
-    TEMPERATURE_MIN_LIMIT,
-    TEMPERATURE_MAX_LIMIT
-  );
-  const low = Math.min(min, max);
-  const high = Math.max(min, max);
-  const randomValue = low + Math.random() * (high - low);
-
-  return Number(randomValue.toFixed(2));
 }
 
 function sanitizePrintableText(value) {
