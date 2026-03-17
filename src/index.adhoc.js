@@ -2,18 +2,13 @@ import { appendFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { listenToButton } from './utils/button.js';
 import './utils/load-env.js';
-import { buildHaikuPrompt, HAIKU_OUTPUT_SCHEMA } from './utils/prompt.haiku.js';
+import { requestHaikuFromLlm } from './utils/prompt.haiku.js';
 import {
   connectThermalPrinter,
   disconnectThermalPrinter,
   printText,
 } from './utils/thermal-printer.js';
 
-const OPENAI_MODEL = process.env.HAIKU_MODEL ?? 'gpt-5.2';
-const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL ?? 'https://api.openai.com/v1';
-const TIME_ZONE = process.env.HAIKU_TIMEZONE ?? 'Asia/Jerusalem';
-const INSTALLATION_NAME = process.env.HAIKU_INSTALLATION_NAME ?? 'המפעל';
-const INSTALLATION_CITY = process.env.HAIKU_INSTALLATION_CITY ?? 'ירושלים';
 const TEMPERATURE_MIN_DEFAULT = 0.8;
 const TEMPERATURE_MAX_DEFAULT = 1.2;
 const TEMPERATURE_MIN_LIMIT = 0;
@@ -140,86 +135,6 @@ function formatHaikuTicket(haiku) {
   const { line1, line2, line3 } = haiku;
 
   return sanitizePrintableText([line1, line2, line3].join('\n'));
-}
-
-async function requestHaikuFromLlm(date) {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY is missing.');
-  }
-
-  const prompt = buildHaikuPrompt({
-    nowIso: date.toISOString(),
-    installationName: INSTALLATION_NAME,
-    city: INSTALLATION_CITY,
-    timeZone: TIME_ZONE,
-  });
-  const temperature = getHaikuTemperature();
-  await appendHaikuLog('llm_prompt', {
-    model: OPENAI_MODEL,
-    temperature,
-    prompt,
-  });
-
-  const response = await fetch(`${OPENAI_BASE_URL}/responses`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      temperature,
-      input: [
-        {
-          role: 'user',
-          content: [{ type: 'input_text', text: prompt }],
-        },
-      ],
-      text: {
-        format: {
-          type: 'json_schema',
-          name: 'daily_haiku',
-          schema: HAIKU_OUTPUT_SCHEMA,
-        },
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => '');
-    throw new Error(`OpenAI request failed (${response.status}): ${errorBody}`);
-  }
-
-  const responseJson = await response.json();
-  const outputText = getResponseOutputText(responseJson);
-  await appendHaikuLog('llm_output_raw', {
-    outputText,
-    usage: responseJson?.usage ?? null,
-  });
-
-  if (!outputText) {
-    throw new Error('OpenAI response did not include output text.');
-  }
-
-  let parsed;
-  try {
-    parsed = JSON.parse(outputText);
-  } catch (_error) {
-    throw new Error('OpenAI output was not valid JSON.');
-  }
-
-  const line1 = sanitizePrintableText(parsed?.line1);
-  const line2 = sanitizePrintableText(parsed?.line2);
-  const line3 = sanitizePrintableText(parsed?.line3);
-
-  if (!line1 || !line2 || !line3) {
-    throw new Error('OpenAI output is missing one or more haiku lines.');
-  }
-
-  await appendHaikuLog('llm_output_parsed', { line1, line2, line3 });
-
-  return { line1, line2, line3 };
 }
 
 async function runHaikuFlow(trigger = {}) {
