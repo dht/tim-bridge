@@ -2,6 +2,7 @@ import './load-env.js';
 import { onBridgeClose } from '../lifecycle/index.js';
 import { getLogger } from './globals.js';
 import { getIp } from './ip.js';
+import { parseMachineIds } from './machine-ids.js';
 
 const MACHINE_IDS = process.env.MACHINE_IDS;
 
@@ -10,7 +11,7 @@ async function cleanupAndExit(code = 0) {
   try {
     logger.info('Cleaning up before exit...');
 
-    const ids = MACHINE_IDS.split(',').map((id) => id.trim());
+    const ids = parseMachineIds(MACHINE_IDS);
 
     for (const id of ids) {
       try {
