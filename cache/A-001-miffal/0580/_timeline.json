@@ -1,0 +1,106 @@
+[
+  {
+    "id": "A-001-miffal|0580|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "id": "1",
+          "speakerName": "הלל הזקן",
+          "text": "שאלה לי אליך, שמאי: מהו עיר—אבנים או אנשים? אם ירושלים היא לב, האם אין צריך גם ריאות שינשמו? תל אביב, על כל רעשה, מחיה מלאכה, פרנסה, יצירה; וירושלים מחיה נשמה, זיכרון, תפילה. הלא נאמר: \"דְּרָכֶיהָ דַרְכֵי נֹעַם\"—וכי נועם אינו גם היכולת לשאת שני מוקדים באהבה אחת?",
+          "duration": 33.44,
+          "cost": 0.1226,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/0580/line-1A.mp3"
+        },
+        {
+          "id": "2",
+          "speakerName": "שמאי הזקן",
+          "text": "הגדרה. עיר לעם ישראל אינה רק שוק; היא ציר. הציר הוא ירושלים. \"כִּי מִצִּיּוֹן תֵּצֵא תוֹרָה\"—לא מרוטשילד. תל אביב יכולה להיות כלי, לא תחליף. כשעושים ממנה מרכז—מקבלים מרכז בלי קדושה, בלי מדידה. עיר צריכה גבול; ירושלים היא גבול של מעלה ושל מטה.",
+          "duration": 25.36,
+          "cost": 0.093,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/0580/line-2B.mp3"
+        },
+        {
+          "id": "3",
+          "speakerName": "הלל הזקן",
+          "text": "ואני אומר: אם הציר נשבר מפני שאיש צעיר מרגיש שאין לו מקום—מה הועילה המדידה? \"לֹא עָלֶיךָ הַמְּלָאכָה לִגְמֹר\"—אבל אינך בן חורין ליבטל ממנה; לתקן עיר הוא גם לתקן את הגשר בין בתים. תל אביב יכולה ללמד זריזות וחסד מעשי—צדקה בלי טקס, הכנסת אורחים בלי סיסמה—ואז לשוב ולהעלותה לירושלים, כאילו מעלים ניצוצות.",
+          "duration": 37.12,
+          "cost": 0.1361,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/0580/line-3A.mp3"
+        },
+        {
+          "id": "4",
+          "speakerName": "שמאי הזקן",
+          "text": "דיוק: חסד בלי טקס—לפעמים חסד בלי עוגן. \"אַל תַּעַשׂ תּוֹרָתְךָ קֶבַע\"—אמרת, הלל, אבל לא אמרת לעשותה ארעי. הקבע הוא ירושלים; היא מדד, אמת-מידה, משכן לזיכרון. בתל אביב קל להחליף אמת במצב-רוח. עיר שמחליפה זהות בכל עונה—אינה בית, היא תחנה.",
+          "duration": 27.44,
+          "cost": 0.1006,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/0580/line-4B.mp3"
+        }
+      ],
+      "params": {
+        "topic": "ירושלים או תל אביב"
+      }
+    }
+  },
+  {
+    "id": "A-001-miffal|0580|1",
+    "index": 1,
+    "ts": 0,
+    "duration": 33.44,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/0580/line-1A.mp3?1771861830688",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0,
+      "mp3LocalPath": "./cache/A-001-miffal/0580/line-1A.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|0580|2",
+    "index": 2,
+    "ts": 34.94,
+    "duration": 25.36,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/0580/line-2B.mp3?1771861830688",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1,
+      "mp3LocalPath": "./cache/A-001-miffal/0580/line-2B.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|0580|3",
+    "index": 3,
+    "ts": 61.8,
+    "duration": 37.12,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/0580/line-3A.mp3?1771861830688",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2,
+      "mp3LocalPath": "./cache/A-001-miffal/0580/line-3A.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|0580|4",
+    "index": 4,
+    "ts": 100.41999999999999,
+    "duration": 27.44,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/0580/line-4B.mp3?1771861830688",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3,
+      "mp3LocalPath": "./cache/A-001-miffal/0580/line-4B.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|0580|5",
+    "index": 5,
+    "ts": 129.35999999999999,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]

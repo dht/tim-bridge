@@ -1,0 +1,106 @@
+[
+  {
+    "id": "A-001-miffal|1a4a|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "id": "1",
+          "speakerName": "הלל הזקן",
+          "text": "חיפה או עכו? אשיב בשאלה: מה מבקשים אנו לבנות על הגבעות—עיר שמקבלת אדם כמו שהוא, או עיר שמלמדת אותו להיות מדויק? אם לקבל—חיפה; הכרמל כהר שמכיל שכונות ועמים וריחות, כמו שנאמר: \"דרכיה דרכי נעם\" (משלי ג).",
+          "duration": 30.24,
+          "cost": 0.1109,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/1a4a/line-1A.mp3"
+        },
+        {
+          "id": "2",
+          "speakerName": "שמאי הזקן",
+          "text": "הגדרה תחילה: \"טובה\" במחלוקת זו היא עמידות וסדר. עכו. עיר-נמל עם קו חוף שנמדד, חומה, שערים—מבנה. חיפה מתפזרת. והרי \"עשו סייג לתורה\" (אבות א, א): מי שאוהב סייג, יאהב חומה.",
+          "duration": 23.04,
+          "cost": 0.0845,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/1a4a/line-2B.mp3"
+        },
+        {
+          "id": "3",
+          "speakerName": "הלל הזקן",
+          "text": "שמאי, אמת-המידה בידך, אך מי נכנס בשער אם השער צר מדי? בעכו החומה שומרת, אך גם מונעת. חיפה—נמל פתוח וגב-הר, אפשר לעלות ולרדת; לתלמיד יש מדרגות. \"הוי מתלמידיו של אהרן... אוהב שלום ורודף שלום\" (אבות א, יב): עיר שמרבה מפגש מרבה שלום.",
+          "duration": 30.88,
+          "cost": 0.1132,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/1a4a/line-3A.mp3"
+        },
+        {
+          "id": "4",
+          "speakerName": "שמאי הזקן",
+          "text": "דיוק: שלום בלי גבול הוא ערבוב. בעכו השוק והנמל פועלים לפי קצב; תוחמים סחורה, תוחמים אחריות. \"כל השערים ננעלו חוץ משערי דמעה\"—אבל שער צריך להיות קיים כדי שיידעו מהו פתוח ומהו נעול. חיפה מערפלת את הקווים.",
+          "duration": 25.28,
+          "cost": 0.0927,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/1a4a/line-4B.mp3"
+        }
+      ],
+      "params": {
+        "topic": "חיפה או עכו?"
+      }
+    }
+  },
+  {
+    "id": "A-001-miffal|1a4a|1",
+    "index": 1,
+    "ts": 0,
+    "duration": 30.24,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/1a4a/line-1A.mp3?1771861849291",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0,
+      "mp3LocalPath": "./cache/A-001-miffal/1a4a/line-1A.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|1a4a|2",
+    "index": 2,
+    "ts": 31.74,
+    "duration": 23.04,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/1a4a/line-2B.mp3?1771861849291",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1,
+      "mp3LocalPath": "./cache/A-001-miffal/1a4a/line-2B.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|1a4a|3",
+    "index": 3,
+    "ts": 56.28,
+    "duration": 30.88,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/1a4a/line-3A.mp3?1771861849291",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2,
+      "mp3LocalPath": "./cache/A-001-miffal/1a4a/line-3A.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|1a4a|4",
+    "index": 4,
+    "ts": 88.66,
+    "duration": 25.28,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/1a4a/line-4B.mp3?1771861849291",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3,
+      "mp3LocalPath": "./cache/A-001-miffal/1a4a/line-4B.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|1a4a|5",
+    "index": 5,
+    "ts": 115.44,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]

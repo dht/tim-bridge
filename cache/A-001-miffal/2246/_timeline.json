@@ -1,0 +1,106 @@
+[
+  {
+    "id": "A-001-miffal|2246|0",
+    "index": 0,
+    "ts": 0,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE",
+      "lines": [
+        {
+          "id": "1",
+          "speakerName": "הלל הזקן",
+          "text": "איזו עיר עושה יותר שלום בין אדם לחברו—זו שמקדשת את הזיכרון או זו שמקדשת את המפגש? ירושלים היא לב שמזכיר לאדם שהוא אורח בפני שכינה ואדם; אבל תל אביב מלמדת הלכה למעשה: חיי ציבור, פרנסה, כבוד הבריות. הרי נאמר: \"דרכיה דרכי נעם וכל נתיבותיה שלום\"—ואני שואל: היכן נתיבות השלום נפתחות לכל עובר ושב בלי לשאול מאין בא?",
+          "duration": 41.84,
+          "cost": 0.1534,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/2246/line-1A.mp3"
+        },
+        {
+          "id": "2",
+          "speakerName": "שמאי הזקן",
+          "text": "להגדיר. עיר אחת—ירושלים—מוקד קדושה, מסורת, ריבונות רוחנית. עיר שנייה—תל אביב—מרכז נוחות ותרבות. לא מתבלבלים: \"כי מציון תצא תורה\". תורה יוצאת ממקום מוגדר. כשמערבבים סמל עם פונקציה—מאבדים מדידה. ירושלים היא קו האפס.",
+          "duration": 25.6,
+          "cost": 0.0939,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/2246/line-2B.mp3"
+        },
+        {
+          "id": "3",
+          "speakerName": "הלל הזקן",
+          "text": "אם ירושלים קו האפס—למה רבים חוזרים ממנה כנטושים? שמא מפני שאנו תובעים מהם שלמות בכניסה ולא צעד ראשון. הלא למדנו: \"לא עליך המלאכה לגמור\"—בעיר שהמלאכה בה כבדה, צריך גם רחמי כניסה. תל אביב, עם כל קלותה, יכולה להיות פרוזדור שמוליך להר; אם נקרב—אולי נעלה.",
+          "duration": 31.12,
+          "cost": 0.1141,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/2246/line-3A.mp3"
+        },
+        {
+          "id": "4",
+          "speakerName": "שמאי הזקן",
+          "text": "פרוזדור בלי טרקלין הוא מסדרון אינסופי. הצעד הראשון חייב להיות לכיוון נכון, לא רק תנועה. \"עשה תורתך קבע\"—קבע דורש מקום שמכתיב משמעת. תל אביב מחליפה קבע בזרימה; זרימה טובה לנחל, לא למקדש. מי שרוצה הר—יפנה להר.",
+          "duration": 22.56,
+          "cost": 0.0827,
+          "url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/2246/line-4B.mp3"
+        }
+      ],
+      "params": {
+        "topic": "ירושלים או תל אביב"
+      }
+    }
+  },
+  {
+    "id": "A-001-miffal|2246|1",
+    "index": 1,
+    "ts": 0,
+    "duration": 41.84,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/2246/line-1A.mp3?1771861757060",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 0,
+      "mp3LocalPath": "./cache/A-001-miffal/2246/line-1A.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|2246|2",
+    "index": 2,
+    "ts": 43.34,
+    "duration": 25.6,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/2246/line-2B.mp3?1771861757060",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 1,
+      "mp3LocalPath": "./cache/A-001-miffal/2246/line-2B.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|2246|3",
+    "index": 3,
+    "ts": 70.44,
+    "duration": 31.12,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/2246/line-3A.mp3?1771861757060",
+      "lightStatus": "ONE",
+      "linesCurrentIndex": 2,
+      "mp3LocalPath": "./cache/A-001-miffal/2246/line-3A.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|2246|4",
+    "index": 4,
+    "ts": 103.06,
+    "duration": 22.56,
+    "state": {
+      "mp3Url": "https://storage.googleapis.com/tim-os.firebasestorage.app/A-001-miffal/sessions/2246/line-4B.mp3?1771861757060",
+      "lightStatus": "TWO",
+      "linesCurrentIndex": 3,
+      "mp3LocalPath": "./cache/A-001-miffal/2246/line-4B.mp3"
+    }
+  },
+  {
+    "id": "A-001-miffal|2246|5",
+    "index": 5,
+    "ts": 127.12,
+    "state": {
+      "mp3Url": "",
+      "lightStatus": "NONE"
+    },
+    "isDone": true
+  }
+]
